@@ -616,7 +616,7 @@ class _DownloadPageState extends State<DownloadPage> {
       if (File(finalPath).existsSync()) {
         int i = 1;
         while (File(finalPath).existsSync()) {
-          finalPath = path.join(downloadDirectory, "${i}_$fileName");
+          finalPath = path.join(downloadDirectory, "${i}_$fileNamePath");
           i++;
         }
       }
