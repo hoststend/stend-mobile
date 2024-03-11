@@ -21,7 +21,9 @@ echo "================= Moved."
 # Better naming
 echo "================= Renaming files"
 DATE=$(date +"%Y-%m-%d")
+rm -f build/StendMobile-ios-$DATE.ipa
 mv build/Runner.ipa build/StendMobile-ios-$DATE.ipa
+rm -f build/StendMobile-android-$DATE.apk
 mv build/app-release.apk build/StendMobile-android-$DATE.apk
 echo "================= Renamed."
 
