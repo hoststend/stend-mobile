@@ -71,9 +71,9 @@ class DownloadPage extends StatefulWidget {
 }
 
 class _DownloadPageState extends State<DownloadPage> {
-  final box = GetStorage();
+  late GetStorage box;
 
-  final TextEditingController urlController = TextEditingController();
+  late TextEditingController urlController;
 
   QRViewController? qrController;
   String? lastScannedCode;
@@ -85,14 +85,21 @@ class _DownloadPageState extends State<DownloadPage> {
 
   @override
   void initState() {
-    super.initState();
+    box = GetStorage();
+    urlController = TextEditingController();
+
     setState(() {
       historic = box.read('historic') ?? [];
     });
+
+    super.initState();
   }
 
   @override
   void dispose() {
+    urlController.dispose();
+    downloadAlertStreamController.close();
+
     super.dispose();
   }
 

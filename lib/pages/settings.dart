@@ -26,8 +26,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   void initState() {
-    super.initState();
     _isConnected = box.read('apiInstanceUrl') != null;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
 	@override
