@@ -16,6 +16,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:html/parser.dart';
 import 'package:tuple/tuple.dart';
 import 'package:path/path.dart' as path;
+import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 
 final dio = Dio(BaseOptions(
@@ -835,6 +836,17 @@ class _DownloadPageState extends State<DownloadPage> {
                     child: ListTile(
                       title: Text(historic[index]["filename"], overflow: TextOverflow.ellipsis, maxLines: 3),
                       subtitle: Text("${formatDate(historic[index]["date"])} ― ${formatBytes(historic[index]["filesize"] ?? '0')}${historic[index]["filetype"] != null && historic[index]["filetype"].isNotEmpty ? " ― ${historic[index]["filetype"]}" : ""}"),
+                      onLongPress: () {
+                        HapticFeedback.lightImpact();
+
+                        final screenSize = MediaQuery.of(context).size;
+                        final rect = Rect.fromCenter(
+                          center: Offset(screenSize.width / 2, screenSize.height / 2),
+                          width: 100,
+                          height: 100,
+                        );
+                        Share.share(historic[index]["access"], sharePositionOrigin: rect);
+                      },
                       onTap: () {
                         HapticFeedback.lightImpact();
                         urlController.text = historic[index]["access"];
