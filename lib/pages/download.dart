@@ -111,6 +111,12 @@ class _DownloadPageState extends State<DownloadPage> {
     String secondKey = '';
     String token = '';
 
+    // Si l'utilisateur n'a rien entré, on arrête là
+    if (downloadKey.isEmpty) {
+      showSnackBar(context, "Veuillez entrer un lien ou une clé de partage");
+      return;
+    }
+
     // Créer un client HTTP
     final http.Client client = http.Client();
 
@@ -712,10 +718,14 @@ class _DownloadPageState extends State<DownloadPage> {
                 controller: urlController,
                 autocorrect: false,
                 keyboardType: TextInputType.url,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
                   labelText: "Lien ou clé de partage du transfert",
                   hintText: "stend.example.com/d?123456",
+                  suffixIcon: IconButton(
+                    icon: Icon(Platform.isIOS ? Icons.arrow_forward_ios : Icons.arrow_forward),
+                    onPressed: () { startDownload(); }
+                  ),
                 ),
                 onSubmitted: (String value) { startDownload(); },
               ),
