@@ -110,6 +110,15 @@ class _DownloadPageState extends State<DownloadPage> {
     // Créer un client HTTP
     final http.Client client = http.Client();
 
+    // Si l'input de l'utilisateur contient un espace, on cherche un lien dans le texte
+    if (downloadKey.contains(' ')) {
+      RegExp regExp = RegExp(r'(https?://\S+)');
+      var matches = regExp.allMatches(downloadKey);
+      if (matches.isNotEmpty) {
+        downloadKey = matches.first.group(0)!;
+      }
+    }
+
     // On détermine le service utilisé si c'est pas Stend
     if (downloadKey.startsWith('https://transfert.free.fr/') || downloadKey.startsWith('http://transfert.free.fr/')) {
       service = 'free';
@@ -443,7 +452,7 @@ class _DownloadPageState extends State<DownloadPage> {
     if (transfertInfoJson.containsKey("message") || transfertInfoJson.containsKey("text") || transfertInfoJson.containsKey("error") || (transfertInfoJson.containsKey("status") && transfertInfoJson["status"] == "error")) {
       Navigator.pop(context);
       debugPrint(transfertInfoJson.toString());
-      showSnackBar(context, (transfertInfoJson["message"] == 'Forbidden' ? "Ce transfert n'a pas pu être obtenu en raison d'une autorisation manquante (transfert protégé ?)" : transfertInfoJson["message"] == "Object not found" ? "Le transfert est introuvable, vérifier l'URL" : transfertInfoJson["message"]) ?? transfertInfoJson["text"] ?? transfertInfoJson["error"] ?? "Impossible de récupérer les infos du transfert");
+      showSnackBar(context, (transfertInfoJson["message"] == 'Forbidden' ? "Ce transfert n'a pas pu être obtenu en raison d'une autorisation manquante (transfert protégé ?)" : transfertInfoJson["message"] == "Object not found" || transfertInfoJson["message"] == "Transfer not found" || transfertInfoJson["message"] == "Not Found" ? "Le transfert est introuvable, vérifier l'URL" : transfertInfoJson["message"]) ?? transfertInfoJson["text"] ?? transfertInfoJson["error"] ?? "Impossible de récupérer les infos du transfert");
       return;
     }
 
