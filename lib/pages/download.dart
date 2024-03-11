@@ -381,7 +381,27 @@ class _DownloadPageState extends State<DownloadPage> {
       } else if (service == 'wetransfer') { // Support manquant : transferts protégés par mot de passe ; les fichiers uploadé à partir d'un dossier peuvent être corrompus (problème avec l'API)
         transfertInfo = await http.post(Uri.parse("https://wetransfer.com/api/v4/transfers/$downloadKey/prepare-download"), body: json.encode({ "security_hash": secondKey }), headers: { "Content-Type": "application/json" });
       } else if (service == 'smash') { // Support manquant : transferts protégés par mot de passe
-        transfertInfo = await http.get(Uri.parse("https://transfer.eu-west-3.fromsmash.co/transfer/$downloadKey/files/preview?version=07-2020"), headers: { "Authorization": token });
+        var transfertRegion = await http.get(Uri.parse("https://link.fromsmash.co/target/fromsmash.com%2F$downloadKey?version=10-2019"), headers: { "Authorization": token });
+
+        final Map<String, dynamic> transfertRegionJson;
+        try {
+          transfertRegionJson = json.decode(transfertRegion.body);
+        } catch (e) {
+        if (!mounted) return;
+          Navigator.pop(context);
+          debugPrint(e.toString());
+          showSnackBar(context, "Impossible de récupérer la région du transfert");
+          return;
+        }
+
+        if (transfertRegionJson['target']['region'] == null) {
+          if (!mounted) return;
+          Navigator.pop(context);
+          showSnackBar(context, "L'API n'a pas retourné la région du transfert");
+          return;
+        }
+
+        transfertInfo = await http.get(Uri.parse("https://transfer.${transfertRegionJson['target']['region']}.fromsmash.co/transfer/$downloadKey/files/preview?version=07-2020"), headers: { "Authorization": token });
       } else if (service == 'swisstransfer') { // Support manquant : transferts protégés par mot de passe
         transfertInfo = await http.get(Uri.parse("https://www.swisstransfer.com/api/links/$downloadKey"), headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" });
       } else if (service == 'cobalt') { // Support manquant : quelques tests à faire ; certains services sont manquants ; picker (plusieurs médias)
