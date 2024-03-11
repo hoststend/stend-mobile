@@ -1,7 +1,6 @@
 import 'package:intl/intl.dart';
 
 String formatMonth(String month) {
-  print(month);
   switch (month) {
     case '01':
       return 'janv.';
