@@ -1,3 +1,6 @@
+// TODO: refaire les snackbar pour qu'ils soient plus facile à comprendre
+// TODO: se faire un modèle en vérifiant la taille max avant que ça déborde
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -230,7 +233,7 @@ class _DownloadPageState extends State<DownloadPage> {
         }
         else {
           Navigator.pop(context);
-          showSnackBar(context, "Le client Stend n'a pas envoyé les infos sur le serveur");
+          showSnackBar(context, "Le client Stend n'a pas envoyé les infos du serveur");
           return;
         }
       }
@@ -404,14 +407,6 @@ class _DownloadPageState extends State<DownloadPage> {
       return;
     }
 
-    // On vérifie si on a une erreur dans le statut de la requête
-    if (transfertInfo.statusCode != 200) {
-      if (!mounted) return;
-      Navigator.pop(context);
-      showSnackBar(context, "L'API n'a pas retourné des infos avec succès");
-      return;
-    }
-
     // On parse en JSON
     if (!mounted) return;
     final Map<String, dynamic> transfertInfoJson;
@@ -420,14 +415,23 @@ class _DownloadPageState extends State<DownloadPage> {
     } catch (e) {
       Navigator.pop(context);
       debugPrint(e.toString());
-      showSnackBar(context, "L'API n'a pas retourné des informations valides");
+      showSnackBar(context, "L'API n'a pas retourné des informations JSON valides");
       return;
     }
 
     // On vérifie si on a une erreur dans le JSON
     if (transfertInfoJson.containsKey("message") || transfertInfoJson.containsKey("text") || transfertInfoJson.containsKey("error") || (transfertInfoJson.containsKey("status") && transfertInfoJson["status"] == "error")) {
       Navigator.pop(context);
+      debugPrint(transfertInfoJson.toString());
       showSnackBar(context, (transfertInfoJson["message"] == 'Forbidden' ? "Ce transfert n'a pas pu être obtenu en raison d'une autorisation manquante (transfert protégé ?)" : transfertInfoJson["message"] == "Object not found" ? "Le transfert est introuvable, vérifier l'URL" : transfertInfoJson["message"]) ?? transfertInfoJson["text"] ?? transfertInfoJson["error"] ?? "Impossible de récupérer les infos du transfert");
+      return;
+    }
+
+    // On vérifie si on a une erreur dans le statut de la requête
+    if (transfertInfo.statusCode != 200) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      showSnackBar(context, "L'API n'a pas retourné des infos avec succès");
       return;
     }
 
