@@ -44,12 +44,6 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  setCurrentIndex(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     var brightness = box.read('theme') == 'Système' ? MediaQuery.of(context).platformBrightness : box.read('theme') == 'Clair' ? Brightness.light : box.read('theme') == 'Sombre' ? Brightness.dark : MediaQuery.of(context).platformBrightness;
@@ -107,11 +101,6 @@ class _MainAppState extends State<MainApp> {
                 child: PageView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
                   children: const [
                     SendPage(),
                     DownloadPage(),
@@ -124,6 +113,10 @@ class _MainAppState extends State<MainApp> {
               selectedIndex: _currentIndex,
               onDestinationSelected: (int index) {
                 if(index != _currentIndex) HapticFeedback.lightImpact();
+
+                setState(() {
+                  _currentIndex = index;
+                });
 
                 _pageController.animateToPage(
                   index,
