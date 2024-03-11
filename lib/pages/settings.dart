@@ -275,13 +275,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   if (!mounted) return;
                                   try {
                                     if (jsonData['success']) {
-                                      box.write('apiInstanceUrl', apiUrlString);
                                       box.write('apiInstancePassword', passwordString);
-                                      setState(() {
-                                        _isConnected = true;
-                                      });
-                                      HapticFeedback.lightImpact();
-                                      showSnackBar(context, "Vous êtes maintenant connecté à votre instance");
                                     }
                                   } catch (e) {
                                     showSnackBar(context, jsonData['message']);
@@ -292,6 +286,14 @@ class _SettingsPageState extends State<SettingsPage> {
                                   return;
                                 }
                               }
+
+                              box.write('apiInstanceUrl', apiUrlString);
+                              setState(() {
+                                _isConnected = true;
+                              });
+                              if (!mounted) return;
+                              HapticFeedback.lightImpact();
+                              showSnackBar(context, "Vous êtes maintenant connecté à votre instance");
                             },
                             child: const Text("Configurer"),
                           ),
