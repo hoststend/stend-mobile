@@ -105,7 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             child: const Text("En savoir plus"),
                           ),
 
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 12),
 
                           FilledButton(
                             onPressed: () async {
