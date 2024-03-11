@@ -13,7 +13,7 @@ createSmashAccount() async {
       'Accept': 'application/json',
     }
   );
-  final Map<String, dynamic> accountInfoJson = json.decode(accountInfo.body);
+  final Map<String, dynamic> accountInfoJson = json.decode(utf8.decode(accountInfo.bodyBytes));
 
   // Vérifier si y'a une erreur
   if (accountInfoJson.containsKey('message') || accountInfoJson.containsKey('error')) return 'err_${accountInfoJson['message'] ?? accountInfoJson['error']}';

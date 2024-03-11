@@ -223,7 +223,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 }
 
                                 // Parse la réponse
-                                final Map<String, dynamic> jsonData = json.decode(response.body);
+                                final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
 
                                 // Définir certaines données dans les préférences
                                 box.write('requirePassword', jsonData['requirePassword']);
@@ -266,7 +266,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   );
                                   
                                   // Parse la réponse
-                                  final Map<String, dynamic> jsonData = json.decode(response.body);
+                                  final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
                                   if (!mounted) return;
                                   try {
                                     if (jsonData['success']) {

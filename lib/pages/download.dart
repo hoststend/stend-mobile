@@ -385,7 +385,7 @@ class _DownloadPageState extends State<DownloadPage> {
 
         final Map<String, dynamic> transfertRegionJson;
         try {
-          transfertRegionJson = json.decode(transfertRegion.body);
+          transfertRegionJson = json.decode(utf8.decode(transfertRegion.bodyBytes));
         } catch (e) {
         if (!mounted) return;
           Navigator.pop(context);
@@ -431,7 +431,7 @@ class _DownloadPageState extends State<DownloadPage> {
     if (!mounted) return;
     final Map<String, dynamic> transfertInfoJson;
     try {
-      transfertInfoJson = json.decode(transfertInfo.body);
+      transfertInfoJson = json.decode(utf8.decode(transfertInfo.bodyBytes));
     } catch (e) {
       Navigator.pop(context);
       debugPrint(e.toString());
@@ -494,7 +494,7 @@ class _DownloadPageState extends State<DownloadPage> {
         // On parse en JSON
         final Map<String, dynamic> subTransfertInfoJson;
         if(subTransfertInfo.body.isNotEmpty) {
-          subTransfertInfoJson = json.decode(subTransfertInfo.body);
+          subTransfertInfoJson = json.decode(utf8.decode(subTransfertInfo.bodyBytes));
         }
         else {
           subTransfertInfoJson = transfert;
