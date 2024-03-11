@@ -218,7 +218,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 final response = await http.get(url);
                                 if (response.statusCode != 200) {
                                   if (!mounted) return;
-                                  showSnackBar(context, "La requête n'a pas abouti avec succès. Vérifier l'URL");
+                                  showSnackBar(context, "La requête n'a pas abouti. Vérifier l'URL");
                                   return;
                                 }
 

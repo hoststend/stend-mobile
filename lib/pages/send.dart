@@ -153,7 +153,7 @@ class _SendPageState extends State<SendPage> {
                           } catch (e) {
                             debugPrint(e.toString());
                             if (!mounted) return;
-                            showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifiez les permissions de l'app");
+                            showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifier les permissions de l'app");
                           }
                         },
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileImage : iconLib == 'Lucide (alt)' ? LucideIcons.image : Icons.image),
@@ -178,7 +178,7 @@ class _SendPageState extends State<SendPage> {
                           } catch (e) {
                             debugPrint(e.toString());
                             if (!mounted) return;
-                            showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifiez les permissions de l'app");
+                            showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifier les permissions de l'app");
                           }
                         },
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileVideo : iconLib == 'Lucide (alt)' ? LucideIcons.film : Icons.movie),

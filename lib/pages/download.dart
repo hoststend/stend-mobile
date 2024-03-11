@@ -1,6 +1,3 @@
-// TODO: refaire les snackbar pour qu'ils soient plus facile à comprendre
-// TODO: se faire un modèle en vérifiant la taille max avant que ça déborde
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -236,13 +233,13 @@ class _DownloadPageState extends State<DownloadPage> {
           } catch (e) {
             debugPrint(e.toString());
             Navigator.pop(context);
-            showSnackBar(context, "Une erreur empêche de récupérer les infos via le client Stend, ou ce n'est pas un lien valide");
+            showSnackBar(context, "Nous n'avons pas pu obtenir le infos sur le serveur");
             return;
           }
         }
         else {
           Navigator.pop(context);
-          showSnackBar(context, "Le client Stend n'a pas envoyé les infos du serveur");
+          showSnackBar(context, "La page ne contient pas les infos sur le serveur");
           return;
         }
       }
@@ -253,7 +250,7 @@ class _DownloadPageState extends State<DownloadPage> {
         if (apiUrl.isEmpty) {
           if (!mounted) return;
           Navigator.pop(context);
-          showSnackBar(context, "L'API n'a pas été configurée depuis les paramètres");
+          showSnackBar(context, "L'API n'a pas été configurée depuis les réglages");
           return;
         }
       }
@@ -298,7 +295,7 @@ class _DownloadPageState extends State<DownloadPage> {
       }
       else {
         Navigator.pop(context);
-        showSnackBar(context, "Le serveur n'a pas effectué la redirection finale");
+        showSnackBar(context, "Nous n'avons pas pu obtenir l'URL après redirection");
         return;
       }
     }
@@ -348,7 +345,7 @@ class _DownloadPageState extends State<DownloadPage> {
     if (downloadKey.isEmpty) {
       if (!mounted) return;
       Navigator.pop(context);
-      showSnackBar(context, "Aucune clé de téléchargement spécifiée");
+      showSnackBar(context, "Aucune clé de téléchargement n'est spécifiée");
       return;
     }
 
@@ -425,7 +422,7 @@ class _DownloadPageState extends State<DownloadPage> {
       } else {
         if (!mounted) return;
         Navigator.pop(context);
-        showSnackBar(context, "Ce service n'est pas supporté. Signalez le problème");
+        showSnackBar(context, "Ce service n'est pas supporté. Cela ne devrait pas arrivé. Signalez ce problème");
         return;
       }
     } catch (e) {
@@ -444,7 +441,7 @@ class _DownloadPageState extends State<DownloadPage> {
     } catch (e) {
       Navigator.pop(context);
       debugPrint(e.toString());
-      showSnackBar(context, "L'API n'a pas retourné des informations JSON valides");
+      showSnackBar(context, "L'API n'a pas retourné des informations valides");
       return;
     }
 
@@ -460,14 +457,14 @@ class _DownloadPageState extends State<DownloadPage> {
     if (transfertInfo.statusCode != 200) {
       if (!mounted) return;
       Navigator.pop(context);
-      showSnackBar(context, "L'API n'a pas retourné des infos avec succès");
+      showSnackBar(context, "L'API n'a pas retourné d'infos avec succès");
       return;
     }
 
     // Vérification additionnelle pour les WeTransfer (protégé par mdp)
     if (service == 'wetransfer' && transfertInfoJson["password_protected"] == true) {
       Navigator.pop(context);
-      showSnackBar(context, "Stend ne supporte pas les liens WeTransfer protégés");
+      showSnackBar(context, "Stend ne supporte pas les liens protégés");
       return;
     }
 
@@ -579,7 +576,7 @@ class _DownloadPageState extends State<DownloadPage> {
     // Si on a pas de transferts à télécharger, on annule tout
     if (transfertsDownloads.isEmpty) {
       if (!mounted) return;
-      showSnackBar(context, "Le groupe de transfert est vide");
+      showSnackBar(context, "Le groupe de transfert est vide ou a expiré");
       Navigator.pop(context);
       return;
     }
@@ -600,7 +597,7 @@ class _DownloadPageState extends State<DownloadPage> {
       // Vérifier les propriétés
       if (!transfert.containsKey("fileName") || !transfert.containsKey("downloadLink")) {
         if (!mounted) return;
-        showSnackBar(context, "Un des transferts est mal formé");
+        showSnackBar(context, "Un des transferts est mal formé (problème avec l'API ?)");
         Navigator.pop(context);
         return;
       }
