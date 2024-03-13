@@ -8,6 +8,7 @@ import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -23,16 +24,54 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _isConnected = true;
 
   final box = GetStorage();
+  String? appVersion;
+  String latestVersion = '';
+  bool isUpdateAvailable = false;
 
   @override
   void initState() {
     _isConnected = box.read('apiInstanceUrl') != null;
+    checkUpdate();
     super.initState();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void checkUpdate() async {
+    // Obtenir la version actuellement installée
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    debugPrint(packageInfo.toString());
+    appVersion = packageInfo.version;
+
+    // Variables locales
+    int latestVersionExpire;
+
+    // Vérifier si on a déjà en cache la version la plus récente
+    latestVersion = box.read('latestVersion') ?? '';
+    latestVersionExpire = box.read('latestVersionExpire') ?? 0;
+    if (latestVersionExpire < DateTime.now().millisecondsSinceEpoch) {
+      box.remove('latestVersion');
+      box.remove('latestVersionExpire');
+      latestVersion = '';
+    }
+
+    // Obtenir la version la plus récente depuis GitHub si on l'a pas déjà
+    if (latestVersion.isEmpty) {
+      debugPrint('Fetching GitHub to check update');
+      http.Response response = await http.get(Uri.parse('https://api.github.com/repos/johan-perso/stend-mobile/releases/latest'));
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
+        latestVersion = jsonData['tag_name'];
+        box.write('latestVersion', latestVersion);
+        box.write('latestVersionExpire', DateTime.now().add(const Duration(hours: 6)).millisecondsSinceEpoch);
+      }
+    }
+
+    // Si on a une version plus récente, on enregistre une variable
+    if (latestVersion.isNotEmpty && latestVersion != appVersion) isUpdateAvailable = true;
   }
 
 	@override
@@ -62,13 +101,53 @@ class _SettingsPageState extends State<SettingsPage> {
                 )
               ),
 
+              // Si une màj est disponible
+              isUpdateAvailable ? Card(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+
+                      child: ListTile(
+                        title: const Text("Mise à jour disponible"),
+                        subtitle: Text("Vous pouvez mettre à jour l'application à la version v$latestVersion pour bénéficier de nouvelles fonctionnalités et corrections de bugs."),
+                      )
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          FilledButton(
+                            onPressed: () async {
+                              HapticFeedback.lightImpact();
+                              final url = Uri.parse('https://github.com/johan-perso/stend-mobile/releases/latest');
+                              launchUrl(url, mode: Platform.isIOS ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
+                            },
+                            child: Text(Platform.isIOS ? "Voir le changelog" : "Mettre à jour"),
+                          ),
+                        ],
+                      )
+                    ),
+
+                    const SizedBox(height: 8),
+                  ]
+                )
+              ) : const SizedBox.shrink(),
+
               // Configuration de Stend
               !_isConnected ? Card(
                 child: Column(
                   children: [
-                    const ListTile(
-                      title: Text("Stend n'est pas encore configuré."),
-                      subtitle: Text("Pour commencer à transférer vers Stend, vous aurez besoin de vous authentifier à une instance.\n\nUne instance est un serveur sur lequel vous enverrez vos fichiers. Celui-ci aura un accès aux données que vous lui envoyez."),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0, bottom: 4.0),
+
+                      child: ListTile(
+                        title: Text("Stend n'est pas encore configuré"),
+                        subtitle: Text("Pour commencer à transférer vers Stend, vous aurez besoin de vous authentifier à une instance.\n\nUne instance est un serveur sur lequel vous enverrez vos fichiers. Celui-ci aura un accès aux données que vous lui envoyez."),
+                      )
                     ),
 
                     Padding(
@@ -84,7 +163,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 context: context,
                                 builder: (context) => AlertDialog.adaptive(
                                   title: const Text("Configuration de Stend"),
-                                  content: Text("Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\n${Platform.isIOS ? '' : 'Pour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation. '}Une instance de démonstration est disponible sur la documentation."),
+                                  content: Text("Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\n${Platform.isIOS ? '' : 'Pour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation. '}Une instance de démonstration est disponible ${Platform.isIOS ? 'sur la documentation' : 'sur celle-ci'}."),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
@@ -665,7 +744,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       // Texte
                       Text(
-                        "Stend Mobile ― Développé par Johan",
+                        "Stend Mobile v${appVersion ?? ''} ― Développé par Johan",
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
                         ),
