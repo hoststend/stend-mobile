@@ -83,6 +83,7 @@ class _DownloadPageState extends State<DownloadPage> {
   Tuple3<String, double?, String?> downloadAlertTupple = const Tuple3("Préparation...", null, null);
 
   List historic = [];
+  List tips = [];
 
   @override
   void initState() {
@@ -91,6 +92,16 @@ class _DownloadPageState extends State<DownloadPage> {
 
     setState(() {
       historic = box.read('historic') ?? [];
+      if (box.read('tips') != null) {
+        tips = box.read('tips');
+      } else {
+        tips = [
+          "Télécharger des fichiers depuis des services tiers comme WeTransfer, Smash, TikTok ou YouTube.",
+          "Appuyer longuement sur un transfert dans l'historique pour le partager, ou appuyer simplement pour le retélécharger.",
+          "Personnaliser la page d'accueil et l'apparence de l'application depuis les réglages."
+        ];
+        box.write('tips', tips);
+      }
     });
 
     super.initState();
@@ -809,6 +820,48 @@ class _DownloadPageState extends State<DownloadPage> {
               const SizedBox(height: 22.0),
 
               // Titre de la section
+              tips.isNotEmpty ? Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Astuces",
+
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
+                  )
+                )
+              ) : const SizedBox.shrink(),
+
+              tips.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
+
+              // Cartes avec les astuces
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: tips.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    child: ListTile(
+                      subtitle: Text(tips[index]),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            tips.removeAt(index);
+                            box.write('tips', tips);                         
+                          });
+                        },
+                      ),
+                    ),
+                  );
+                } 
+              ),
+
+              tips.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
+
+              // Titre de la section
               historic.isNotEmpty ? Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -822,7 +875,7 @@ class _DownloadPageState extends State<DownloadPage> {
                 )
               ) : const SizedBox.shrink(),
 
-              const SizedBox(height: 18.0),
+              historic.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
 
               // Cartes avec les précédents envois
               ListView.builder(
