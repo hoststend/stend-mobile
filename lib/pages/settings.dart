@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -547,6 +548,45 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
 
+              Platform.isIOS ? ListTile(
+                title: const Text("Choix des couleurs"),
+                subtitle: const Text("Choisissez une couleur clé qui sera utilisée dans l'appli"),
+                trailing: IconButton(
+                  onPressed: () async {
+                    HapticFeedback.lightImpact();
+                    await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Choix des couleurs'),
+                          content: SingleChildScrollView(
+                            child: ColorPicker(
+                              pickerColor: box.read('appColor') ?? Colors.blue,
+                              enableAlpha: false,
+                              hexInputBar: true,
+                              labelTypes: const [],
+                              onColorChanged: (Color color) {
+                                box.write('appColor', color);
+                              },
+                            ),
+                          ),
+                          actions: [
+                            ElevatedButton(
+                              child: const Text('Enregistrer'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                showSnackBar(context, "Le choix sera appliqué au prochain démarrage");
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.color_lens),
+                ),
+              ) : const SizedBox.shrink(),
+
               // Boutons d'actions
               const SizedBox(height: 12),
 
@@ -744,7 +784,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       // Texte
                       Text(
-                        "Stend Mobile v${appVersion ?? ''} ― Développé par Johan",
+                        "Stend Mobile${appVersion != null ? ' v$appVersion' : ''} ― Développé par Johan",
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
                         ),

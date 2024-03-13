@@ -26,6 +26,7 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   late PageController _pageController;
   late GetStorage box;
+
   bool firstBuildPassed = false;
   int _currentIndex = 0;
 
@@ -79,6 +80,17 @@ class _MainAppState extends State<MainApp> {
 
     return DynamicColorBuilder(
       builder: (lightColorScheme, darkColorScheme) {
+        if (lightColorScheme == null && darkColorScheme == null) {
+          lightColorScheme = ColorScheme.fromSeed(
+            seedColor: box.read('appColor') ?? Colors.blueAccent,
+            brightness: Brightness.light,
+          );
+          darkColorScheme = ColorScheme.fromSeed(
+            seedColor: box.read('appColor') ?? Colors.blueAccent,
+            brightness: Brightness.dark,
+          );
+        }
+
         return MaterialApp(
           title: 'Stend',
           themeMode: box.read('theme') == 'Système' ? ThemeMode.system : box.read('theme') == 'Clair' ? ThemeMode.light : box.read('theme') == 'Sombre' ? ThemeMode.dark : ThemeMode.system,

@@ -51,6 +51,7 @@ dependencies:
   lucide_icons: ^0.257.0
   html: ^0.15.4
   package_info_plus: ^4.2.0
+  flutter_colorpicker: ^1.0.3
 
 dev_dependencies:
   flutter_test:
