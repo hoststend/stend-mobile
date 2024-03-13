@@ -9,10 +9,6 @@ Ce repo GitHub contient le code source et les installateurs du client Mobile de 
 
 Pour plus d'informations sur ce client, vous pouvez lire [la page de la documentation dédiée](https://stend-docs.johanstick.fr/mobile-docs/intro).
 
-### Mises à jours
-
-Pour être au courant des mises à jours, vous pouvez suivre ("watch") ce dépôt GitHub ou rejoindre mon [canal Telegram](https://t.me/johanstickman). Une vérification des mises à jour n'a pas encore été implémentée dans l'application.
-
 ### Licence
 
 MIT © [Johan](https://johanstick.fr). Soutenez ce projet via [Ko-Fi](https://ko-fi.com/johan_stickman) ou [PayPal](https://paypal.me/moipastoii) si vous souhaitez m'aider 💙
