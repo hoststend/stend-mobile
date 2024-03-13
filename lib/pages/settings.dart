@@ -14,6 +14,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons/lucide_icons.dart';
 
+// Fonction pour convertir une chaîne de caractères HEX en couleur
+Color hexToColor(String code) {
+  return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+}
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
@@ -553,6 +558,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 subtitle: const Text("Choisissez une couleur clé qui sera utilisée dans l'appli"),
                 trailing: IconButton(
                   onPressed: () async {
+                    debugPrint(box.read('appColor').toString());
                     HapticFeedback.lightImpact();
                     await showDialog(
                       context: context,
@@ -561,12 +567,12 @@ class _SettingsPageState extends State<SettingsPage> {
                           title: const Text('Choix des couleurs'),
                           content: SingleChildScrollView(
                             child: ColorPicker(
-                              pickerColor: box.read('appColor') ?? Colors.blue,
+                              pickerColor: box.read('appColor') != null ? hexToColor(box.read('appColor')) : Colors.blueAccent,
                               enableAlpha: false,
                               hexInputBar: true,
                               labelTypes: const [],
                               onColorChanged: (Color color) {
-                                box.write('appColor', color);
+                                box.write('appColor', '#${color.value.toRadixString(16).substring(2)}');
                               },
                             ),
                           ),

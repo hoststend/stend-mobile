@@ -9,6 +9,11 @@ import 'package:stendmobile/pages/download.dart';
 import 'package:stendmobile/pages/send.dart';
 import 'package:stendmobile/pages/settings.dart';
 
+// Fonction pour convertir une chaîne de caractères HEX en couleur
+Color hexToColor(String code) {
+  return Color(int.parse(code.substring(1, 7), radix: 16) + 0xFF000000);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
@@ -82,11 +87,11 @@ class _MainAppState extends State<MainApp> {
       builder: (lightColorScheme, darkColorScheme) {
         if (lightColorScheme == null && darkColorScheme == null) {
           lightColorScheme = ColorScheme.fromSeed(
-            seedColor: box.read('appColor') ?? Colors.blueAccent,
+            seedColor: box.read('appColor') != null ? hexToColor(box.read('appColor')) : Colors.blueAccent,
             brightness: Brightness.light,
           );
           darkColorScheme = ColorScheme.fromSeed(
-            seedColor: box.read('appColor') ?? Colors.blueAccent,
+            seedColor: box.read('appColor') != null ? hexToColor(box.read('appColor')) : Colors.blueAccent,
             brightness: Brightness.dark,
           );
         }
