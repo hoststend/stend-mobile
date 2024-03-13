@@ -84,7 +84,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 context: context,
                                 builder: (context) => AlertDialog.adaptive(
                                   title: const Text("Configuration de Stend"),
-                                  content: const Text("Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\nPour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation."),
+                                  content: Text("Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\n${Platform.isIOS ? '' : 'Pour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation. '}Une instance de démonstration est disponible sur la documentation."),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
@@ -401,7 +401,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
 
               ListTile(
-                title: const Text("Icône"),
+                title: const Text("Icônes"),
                 subtitle: const Text("Choisissez le style d'icône utilisé"),
                 trailing: DropdownButton<String>(
                   value: box.read('iconLib') ?? 'Material',
