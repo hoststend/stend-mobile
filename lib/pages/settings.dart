@@ -680,6 +680,13 @@ class _SettingsPageState extends State<SettingsPage> {
                           IconButton(
                             onPressed: () {
                               HapticFeedback.lightImpact();
+                              launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
+                            },
+                            icon: const Icon(LucideIcons.globe),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
                               launchUrl(Uri.parse('https://github.com/johan-perso/stend-mobile'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.github),
@@ -690,13 +697,6 @@ class _SettingsPageState extends State<SettingsPage> {
                               launchUrl(Uri.parse('https://twitter.com/johan_stickman'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.twitter),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              launchUrl(Uri.parse('https://johanstick.fr'), mode: LaunchMode.externalApplication);
-                            },
-                            icon: const Icon(LucideIcons.globe),
                           ),
                           IconButton(
                             onPressed: () {
