@@ -200,6 +200,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           FilledButton(
                             onPressed: () async {
                               HapticFeedback.lightImpact();
+                              String apiUrlFromWeb = '';
 
                               // On récupère l'URL du client web de l'instance via un dialogue
                               final webUrl = await showTextInputDialog(
@@ -237,13 +238,20 @@ class _SettingsPageState extends State<SettingsPage> {
                                   showSnackBar(context, "L'URL entrée n'est pas valide");
                                   return;
                                 }
+
                                 // Vérifier que l'URL soit accessible
                                 try {
                                   final response = await http.get(urlParsed);
-                                  if (response.statusCode != 200) {
+                                  if (response.statusCode != 200) { // Si on a pas accès à l'URL, on dit que ça marche pas
                                     if (!mounted) return;
                                     showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
                                     return;
+                                  } else { // Si on y a accès, on essaye de parser l'URL de l'API
+                                    try {
+                                      apiUrlFromWeb = response.body.split('apibaseurl="')[1].split('"')[0];
+                                    } catch (e) {
+                                      debugPrint("Aucune API trouvé dans le client web, on continue : $e");
+                                    }
                                   }
                                 } catch (e) {
                                   debugPrint(e.toString());
@@ -264,10 +272,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                 message: "Entrer l'URL de l'API de votre serveur, celle-ci est nécessaire. Un mot de passe pourra être demandé.",
                                 okLabel: 'Valider',
                                 cancelLabel: 'Annuler',
-                                textFields: const [
+                                textFields: [
                                   DialogTextField(
                                     hintText: "https://stend-api.example.com",
                                     autocorrect: false,
+                                    initialText: apiUrlFromWeb != '' ? apiUrlFromWeb : null,
                                     keyboardType: TextInputType.url
                                   ),
                                 ],
@@ -318,6 +327,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 // Définir certaines données dans les préférences
                                 box.write('requirePassword', jsonData['requirePassword']);
                                 box.write('recommendedExpireTimes', jsonData['recommendedExpireTimes']);
+                                box.write('apiInstanceUrl', apiUrlString);
                               } catch (e) {
                                 if (!mounted) return;
                                 showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
@@ -354,15 +364,19 @@ class _SettingsPageState extends State<SettingsPage> {
                                       "Authorization": passwordString
                                     }
                                   );
-                                  
+
                                   // Parse la réponse
                                   final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
                                   if (!mounted) return;
                                   try {
                                     if (jsonData['success']) {
                                       box.write('apiInstancePassword', passwordString);
+                                    } else {
+                                      box.remove('apiInstanceUrl');
+                                      showSnackBar(context, jsonData['message']);
                                     }
                                   } catch (e) {
+                                    box.remove('apiInstanceUrl');
                                     showSnackBar(context, jsonData['message']);
                                   }
                                 } else {
@@ -372,13 +386,16 @@ class _SettingsPageState extends State<SettingsPage> {
                                 }
                               }
 
-                              box.write('apiInstanceUrl', apiUrlString);
-                              setState(() {
-                                _isConnected = true;
-                              });
-                              if (!mounted) return;
-                              HapticFeedback.lightImpact();
-                              showSnackBar(context, "Vous êtes maintenant connecté à votre instance");
+                              // Informer l'utilisateur (si on a réussi)
+                              debugPrint('API Instance URL : ${box.read('apiInstanceUrl')}');
+                              if (box.read('apiInstanceUrl') != null) {
+                                if (!mounted) return;
+                                HapticFeedback.lightImpact();
+                                showSnackBar(context, "Vous êtes maintenant connecté à votre instance");
+                                setState(() {
+                                  _isConnected = true;
+                                });
+                              }
                             },
                             child: const Text("Configurer"),
                           ),
