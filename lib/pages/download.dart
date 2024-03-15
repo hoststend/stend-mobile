@@ -48,7 +48,7 @@ class DownloadDialogState extends State<DownloadDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog.adaptive(
-      title: const Text("Téléchargement en cours"),
+      title: const Text("Téléchargement"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
 
