@@ -410,6 +410,18 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // Différents réglages
               SwitchListTile(
+                title: const Text("Enregistrer dans la galerie"),
+                subtitle: const Text("Les médias téléchargés seront enregistrés dans la galerie"),
+                value: box.read('saveMediasInGallery') ?? false,
+                onChanged: (bool? value) {
+                  HapticFeedback.lightImpact();
+                  setState(() {
+                    box.write('saveMediasInGallery', value!);
+                  });
+                },
+              ),
+
+              SwitchListTile(
                 title: const Text("Copier l'URL après un envoi"),
                 subtitle: const Text("Copie dans le presser-papier le lien d'un transfert lorsqu'il se termine"),
                 value: box.read('copyUrlAfterSend') ?? false,

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gal/gal.dart';
 import 'package:stendmobile/utils/format_bytes.dart';
 import 'package:stendmobile/utils/format_date.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
@@ -617,6 +618,7 @@ class _DownloadPageState extends State<DownloadPage> {
     }
 
     // On télécharge chaque transfert
+    bool savedInGallery = false;
     for (var transfert in transfertsDownloads) {
       debugPrint(transfert.toString());
       // Vérifier les propriétés
@@ -687,6 +689,59 @@ class _DownloadPageState extends State<DownloadPage> {
       // On ferme différents éléments
       await sink.flush();
       await sink.close();
+
+      // Si on souhaite enregistrer dans la galerie et que c'est une image ou une vidéo
+      if (box.read('saveMediasInGallery') == true) {
+        // Déterminer le type de fichier
+        var determinedFileType = fileName.split('.').last.toLowerCase();
+        if (determinedFileType == 'jpeg' || determinedFileType == 'jpg' || determinedFileType == 'png' || determinedFileType == 'gif' || determinedFileType == 'webp') {
+          determinedFileType = 'image';
+        } else if (determinedFileType == 'mp4' || determinedFileType == 'mov' || determinedFileType == 'avi' || determinedFileType == 'mkv' || determinedFileType == 'webm') {
+          determinedFileType = 'video';
+        }
+
+        // Si on a un type de fichier, on continue
+        if (determinedFileType == 'image' || determinedFileType == 'video') {
+          bool shouldContinue = false;
+
+          // On vérifie les permissions
+          final hasAccess = await Gal.hasAccess();
+          if (!hasAccess) {
+            await Gal.requestAccess();
+
+            final hasAccess = await Gal.hasAccess();
+            if (!hasAccess) {
+              if (!mounted) return;
+              showSnackBar(context, "La permission pour enregistrer dans la galerie a été refusée, le fichier se trouve dans le dossier téléchargement");
+            } else {
+              shouldContinue = true;
+            }
+          } else {
+            shouldContinue = true;
+          }
+
+          // Si on a la permission, on continue
+          if (shouldContinue) {
+            try {
+              // On enregistre le fichier dans la galerie
+              if (determinedFileType == 'image') {
+                await Gal.putImage(finalPath);
+                savedInGallery = true;
+              } else if (determinedFileType == 'video') {
+                await Gal.putVideo(finalPath);
+                savedInGallery = true;
+              }
+
+              // On supprime le fichier téléchargé
+              await file.delete();
+            } catch (e) {
+              debugPrint(e.toString());
+              if (!mounted) return;
+              showSnackBar(context, "Impossible d'enregistrer le fichier dans la galerie");
+            }
+          }
+        }
+      }
     }
 
     // On ferme l'alerte
@@ -694,7 +749,7 @@ class _DownloadPageState extends State<DownloadPage> {
     if (!mounted) return;
     Navigator.pop(context);
     HapticFeedback.heavyImpact();
-    showSnackBar(context, transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été téléchargés" : "Le fichier a été téléchargé");
+    showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été téléchargés" : "Le fichier a été téléchargé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}");
   }
 
 	@override
