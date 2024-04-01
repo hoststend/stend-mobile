@@ -34,9 +34,12 @@ class _SettingsPageState extends State<SettingsPage> {
   String latestVersion = '';
   bool isUpdateAvailable = false;
 
+  late bool storeRelease;
+
   @override
   void initState() {
     _isConnected = box.read('apiInstanceUrl') != null;
+    storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
     checkUpdate();
     super.initState();
   }
@@ -96,14 +99,26 @@ class _SettingsPageState extends State<SettingsPage> {
               Padding(
                 padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
 
-                child: Text(
-                  "Réglages généraux",
+                child: GestureDetector(
+                  onLongPress: () => {
+                    if(storeRelease){
+                      box.write('forceStore', true),
+                      HapticFeedback.lightImpact(),
+                      showSnackBar(context, "Les restrictions seront levées au redémarrage 👀")
+                    } else {
+                      HapticFeedback.lightImpact(),
+                      showSnackBar(context, "Hmm, qu'est ce que tu cherches par ici ?")
+                    }
+                  },
+                  child: Text(
+                    "Réglages généraux",
 
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
-                  ),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
+                    )
+                  )
                 )
               ),
 
@@ -819,7 +834,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       // Texte
                       Text(
-                        "Stend Mobile${appVersion != null ? ' v$appVersion' : ''} ― Développé par Johan",
+                        "Stend Mobile${appVersion != null ? ' v$appVersion' : ''} (${storeRelease ? 'Release Store' : 'Release Libre'})\nDéveloppé par Johan",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
                         ),

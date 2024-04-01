@@ -86,10 +86,13 @@ class _DownloadPageState extends State<DownloadPage> {
   List historic = [];
   List tips = [];
 
+  late bool storeRelease;
+
   @override
   void initState() {
     box = GetStorage();
     urlController = TextEditingController();
+    storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
 
     setState(() {
       historic = box.read('historic') ?? [];
@@ -97,10 +100,11 @@ class _DownloadPageState extends State<DownloadPage> {
         tips = box.read('tips');
       } else {
         tips = [
-          "Télécharger des fichiers depuis des services tiers comme WeTransfer, Smash, TikTok ou YouTube.",
+          storeRelease ? null : "Télécharger des fichiers depuis des services tiers comme WeTransfer, Smash, TikTok ou YouTube.",
           "Appuyer longuement sur un transfert dans l'historique pour le partager, ou appuyer simplement pour le retélécharger.",
           "Personnaliser la page d'accueil et l'apparence de l'application depuis les réglages."
         ];
+        tips.removeWhere((element) => element == null);
         box.write('tips', tips);
       }
     });
@@ -155,7 +159,10 @@ class _DownloadPageState extends State<DownloadPage> {
     else if (downloadKey.startsWith('https://www.swisstransfer.com/d/') || downloadKey.startsWith('http://www.swisstransfer.com/d/') || downloadKey.startsWith('https://swisstransfer.com/d/') || downloadKey.startsWith('http://swisstransfer.com/d/')) {
       service = 'swisstransfer';
     }
-    else if (downloadKey.startsWith('https://bilibili.com/') || downloadKey.startsWith('https://bilibili.tv/') || downloadKey.startsWith('https://twitter.com/') || downloadKey.startsWith('https://mobile.twitter.com/') || downloadKey.startsWith('https://x.com/') || downloadKey.startsWith('https://vxtwitter.com/') || downloadKey.startsWith('https://fixvx.com/') || downloadKey.startsWith('https://youtube.com/watch?v=') || downloadKey.startsWith('https://www.youtube.com/watch?v=') || downloadKey.startsWith('https://m.youtube.com/watch?v=') || downloadKey.startsWith('https://youtu.be/') || downloadKey.startsWith('https://youtube.com/embed/') || downloadKey.startsWith('https://youtube.com/watch/') || downloadKey.startsWith('https://tumblr.com/') || downloadKey.startsWith('https://www.tumblr.com/') || downloadKey.startsWith('https://tiktok.com/') || downloadKey.startsWith('https://www.tiktok.com/') || downloadKey.startsWith('https://vm.tiktok.com/') || downloadKey.startsWith('https://vt.tiktok.com/') || downloadKey.startsWith('https://vimeo.com/') || downloadKey.startsWith('https://soundcloud.com/') || downloadKey.startsWith('https://on.soundcloud.com/') || downloadKey.startsWith('https://m.soundcloud.com/') || downloadKey.startsWith('https://instagram.com/') || downloadKey.startsWith('https://www.instagram.com/') || downloadKey.startsWith('https://www.vine.co/v/') || downloadKey.startsWith('https://vine.co/v/') || downloadKey.startsWith('https://pinterest.com/') || downloadKey.startsWith('https://www.pinterest.com/') || downloadKey.startsWith('https://pinterest.fr/') || downloadKey.startsWith('https://www.pinterest.fr/') || downloadKey.startsWith('https://pin.it/') || downloadKey.startsWith('https://streamable.com/') || downloadKey.startsWith('https://www.streamable.com/') || downloadKey.startsWith('https://twitch.tv/') || downloadKey.startsWith('https://clips.twitch.tv/') || downloadKey.startsWith('https://www.twitch.tv/') || downloadKey.startsWith('https://dailymotion.com/video/') || downloadKey.startsWith('https://www.dailymotion.com/video/') || downloadKey.startsWith('https://dai.ly/')) {
+    else if (downloadKey.startsWith('https://twitter.com/') || downloadKey.startsWith('https://mobile.twitter.com/') || downloadKey.startsWith('https://x.com/') || downloadKey.startsWith('https://vxtwitter.com/') || downloadKey.startsWith('https://fixvx.com/') || downloadKey.startsWith('https://tumblr.com/') || downloadKey.startsWith('https://www.tumblr.com/') || downloadKey.startsWith('https://tiktok.com/') || downloadKey.startsWith('https://www.tiktok.com/') || downloadKey.startsWith('https://vm.tiktok.com/') || downloadKey.startsWith('https://vt.tiktok.com/') || downloadKey.startsWith('https://instagram.com/') || downloadKey.startsWith('https://www.instagram.com/') || downloadKey.startsWith('https://www.vine.co/v/') || downloadKey.startsWith('https://vine.co/v/') || downloadKey.startsWith('https://pinterest.com/') || downloadKey.startsWith('https://www.pinterest.com/') || downloadKey.startsWith('https://pinterest.fr/') || downloadKey.startsWith('https://www.pinterest.fr/') || downloadKey.startsWith('https://pin.it/') || downloadKey.startsWith('https://streamable.com/') || downloadKey.startsWith('https://www.streamable.com/')) {
+      service = 'cobalt';
+    }
+    else if (!storeRelease && (downloadKey.startsWith('https://bilibili.com/') || downloadKey.startsWith('https://bilibili.tv/') || downloadKey.startsWith('https://youtube.com/watch?v=') || downloadKey.startsWith('https://www.youtube.com/watch?v=') || downloadKey.startsWith('https://m.youtube.com/watch?v=') || downloadKey.startsWith('https://youtu.be/') || downloadKey.startsWith('https://youtube.com/embed/') || downloadKey.startsWith('https://youtube.com/watch/') || downloadKey.startsWith('https://vimeo.com/') || downloadKey.startsWith('https://soundcloud.com/') || downloadKey.startsWith('https://on.soundcloud.com/') || downloadKey.startsWith('https://m.soundcloud.com/') || downloadKey.startsWith('https://twitch.tv/') || downloadKey.startsWith('https://clips.twitch.tv/') || downloadKey.startsWith('https://www.twitch.tv/') || downloadKey.startsWith('https://dailymotion.com/video/') || downloadKey.startsWith('https://www.dailymotion.com/video/') || downloadKey.startsWith('https://dai.ly/'))) { // sur les stores, on permet pas de télécharger depuis ces services
       service = 'cobalt';
     }
     else if (downloadKey.startsWith('https://mediafire.com/file/') || downloadKey.startsWith('https://www.mediafire.com/file/')) {
@@ -259,7 +266,7 @@ class _DownloadPageState extends State<DownloadPage> {
           } catch (e) {
             debugPrint(e.toString());
             Navigator.pop(context);
-            showSnackBar(context, "Nous n'avons pas pu obtenir le infos sur le serveur");
+            showSnackBar(context, "Nous n'avons pas pu obtenir les infos sur le serveur");
             return;
           }
         }
@@ -749,7 +756,7 @@ class _DownloadPageState extends State<DownloadPage> {
     if (!mounted) return;
     Navigator.pop(context);
     HapticFeedback.heavyImpact();
-    showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été téléchargés" : "Le fichier a été téléchargé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}");
+    showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "Le fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}");
   }
 
 	@override
@@ -905,7 +912,7 @@ class _DownloadPageState extends State<DownloadPage> {
                           HapticFeedback.lightImpact();
                           setState(() {
                             tips.removeAt(index);
-                            box.write('tips', tips);                         
+                            box.write('tips', tips);
                           });
                         },
                       ),
