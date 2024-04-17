@@ -82,7 +82,11 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     // Si on a une version plus récente, on enregistre une variable
-    if (latestVersion.isNotEmpty && latestVersion != appVersion) isUpdateAvailable = true;
+    if (latestVersion.isNotEmpty && latestVersion != appVersion){
+      setState(() {
+        isUpdateAvailable = true;
+      });
+    }
   }
 
 	@override
