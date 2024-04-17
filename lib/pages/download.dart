@@ -764,6 +764,7 @@ class _DownloadPageState extends State<DownloadPage> {
 	@override
 	Widget build(BuildContext context) {
     var iconLib = box.read('iconLib');
+    bool disableHistory = box.read('disableHistory') ?? false;
 
 		return SingleChildScrollView(
       child: Center(
@@ -1042,13 +1043,13 @@ class _DownloadPageState extends State<DownloadPage> {
                 // carte avec un icône tout en haut:
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.only(top: 18.0, bottom: 18.0, left: 12.0, right: 12.0),
                     child: Column(
                       children: [
                         Icon(iconLib == 'Lucide' ? LucideIcons.folderX : iconLib == 'Lucide (alt)' ? LucideIcons.imageOff : iconLib == 'iOS' ? CupertinoIcons.bin_xmark : Icons.folder_off_outlined, size: 32, color: Theme.of(context).colorScheme.primary),
-                        const ListTile(
-                          title: Text('Aucun envoi récent', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600)),
-                          subtitle: Text("Commencez à envoyer des fichiers pour les retrouver ici", textAlign: TextAlign.center),
+                        ListTile(
+                          title: Text(disableHistory == true ? "Historique désactivé" : "Aucun envoi récent", textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          subtitle: Text(disableHistory == true ? "Vous pouvez réactiver l'historique depuis les réglages" : "Commencez à envoyer des fichiers pour les retrouver ici", textAlign: TextAlign.center),
                         )
                       ]
                     )
