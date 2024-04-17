@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:stendmobile/utils/format_bytes.dart';
 import 'package:stendmobile/utils/format_date.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
@@ -761,6 +763,8 @@ class _DownloadPageState extends State<DownloadPage> {
 
 	@override
 	Widget build(BuildContext context) {
+    var iconLib = box.read('iconLib');
+
 		return SingleChildScrollView(
       child: Center(
         child: Padding(
@@ -907,7 +911,7 @@ class _DownloadPageState extends State<DownloadPage> {
                     child: ListTile(
                       subtitle: Text(tips[index]),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           setState(() {
@@ -924,7 +928,7 @@ class _DownloadPageState extends State<DownloadPage> {
               tips.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
 
               // Titre de la section
-              historic.isNotEmpty ? Align(
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Accéder à vos précédents envois",
@@ -935,105 +939,121 @@ class _DownloadPageState extends State<DownloadPage> {
                     color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
                   )
                 )
-              ) : const SizedBox.shrink(),
+              ),
 
-              historic.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
+              const SizedBox(height: 18.0),
 
               // Cartes avec les précédents envois
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: historic.length,
-                itemBuilder: (BuildContext context, int index) {
-                  debugPrint(historic[index].toString());
+              historic.isNotEmpty ?
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: historic.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    debugPrint(historic[index].toString());
 
-                  return Card(
-                    child: ListTile(
-                      title: Text(historic[index]["filename"], overflow: TextOverflow.ellipsis, maxLines: 3),
-                      subtitle: Text("${formatDate(historic[index]["date"])} ― ${formatBytes(historic[index]["filesize"] ?? '0')}${historic[index]["filetype"] != null && historic[index]["filetype"].isNotEmpty ? " ― ${historic[index]["filetype"]}" : ""}"),
-                      onLongPress: () {
-                        HapticFeedback.lightImpact();
-
-                        final screenSize = MediaQuery.of(context).size;
-                        final rect = Rect.fromCenter(
-                          center: Offset(screenSize.width / 2, screenSize.height / 2),
-                          width: 100,
-                          height: 100,
-                        );
-                        Share.share(historic[index]["access"], sharePositionOrigin: rect);
-                      },
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        urlController.text = historic[index]["access"];
-                        startDownload();
-                      },
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
+                    return Card(
+                      child: ListTile(
+                        title: Text(historic[index]["filename"], overflow: TextOverflow.ellipsis, maxLines: 3),
+                        subtitle: Text("${formatDate(historic[index]["date"])} ― ${formatBytes(historic[index]["filesize"] ?? '0')}${historic[index]["filetype"] != null && historic[index]["filetype"].isNotEmpty ? " ― ${historic[index]["filetype"]}" : ""}"),
+                        onLongPress: () {
                           HapticFeedback.lightImpact();
 
-                          // Afficher un dialogue pour demander une confirmation
-                          showAdaptiveDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog.adaptive(
-                                title: const Text("Supprimer cet envoi ?"),
-                                content: Text("${Platform.isAndroid ? "Le fichier ne pourra pas être récupérer si vous n'en disposez pas une copie. " : ''}Êtes-vous sûr de vouloir supprimer ce transfert des serveurs ?"),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () {
-                                      HapticFeedback.lightImpact();
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text("Annuler"),
-                                  ),
-                                  TextButton(
-                                    onPressed: () async {
-                                      HapticFeedback.lightImpact();
-
-                                      // Faire une requête pour supprimer le fichier
-                                      var response = await dio.delete(
-                                        "${historic[index]["apiurl"]}/files/delete",
-                                        options: Options(
-                                          headers: { 'Content-Type': 'application/json' },
-                                        ),
-                                        queryParameters: {
-                                          "sharekey": historic[index]["sharekey"] ?? "",
-                                          "deletekey": historic[index]["deletekey"] ?? ""
-                                        },
-                                      );
-
-                                      // On supprime l'élément de la liste (même si la requête a échoué, ptet la clé a expiré et donc ça va forcément fail mais on veut le masquer)
-                                      setState(() {
-                                        historic.removeAt(index);
-                                        box.write('historic', historic);
-                                      });
-
-                                      // On parse le JSON et affiche l'erreur si le status code n'est pas 200
-                                      if (!mounted) return;
-                                      if (response.statusCode != 200) {
-                                        try {
-                                          showSnackBar(context, response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert");
-                                        } catch (e) {
-                                          showSnackBar(context, "Impossible de supprimer le transfert");
-                                        }
-                                      }
-
-                                      // Fermer le dialogue
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text("Supprimer"),
-                                  ),
-                                ],
-                              );
-                            }
+                          final screenSize = MediaQuery.of(context).size;
+                          final rect = Rect.fromCenter(
+                            center: Offset(screenSize.width / 2, screenSize.height / 2),
+                            width: 100,
+                            height: 100,
                           );
+                          Share.share(historic[index]["access"], sharePositionOrigin: rect);
                         },
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          urlController.text = historic[index]["access"];
+                          startDownload();
+                        },
+                        trailing: IconButton(
+                          icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+
+                            // Afficher un dialogue pour demander une confirmation
+                            showAdaptiveDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog.adaptive(
+                                  title: const Text("Supprimer cet envoi ?"),
+                                  content: Text("${Platform.isAndroid ? "Le fichier ne pourra pas être récupérer si vous n'en disposez pas une copie. " : ''}Êtes-vous sûr de vouloir supprimer ce transfert des serveurs ?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        HapticFeedback.lightImpact();
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Annuler"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        HapticFeedback.lightImpact();
+
+                                        // Faire une requête pour supprimer le fichier
+                                        var response = await dio.delete(
+                                          "${historic[index]["apiurl"]}/files/delete",
+                                          options: Options(
+                                            headers: { 'Content-Type': 'application/json' },
+                                          ),
+                                          queryParameters: {
+                                            "sharekey": historic[index]["sharekey"] ?? "",
+                                            "deletekey": historic[index]["deletekey"] ?? ""
+                                          },
+                                        );
+
+                                        // On supprime l'élément de la liste (même si la requête a échoué, ptet la clé a expiré et donc ça va forcément fail mais on veut le masquer)
+                                        setState(() {
+                                          historic.removeAt(index);
+                                          box.write('historic', historic);
+                                        });
+
+                                        // On parse le JSON et affiche l'erreur si le status code n'est pas 200
+                                        if (!mounted) return;
+                                        if (response.statusCode != 200) {
+                                          try {
+                                            showSnackBar(context, response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert");
+                                          } catch (e) {
+                                            showSnackBar(context, "Impossible de supprimer le transfert");
+                                          }
+                                        }
+
+                                        // Fermer le dialogue
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Supprimer"),
+                                    ),
+                                  ],
+                                );
+                              }
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  );
-                } 
-              )
+                    );
+                  }
+                ) :
+                // carte avec un icône tout en haut:
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      children: [
+                        Icon(iconLib == 'Lucide' ? LucideIcons.folderX : iconLib == 'Lucide (alt)' ? LucideIcons.imageOff : iconLib == 'iOS' ? CupertinoIcons.bin_xmark : Icons.folder_off_outlined, size: 32, color: Theme.of(context).colorScheme.primary),
+                        const ListTile(
+                          title: Text('Aucun envoi récent', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600)),
+                          subtitle: Text("Commencez à envoyer des fichiers pour les retrouver ici", textAlign: TextAlign.center),
+                        )
+                      ]
+                    )
+                  )
+                )
             ],
           ),
         ),
