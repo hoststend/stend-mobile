@@ -114,7 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     "Réglages généraux",
 
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
                     )
@@ -871,7 +871,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           IconButton(
                             onPressed: () {
                               HapticFeedback.lightImpact();
-                              launchUrl(Uri.parse('https://ko-fi.com/johan_stickman'), mode: LaunchMode.externalApplication);
+                              launchUrl(Uri.parse('https://johanstick.fr/#donate'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.circleDollarSign),
                           ),
