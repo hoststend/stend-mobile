@@ -29,27 +29,53 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  late PageController _pageController;
   late GetStorage box;
 
   bool firstBuildPassed = false;
   int _currentIndex = 0;
+
+  late PageController _pageController;
+  late int defaultPageIndex;
+
+  Key _refreshKey = UniqueKey();
+  void refresh() {
+    // mettre à jour la page par défaut
+    var defaultPage = box.read('defaultPage');
+    if (defaultPage == null || defaultPage == 'Envoyer') {
+       _pageController = PageController(initialPage: 0);
+      defaultPageIndex = 0;
+    } else if (defaultPage == 'Télécharger') {
+       _pageController = PageController(initialPage: 1);
+      defaultPageIndex = 1;
+    } else if (defaultPage == 'Réglages') {
+       _pageController = PageController(initialPage: 2);
+      defaultPageIndex = 2;
+    }
+
+    setState(() {
+      _currentIndex = defaultPageIndex;
+      _refreshKey = UniqueKey();
+    });
+  }
+
 
   @override
   void initState() {
     box = GetStorage();
 
     var defaultPage = box.read('defaultPage');
-    if (defaultPage == null) {
+    if (defaultPage == null || defaultPage == 'Envoyer') {
       _pageController = PageController(initialPage: 0);
-    } else if (defaultPage == 'Envoyer') {
-      _pageController = PageController(initialPage: 0);
+      _currentIndex = 0;
+      defaultPageIndex = 0;
     } else if (defaultPage == 'Télécharger') {
       _pageController = PageController(initialPage: 1);
       _currentIndex = 1;
+      defaultPageIndex = 1;
     } else if (defaultPage == 'Réglages') {
       _pageController = PageController(initialPage: 2);
       _currentIndex = 2;
+      defaultPageIndex = 2;
     }
 
     super.initState();
@@ -97,6 +123,7 @@ class _MainAppState extends State<MainApp> {
         }
 
         return MaterialApp(
+          key: _refreshKey,
           title: 'Stend',
           themeMode: box.read('theme') == 'Système' ? ThemeMode.system : box.read('theme') == 'Clair' ? ThemeMode.light : box.read('theme') == 'Sombre' ? ThemeMode.dark : ThemeMode.system,
           theme: ThemeData(
@@ -129,10 +156,10 @@ class _MainAppState extends State<MainApp> {
                 child: PageView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _pageController,
-                  children: const [
-                    SendPage(),
-                    DownloadPage(),
-                    SettingsPage(),
+                  children: [
+                    const SendPage(),
+                    const DownloadPage(),
+                    SettingsPage(refresh: refresh),
                   ]
                 ),
               ),

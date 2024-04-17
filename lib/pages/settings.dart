@@ -20,7 +20,9 @@ Color hexToColor(String code) {
 }
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  final Function refresh;
+
+  const SettingsPage({Key? key, required this.refresh}) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -516,7 +518,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     HapticFeedback.lightImpact();
                     setState(() {
                       box.write('theme', newValue!);
-                      showSnackBar(context, "Le choix sera appliqué au prochain démarrage");
+                      widget.refresh();
                     });
                   },
                   items: <String>['Système', 'Clair', 'Sombre']
@@ -539,7 +541,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     HapticFeedback.lightImpact();
                     setState(() {
                       box.write('iconLib', newValue!);
-                      showSnackBar(context, "Le choix sera appliqué au prochain démarrage");
+                      widget.refresh();
                     });
                   },
                   items: <String>['Material', 'iOS', 'Lucide', 'Lucide (alt)']
@@ -562,7 +564,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     HapticFeedback.lightImpact();
                     setState(() {
                       box.write('defaultPage', newValue!);
-                      showSnackBar(context, "Le choix sera appliqué au prochain démarrage");
                     });
                   },
                   items: <String>['Envoyer', 'Télécharger', 'Réglages']
@@ -625,7 +626,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               child: const Text('Enregistrer'),
                               onPressed: () {
                                 Navigator.of(context).pop();
-                                showSnackBar(context, "Le choix sera appliqué au prochain démarrage");
+                                widget.refresh();
                               },
                             ),
                           ],
@@ -853,6 +854,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.globe),
+                            color: Theme.of(context).colorScheme.secondary
                           ),
                           IconButton(
                             onPressed: () {
@@ -860,6 +862,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               launchUrl(Uri.parse('https://github.com/johan-perso/stend-mobile'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.github),
+                            color: Theme.of(context).colorScheme.secondary
                           ),
                           IconButton(
                             onPressed: () {
@@ -867,6 +870,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               launchUrl(Uri.parse('https://twitter.com/johan_stickman'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.twitter),
+                            color: Theme.of(context).colorScheme.secondary
                           ),
                           IconButton(
                             onPressed: () {
@@ -874,6 +878,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               launchUrl(Uri.parse('https://johanstick.fr/#donate'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.circleDollarSign),
+                            color: Theme.of(context).colorScheme.secondary
                           ),
                         ]
                       ),
