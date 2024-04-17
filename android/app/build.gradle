@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "fr.johanstick.stendmobile"
+    namespace "fr.johanstick.stendmobile.dev"
     compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
@@ -41,7 +41,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "fr.johanstick.stendmobile"
+        applicationId "fr.johanstick.stendmobile.dev"
         minSdkVersion 20
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()

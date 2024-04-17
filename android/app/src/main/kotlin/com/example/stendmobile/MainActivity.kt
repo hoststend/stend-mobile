@@ -1,4 +1,4 @@
-package fr.johanstick.stendmobile
+package fr.johanstick.stendmobile.dev
 
 import io.flutter.embedding.android.FlutterActivity
 
