@@ -228,8 +228,16 @@ class _DownloadPageState extends State<DownloadPage> {
         Response response;
 
         try {
-          // Faire une requête pour obtenir l'URL de l'API
-          response = await dio.get(downloadKey, 
+          var cancelToken = CancelToken();
+
+          // Faire une requête pour obtenir l'URL de l'API avec une limite de 8 Mo
+          response = await dio.get(downloadKey,
+            cancelToken: cancelToken,
+            onReceiveProgress: (received, total) {
+              if (total > 8000000 || received > 8000000) {
+                cancelToken.cancel();
+              }
+            },
             options: Options(
               followRedirects: false,
               validateStatus: (status) {
@@ -242,7 +250,14 @@ class _DownloadPageState extends State<DownloadPage> {
             downloadKey = response.requestOptions.uri.toString();
             if (location.startsWith("/")) location = '${downloadKey.split("/")[0]}//${downloadKey.split("/")[2]}$location';
             if (location.endsWith('=')) location = location.substring(0, location.length - 1);
-            response = await dio.get(location, 
+            var cancelToken = CancelToken();
+            response = await dio.get(location,
+              cancelToken: cancelToken,
+              onReceiveProgress: (received, total) {
+                if (total > 8000000 || received > 8000000) {
+                  cancelToken.cancel();
+                }
+              },
               options: Options(
                 followRedirects: false,
                 validateStatus: (status) {
@@ -255,7 +270,7 @@ class _DownloadPageState extends State<DownloadPage> {
           debugPrint(e.toString());
           if (!mounted) return;
           Navigator.pop(context);
-          showSnackBar(context, "Le lien entré n'est pas accessible, vérifier votre connexion");
+          showSnackBar(context, e.toString().contains("was manually cancelled by the user") ? "La requête n'a pas pu être validé" : "Le lien entré n'est pas accessible, vérifier votre connexion");
           return;
         }
 
@@ -446,8 +461,24 @@ class _DownloadPageState extends State<DownloadPage> {
       } else if (service == 'swisstransfer') { // Support manquant : transferts protégés par mot de passe
         transfertInfo = await http.get(Uri.parse("https://www.swisstransfer.com/api/links/$downloadKey"), headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" });
       } else if (service == 'cobalt') { // Support manquant : quelques tests à faire ; certains services sont manquants ; picker (plusieurs médias)
-        // Note : l'API Cobalt original ne retourne pas le nom du ƒichier dans l'endpoint principal, il faut donc utiliser une version modifiée
-        transfertInfo = await http.post(Uri.parse("https://cobalt.johanstick.fr/api/json"), body: json.encode({ "url": downloadKey, "vQuality": "max", "aFormat": "best", "filenamePattern": "pretty", "isNoTTWatermark": true, "isTTFullAudio": true }), headers: { "Content-Type": "application/json", "Accept": "application/json" } );
+        // On utilise dio au lieu d'http puisqu'il n'ajoute pas un header que l'API ne supporte pas
+        Response dioTransfertInfo = await dio.post("https://co.wuk.sh/api/json",
+          data: {
+            "url": downloadKey,
+            "vQuality": "max",
+            "aFormat": "best",
+            "filenamePattern": "pretty",
+            "isNoTTWatermark": true,
+            "isTTFullAudio": true
+          },
+          options: Options(
+            contentType: Headers.jsonContentType,
+            headers: {
+              "Accept": "application/json"
+            }
+          )
+        );
+        transfertInfo = http.Response(jsonEncode(dioTransfertInfo.data), dioTransfertInfo.statusCode!);
       } else if (service == 'mediafire') { // Support manquant : dossiers
         var transfertInfoPage = await http.get(Uri.parse(downloadKey));
         var transfertInfoHtml = parse(transfertInfoPage.body);
@@ -596,8 +627,42 @@ class _DownloadPageState extends State<DownloadPage> {
       }
 
       if ((transfertInfoJson["status"] == "stream" || transfertInfoJson["status"] == "redirect") && transfertInfoJson.containsKey("url")) {
+        // Modifier le dialogue
+        downloadAlertTupple = const Tuple3("Récupération des détails...", null, null);
+        downloadAlertStreamController.add(downloadAlertTupple);
+
+        // Faire une requête HEAD pour obtenir les infos détaillées sur le fichier
+        http.Response headResponse = await http.head(Uri.parse(transfertInfoJson["url"]));
+        debugPrint(headResponse.headers.toString());
+        int fileSize = headResponse.headers["content-length"] != null ? int.parse(headResponse.headers["content-length"]!) : 0;
+        var fileName = transfertInfoJson["filename"];
+        if (fileName == null){
+          String contentDisposition = headResponse.headers["content-disposition"] ?? "";
+          contentDisposition.split(";").forEach((element) {
+            if (element.trim().startsWith("filename=")) {
+              fileName = element.trim().split("=")[1];
+              fileName = fileName.replaceAll("\"", "");
+            }
+          });
+        }
+
+        // Si le nom est manquant, on le génère en fonction de l'URL
+        if (fileName == null) {
+          fileName = Uri.parse(transfertInfoJson["url"]).pathSegments.last.toString();
+          if (fileName.contains("?")) {
+            fileName = fileName.split("?")[0];
+          }
+        }
+
+        // On remplace l'extension .opus par .mp3
+        if (fileName.endsWith(".opus")) {
+          fileName = fileName.replaceAll(".opus", ".mp3");
+        }
+
+        // Ajouter à la liste des transferts
         transfertsDownloads.add({
-          "fileName": transfertInfoJson["filename"] ?? "cobalt_unnamed_media",
+          "fileName": fileName ?? "cobalt_unnamed_media",
+          "fileSize": fileSize,
           "downloadLink": transfertInfoJson["url"]
         });
       }
@@ -686,13 +751,11 @@ class _DownloadPageState extends State<DownloadPage> {
         // On écrit le chunk dans le fichier
         sink.add(chunk);
 
-        // On met à jour l'alerte et une variable pour le pourcentage si on a accès à la taille totale (indispo pour Cobalt par exemple)
-        if (totalBytes != null || fileSize != 0) {
-          bytesDownloaded += chunk.length;
-          double downloadProgress = bytesDownloaded / (totalBytes ?? fileSize);
-          downloadAlertTupple = Tuple3('$fileName${totalBytes != null || fileSize != 0 ? ' ― ${formatBytes(fileSize != 0 ? fileSize : totalBytes!)}' : ''}', downloadProgress, fileType);
-          downloadAlertStreamController.add(downloadAlertTupple);
-        }
+        // On met à jour l'alerte
+        bytesDownloaded += chunk.length;
+        dynamic downloadProgress = totalBytes != null || fileSize != 0 ? bytesDownloaded / (totalBytes ?? fileSize) : null;
+        downloadAlertTupple = Tuple3('$fileName ― ${downloadProgress == null ? formatBytes(bytesDownloaded) : formatBytes(fileSize != 0 ? fileSize : totalBytes!)}', downloadProgress, fileType);
+        downloadAlertStreamController.add(downloadAlertTupple);
       }
 
       // On ferme différents éléments
