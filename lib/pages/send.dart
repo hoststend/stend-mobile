@@ -692,7 +692,7 @@ class _SendPageState extends State<SendPage> {
                       title: Text(selectedFiles[index].path.split('/').last, overflow: TextOverflow.ellipsis, maxLines: 3),
                       subtitle: Text(formatBytes(selectedFiles[index].lengthSync())),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                         onPressed: () {
                           HapticFeedback.mediumImpact();
                           setState(() {
