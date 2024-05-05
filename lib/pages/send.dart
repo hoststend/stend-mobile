@@ -541,7 +541,7 @@ class _SendPageState extends State<SendPage> {
                         if (selectedFiles.length == 1 && shortUrl) {
                           // On raccourcit l'URL
                           var shortenResponse = await dio.post(
-                            'https://s.jk.al/create',
+                            'https://mdrr.fr/create',
                             data: {
                               'url': webInstanceUrl != 'null' ? '${webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?' : ''}${chunkResponse.data['shareKey']}' : chunkResponse.data['shareKey'],
                               'shorturl': shareKeyController.text.isNotEmpty ? shareKeyController.text : ''
@@ -591,7 +591,7 @@ class _SendPageState extends State<SendPage> {
                     if (shortUrl) {
                       // On raccourcit l'URL
                       var shortenResponse = await dio.post(
-                        'https://s.jk.al/create',
+                        'https://mdrr.fr/create',
                         data: {
                           'url': webInstanceUrl != 'null' ? '${webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?' : ''}${mergeResponse.data['shareKey']}' : mergeResponse.data['shareKey'],
                           'shorturl': shareKeyController.text.isNotEmpty ? shareKeyController.text : ''
