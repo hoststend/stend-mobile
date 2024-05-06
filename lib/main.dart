@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:stendmobile/pages/download.dart';
 import 'package:stendmobile/pages/send.dart';
 import 'package:stendmobile/pages/settings.dart';
@@ -15,7 +16,9 @@ Color hexToColor(String code) {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   await GetStorage.init();
 
   runApp(const MainApp());
@@ -107,6 +110,8 @@ class _MainAppState extends State<MainApp> {
         systemNavigationBarIconBrightness: Brightness.dark,
       ));
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+      FlutterNativeSplash.remove();
     }
 
     return DynamicColorBuilder(
