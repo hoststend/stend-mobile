@@ -148,6 +148,18 @@ class _DownloadPageState extends State<DownloadPage> {
       }
     }
 
+    // Si le lien semble raccourci par Google (résultat du moteur de recherche)
+    if (downloadKey.startsWith('https://www.google.com/url?') || downloadKey.startsWith('https://google.com/url?') || downloadKey.startsWith('https://google.fr/url?') || downloadKey.startsWith('http://google.fr/url?')) {
+      // Parser comme une URL pour récupérer les paramètres
+      Uri googleUri = Uri.parse(downloadKey);
+      debugPrint("URL provenant de Google parsé");
+      if (googleUri.queryParameters.containsKey('url')) {
+        downloadKey = googleUri.queryParameters['url']!;
+        debugPrint("URL trouvée: $downloadKey");
+        debugPrint(downloadKey);
+      }
+    }
+
     // On détermine le service utilisé si c'est pas Stend
     if (downloadKey.startsWith('https://transfert.free.fr/') || downloadKey.startsWith('http://transfert.free.fr/')) {
       service = 'free';
