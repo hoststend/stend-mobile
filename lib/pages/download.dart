@@ -968,7 +968,8 @@ class _DownloadPageState extends State<DownloadPage> {
               // Cartes avec les astuces
               ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+                // physics: const NeverScrollableScrollPhysics(),
+                primary: false,
                 itemCount: tips.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Card(
@@ -1011,11 +1012,10 @@ class _DownloadPageState extends State<DownloadPage> {
               historic.isNotEmpty ?
                 ListView.builder(
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                  // physics: const NeverScrollableScrollPhysics(),
+                  primary: false,
                   itemCount: historic.length,
                   itemBuilder: (BuildContext context, int index) {
-                    debugPrint(historic[index].toString());
-
                     return Card(
                       child: ListTile(
                         title: Text(historic[index]["filename"], overflow: TextOverflow.ellipsis, maxLines: 3),

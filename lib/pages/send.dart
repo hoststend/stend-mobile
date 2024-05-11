@@ -684,7 +684,8 @@ class _SendPageState extends State<SendPage> {
               // Cartes avec les fichiers à envoyer
               ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+                // physics: const NeverScrollableScrollPhysics(),
+                primary: false,
                 itemCount: selectedFiles.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Card(
