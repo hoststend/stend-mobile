@@ -13,7 +13,6 @@ import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/smash_account.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:html/parser.dart';
