@@ -411,26 +411,6 @@ class _DownloadPageState extends State<DownloadPage> {
       return;
     }
 
-    // Vérifier que l'application puisse télécharger le fichier
-    if (Platform.isAndroid) {
-      final permissionStatus = await Permission.manageExternalStorage.status;
-      if (permissionStatus.isDenied) {
-        await Permission.manageExternalStorage.request();
-
-        if (permissionStatus.isDenied) {
-          if (!mounted) return;
-          Navigator.pop(context);
-          showSnackBar(context, "L'application a besoin de gérer tous les fichiers pour pouvoir en télécharger");
-          return;
-        }
-      } else if (permissionStatus.isPermanentlyDenied) {
-        if (!mounted) return;
-        Navigator.pop(context);
-        showSnackBar(context, "L'application a besoin de gérer tous les fichiers pour pouvoir en télécharger");
-        return;
-      }
-    }
-
     // Enlever le slash à la fin de l'URL de l'API s'il y en a un
     if (apiUrl.endsWith("/")) {
       apiUrl = apiUrl.substring(0, apiUrl.length - 1);
