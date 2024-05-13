@@ -106,7 +106,7 @@ class _MainAppState extends State<MainApp> {
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
-        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.black.withOpacity(0.002),
         systemNavigationBarIconBrightness: Brightness.dark,
       ));
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
