@@ -224,7 +224,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               String apiUrlFromWeb = '';
 
                               // On récupère l'URL du client web de l'instance via un dialogue
-                              final webUrl = await showTextInputDialog(
+                              var webUrl = await showTextInputDialog(
                                 context: context,
                                 title: 'Client WEB',
                                 message: "Entrer l'URL du site de votre serveur si vous en avez un, sinon, laissez vide.",
@@ -239,6 +239,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                 ],
                               );
 
+                              // Si l'URL entré est "demo", on met l'URL de démo
+                              if (webUrl != null && webUrl.single.toString().toLowerCase() == 'demo') {
+                                webUrl = List<String>.filled(1, 'https://stend-demo.johanstick.fr');
+                              }
+
                               // Si on a entré une URL d'un client
                               if (webUrl != null && webUrl.toString().length > 2) {
                                 if (!mounted) return;
@@ -246,6 +251,11 @@ class _SettingsPageState extends State<SettingsPage> {
                                 var url = webUrl.single.toString();
                                 if (url.toString().endsWith('//')) url = url.toString().substring(0, url.toString().length - 1);
                                 if (!url.toString().endsWith('/')) url += '/';
+
+                                // Vérifier que l'URL commence par http ou https
+                                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                                  url = 'https://$url';
+                                }
 
                                 if (!checkURL(webUrl.single)) {
                                   showSnackBar(context, "L'URL entrée n'est pas valide");
@@ -316,6 +326,11 @@ class _SettingsPageState extends State<SettingsPage> {
                               if (!apiUrlString.endsWith('/')) apiUrlString += '/';
                               debugPrint(apiUrlString);
                               var apiUrlStringInstance = '${apiUrlString}instance';
+
+                              // Vérifier que l'URL commence par http ou https
+                              if (!apiUrlString.startsWith('http://') && !apiUrlString.startsWith('https://')) {
+                                apiUrlString = 'https://$apiUrlString';
+                              }
 
                               // On vérifie que l'URL de l'API soit valide
                               if (!checkURL(apiUrlStringInstance)) {
@@ -571,6 +586,28 @@ class _SettingsPageState extends State<SettingsPage> {
                     });
                   },
                   items: <String>['Envoyer', 'Télécharger', 'Réglages']
+                  .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              ListTile(
+                title: const Text("Service d'URLs courts"),
+                subtitle: const Text("Définissez le service utilisé pour racourcir les URLs"),
+                trailing: DropdownButton<String>(
+                  value: box.read('shortenService') ?? 'mdrr.fr',
+                  onTap: () { HapticFeedback.lightImpact(); },
+                  onChanged: (String? newValue) {
+                    HapticFeedback.lightImpact();
+                    setState(() {
+                      box.write('shortenService', newValue!);
+                    });
+                  },
+                  items: <String>['mdrr.fr', 'ptdrr.com', 's.3vm.cl', 's.erc.hr']
                   .map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                     value: value,

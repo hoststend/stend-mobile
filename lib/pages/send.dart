@@ -305,6 +305,7 @@ class _SendPageState extends State<SendPage> {
                   // Obtenir des variables depuis les réglages
                   bool disableHistory = box.read('disableHistory') ?? false;
                   bool copyUrlAfterSend = box.read('copyUrlAfterSend') ?? false;
+                  String shortenService = box.read('shortenService') ?? 'mdrr.fr';
                   String webInstanceUrl = box.read('webInstanceUrl') ?? '';
                   String apiInstanceUrl = box.read('apiInstanceUrl') ?? '';
                   final apiInstancePassword = box.read('apiInstancePassword');
@@ -541,7 +542,7 @@ class _SendPageState extends State<SendPage> {
                         if (selectedFiles.length == 1 && shortUrl) {
                           // On raccourcit l'URL
                           var shortenResponse = await dio.post(
-                            'https://mdrr.fr/create',
+                            'https://$shortenService/create',
                             data: {
                               'url': webInstanceUrl != 'null' ? '${webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?' : ''}${chunkResponse.data['shareKey']}' : chunkResponse.data['shareKey'],
                               'shorturl': shareKeyController.text.isNotEmpty ? shareKeyController.text : ''
@@ -591,7 +592,7 @@ class _SendPageState extends State<SendPage> {
                     if (shortUrl) {
                       // On raccourcit l'URL
                       var shortenResponse = await dio.post(
-                        'https://mdrr.fr/create',
+                        'https://$shortenService/create',
                         data: {
                           'url': webInstanceUrl != 'null' ? '${webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?' : ''}${mergeResponse.data['shareKey']}' : mergeResponse.data['shareKey'],
                           'shorturl': shareKeyController.text.isNotEmpty ? shareKeyController.text : ''
