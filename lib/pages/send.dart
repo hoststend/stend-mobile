@@ -152,7 +152,7 @@ class _SendPageState extends State<SendPage> {
                             });
                           } catch (e) {
                             debugPrint(e.toString());
-                            if (!mounted) return;
+                            if (!context.mounted) return;
                             showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifier les permissions de l'app");
                           }
                         },
@@ -177,7 +177,7 @@ class _SendPageState extends State<SendPage> {
                             });
                           } catch (e) {
                             debugPrint(e.toString());
-                            if (!mounted) return;
+                            if (!context.mounted) return;
                             showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifier les permissions de l'app");
                           }
                         },
@@ -347,7 +347,7 @@ class _SendPageState extends State<SendPage> {
 
                   // On affiche le dialogue de chargement
                   uploadAlertTupple = const Tuple3("Préparation...", null, null);
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   showAdaptiveDialog(
                     barrierDismissible: false,
                     context: context,
@@ -359,11 +359,9 @@ class _SendPageState extends State<SendPage> {
                           String content = snapshot.data.item1;
                           double? value = snapshot.data.item2;
                           String? details = snapshot.data.item3;
-                          return WillPopScope(
-                            child: UploadDialog(content: content, value: value, details: details),
-                            onWillPop: () async {
-                              return false;
-                            },
+                          return PopScope(
+                            canPop: false,
+                            child: UploadDialog(content: content, value: value, details: details)
                           );
                         }
                       );
@@ -375,7 +373,7 @@ class _SendPageState extends State<SendPage> {
                   try {
                     response = await dio.get('$apiInstanceUrl/instance');
                   } catch (e) {
-                  if (!mounted) return;
+                    if (!context.mounted) return;
                     debugPrint(e.toString());
                     showSnackBar(context, "Impossible de se connecter à l'instance");
                     Navigator.pop(context);
@@ -383,7 +381,7 @@ class _SendPageState extends State<SendPage> {
                   }
 
                   // On vérifie le code de statut
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   if (response.statusCode != 200) {
                     showSnackBar(context, "L'instance a retourné une erreur HTTP ${response.statusCode}");
                     Navigator.pop(context);
@@ -443,7 +441,7 @@ class _SendPageState extends State<SendPage> {
                     );
 
                     // On vérifie le code de statut
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     if (transfertInfo.statusCode != 200 || (transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty)) {
                       showSnackBar(context, "Impossible de créer un transfert${transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty ? ": ${transfertInfo.data['message']}" : ""}");
                       Navigator.pop(context);
@@ -496,14 +494,14 @@ class _SendPageState extends State<SendPage> {
                         );
                       } catch (e) {
                         debugPrint(e.toString());
-                        if (!mounted) return;
+                        if (!context.mounted) return;
                         showSnackBar(context, "Impossible de gérer le transfert : $e");
                         Navigator.pop(context);
                         return;
                       }
 
                       // On vérifie le code de statut
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       if (chunkResponse.statusCode != 200 || (chunkResponse.data.isNotEmpty && chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty)) {
                         showSnackBar(context, "Impossible de gérer le transfert${chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty ? ": ${chunkResponse.data['message']}" : ""}");
                         Navigator.pop(context); 
@@ -581,7 +579,7 @@ class _SendPageState extends State<SendPage> {
                     );
 
                     // On vérifie le code de statut
-                    if (!mounted) return;
+                    if (!context.mounted) return;
                     if (mergeResponse.statusCode != 200 || (mergeResponse.data.isNotEmpty && mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty)) {
                       showSnackBar(context, "Impossible de créer un groupe de liens${mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty ? ": ${mergeResponse.data['message']}" : ""}");
                       Navigator.pop(context);
@@ -614,7 +612,7 @@ class _SendPageState extends State<SendPage> {
                   if (finalAccess.isNotEmpty && copyUrlAfterSend) Clipboard.setData(ClipboardData(text: finalAccess));
 
                   // On ferme le dialogue de chargement
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   Navigator.pop(context);
 
                   // On affiche un nouveau dialogue avec les infos d'accès (on propose d'ouvrir ou de partager)

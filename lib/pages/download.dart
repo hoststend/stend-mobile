@@ -222,11 +222,9 @@ class _DownloadPageState extends State<DownloadPage> {
             String content = snapshot.data.item1;
             double? value = snapshot.data.item2;
             String? fileType = snapshot.data.item3;
-            return WillPopScope(
-              child: DownloadDialog(content: content, value: value, fileType: fileType),
-              onWillPop: () async {
-                return false;
-              },
+            return PopScope(
+              canPop: false,
+              child: DownloadDialog(content: content, value: value, fileType: fileType)
             );
           }
         );
@@ -880,7 +878,7 @@ class _DownloadPageState extends State<DownloadPage> {
 
                         // Si le presse-papier fait moins de 3 caractères ou plus de 256 caractères, on ne le prend pas en compte
                         if (clipboard == null || clipboard.length < 3 || clipboard.length > 256) {
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           showSnackBar(context, "Aucun lien valide dans le presse-papier");
                         }
 
@@ -1070,7 +1068,7 @@ class _DownloadPageState extends State<DownloadPage> {
                                         });
 
                                         // On parse le JSON et affiche l'erreur si le status code n'est pas 200
-                                        if (!mounted) return;
+                                        if (!context.mounted) return;
                                         if (response.statusCode != 200) {
                                           try {
                                             showSnackBar(context, response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert");

@@ -246,7 +246,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                               // Si on a entré une URL d'un client
                               if (webUrl != null && webUrl.toString().length > 2) {
-                                if (!mounted) return;
+                                if (!context.mounted) return;
 
                                 var url = webUrl.single.toString();
                                 if (url.toString().endsWith('//')) url = url.toString().substring(0, url.toString().length - 1);
@@ -274,7 +274,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 try {
                                   final response = await http.get(urlParsed);
                                   if (response.statusCode != 200) { // Si on a pas accès à l'URL, on dit que ça marche pas
-                                    if (!mounted) return;
+                                    if (!context.mounted) return;
                                     showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
                                     return;
                                   } else { // Si on y a accès, on essaye de parser l'URL de l'API
@@ -286,7 +286,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   }
                                 } catch (e) {
                                   debugPrint(e.toString());
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                   showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
                                   return;
                                 }
@@ -296,7 +296,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               }
 
                               // On récupère l'URL de l'API
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               final apiUrl = await showTextInputDialog(
                                 context: context,
                                 title: "API de l'instance",
@@ -314,7 +314,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               );
 
                               // On vérifie qu'on a entré une URL d'API
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               if (apiUrl == null || apiUrl.toString().length < 2) {
                                 showSnackBar(context, "Une URL d'API est nécessaire pour continuer");
                                 return;
@@ -341,7 +341,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               final url = Uri.parse(apiUrlStringInstance);
 
                               // Vérifier que l'URL soit valide
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               if (!url.isAbsolute) {
                                 showSnackBar(context, "L'URL entrée n'est pas valide");
                                 return;
@@ -352,7 +352,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 // Vérifier que l'URL soit accessible
                                 final response = await http.get(url);
                                 if (response.statusCode != 200) {
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                   showSnackBar(context, "La requête n'a pas abouti. Vérifier l'URL");
                                   return;
                                 }
@@ -365,7 +365,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 box.write('recommendedExpireTimes', jsonData['recommendedExpireTimes']);
                                 box.write('apiInstanceUrl', apiUrlString);
                               } catch (e) {
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
                                 debugPrint(e.toString());
                                 return;
@@ -373,7 +373,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                               // Si on a besoin de s'autentifier
                               if (box.read('requirePassword') ?? false) {
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 final password = await showTextInputDialog(
                                   context: context,
                                   title: "Mot de passe",
@@ -403,7 +403,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                                   // Parse la réponse
                                   final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                   try {
                                     if (jsonData['success']) {
                                       box.write('apiInstancePassword', passwordString);
@@ -416,7 +416,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                     showSnackBar(context, jsonData['message']);
                                   }
                                 } else {
-                                  if (!mounted) return;
+                                  if (!context.mounted) return;
                                   showSnackBar(context, "La configuration de l'API a été annulée");
                                   return;
                                 }
@@ -425,7 +425,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               // Informer l'utilisateur (si on a réussi)
                               debugPrint('API Instance URL : ${box.read('apiInstanceUrl')}');
                               if (box.read('apiInstanceUrl') != null) {
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 HapticFeedback.lightImpact();
                                 showSnackBar(context, "Vous êtes maintenant connecté à votre instance");
                                 setState(() {
@@ -734,7 +734,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       );
 
                       // Afficher une snackbar pour informer l'utilisateur
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       showSnackBar(context, "Début de la vérification de l'instance...");
 
                       // Vérifier si l'API retourne HTTP 200
@@ -748,7 +748,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           apiResponseCode = response.statusCode;
                         } catch (e) {
                           debugPrint(e.toString());
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           apiResponseCode = 0;
                         }
                       }
@@ -763,13 +763,13 @@ class _SettingsPageState extends State<SettingsPage> {
                           webResponseCode = webResponse.statusCode;
                         } catch (e) {
                           debugPrint(e.toString());
-                          if (!mounted) return;
+                          if (!context.mounted) return;
                           webResponseCode = 0;
                         }
                       }
 
                       // Afficher les résultats
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       await showAdaptiveDialog(
                         context: context,
                         builder: (context) => AlertDialog(
@@ -840,12 +840,12 @@ class _SettingsPageState extends State<SettingsPage> {
                                 }
                               } catch (e) {
                                 debugPrint(e.toString());
-                                if (!mounted) return;
+                                if (!context.mounted) return;
                                 showSnackBar(context, "Impossible d'effacer le cache");
                               }
 
                               // Informer l'utilisateur
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               HapticFeedback.mediumImpact();
                               Navigator.of(context).pop();
                               showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées");

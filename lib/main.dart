@@ -61,11 +61,11 @@ class _MainAppState extends State<MainApp> {
     });
   }
 
-
   @override
   void initState() {
     box = GetStorage();
 
+    // Déterminer la page par défaut et définir le contrôleur de page
     var defaultPage = box.read('defaultPage');
     if (defaultPage == null || defaultPage == 'Envoyer') {
       _pageController = PageController(initialPage: 0);
@@ -103,6 +103,7 @@ class _MainAppState extends State<MainApp> {
     if (firstBuildPassed == false){
       firstBuildPassed = true;
 
+      // Couleurs pour la barre de status/navigation système
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: brightness == Brightness.dark ? Brightness.light : Brightness.dark,
@@ -111,6 +112,7 @@ class _MainAppState extends State<MainApp> {
       ));
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
+      // Masquer le splash screen et afficher l'app
       FlutterNativeSplash.remove();
     }
 
