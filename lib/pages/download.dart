@@ -9,6 +9,7 @@ import 'package:gal/gal.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:stendmobile/utils/format_bytes.dart';
 import 'package:stendmobile/utils/format_date.dart';
+import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/smash_account.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -572,7 +573,7 @@ class _DownloadPageState extends State<DownloadPage> {
         }
 
         // Normaliser le nom du fichier
-        String fileName = transfert["name"] ?? transfert["path"] ?? transfert["fileName"] ?? transfert["filename"] ?? 'Aucun nom trouvé';
+        String fileName = subTransfertInfoJson["name"] ?? subTransfertInfoJson["path"] ?? subTransfertInfoJson["fileName"] ?? subTransfertInfoJson["filename"] ?? 'Aucun nom trouvé';
         if (fileName.contains("/")) fileName = fileName.split("/").last;
 
         // On ajoute le transfert à la liste
@@ -809,8 +810,11 @@ class _DownloadPageState extends State<DownloadPage> {
     lastScannedCode = null;
     if (!mounted) return;
     Navigator.pop(context);
+
+    // Indiquer à l'user que le téléchargement est terminé
     HapticFeedback.heavyImpact();
     showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "Le fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}");
+    sendBackgroundNotif("Téléchargement terminé", "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "1 fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}", "download", "open-downloads");
   }
 
 	@override

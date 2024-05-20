@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:stendmobile/utils/format_bytes.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
+import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/limit_string_size.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
@@ -614,6 +615,9 @@ class _SendPageState extends State<SendPage> {
                   // On ferme le dialogue de chargement
                   if (!context.mounted) return;
                   Navigator.pop(context);
+
+                  // Envoyer une notification si l'app est en arrière plan
+                  sendBackgroundNotif("Transfert terminé", "${selectedFiles.length} ${selectedFiles.length > 1 ? "fichiers ont été envoyés" : "fichier a été envoyé"} vers Stend", "upload", null);
 
                   // On affiche un nouveau dialogue avec les infos d'accès (on propose d'ouvrir ou de partager)
                   HapticFeedback.heavyImpact();

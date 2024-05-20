@@ -6,6 +6,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/pages/download.dart';
 import 'package:stendmobile/pages/send.dart';
 import 'package:stendmobile/pages/settings.dart';
@@ -81,9 +82,11 @@ class _MainAppState extends State<MainApp> {
       defaultPageIndex = 2;
     }
 
+    notifInitialize();
     super.initState();
   }
 
+  // TODO: chercher comment faire pour que on laisse l'état précédent de la page quand on change de page, et que on ne recharge pas tout à chaque fois
   @override
   void dispose() {
     _pageController.dispose();
