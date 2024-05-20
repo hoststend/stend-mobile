@@ -28,21 +28,22 @@ class SettingsPage extends StatefulWidget {
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
+bool checkedUpdate = false;
+
+final box = GetStorage();
+String? appVersion;
+String latestVersion = '';
+bool isUpdateAvailable = false;
+
 class _SettingsPageState extends State<SettingsPage> {
   bool _isConnected = true;
-
-  final box = GetStorage();
-  String? appVersion;
-  String latestVersion = '';
-  bool isUpdateAvailable = false;
-
   late bool storeRelease;
 
   @override
   void initState() {
     _isConnected = box.read('apiInstanceUrl') != null;
     storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
-    checkUpdate();
+    if(!checkedUpdate) checkUpdate();
     super.initState();
   }
 
@@ -87,6 +88,7 @@ class _SettingsPageState extends State<SettingsPage> {
         isUpdateAvailable = true;
       });
     }
+    checkedUpdate = true;
   }
 
 	@override
