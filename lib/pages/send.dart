@@ -426,6 +426,9 @@ class _SendPageState extends State<SendPage> {
                     }
                   }
 
+                  // Demander la permission d'envoyer des notifications
+                  askNotifPermission();
+
                   // On passe sur chaque fichiers
                   String finalAccess = '';
                   List uploadedFiles = [];

@@ -681,6 +681,9 @@ class _DownloadPageState extends State<DownloadPage> {
       downloadDirectory = '$downloadDirectory/Stend';
     }
 
+    // Demander la permission d'envoyer des notifications
+    askNotifPermission();
+
     // On télécharge chaque transfert
     bool savedInGallery = false;
     for (var transfert in transfertsDownloads) {

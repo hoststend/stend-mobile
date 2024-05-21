@@ -1,9 +1,11 @@
 import 'dart:io';
-
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
@@ -15,17 +17,21 @@ Map channels = {
     'upload',
     'Envoi de fichiers',
     channelDescription: 'Notifications liés à l\'envoi de fichiers',
+    category: AndroidNotificationCategory.progress,
+    visibility: NotificationVisibility.public,
+    color: Color(0x1B6497FF),
     groupKey: 'transfert'
   ),
   'download': const AndroidNotificationDetails(
     'download',
     'Téléchargement',
     channelDescription: 'Notifications liés au téléchargement de fichiers',
+    category: AndroidNotificationCategory.progress,
+    visibility: NotificationVisibility.public,
+    color: Color(0x1B6497FF),
     groupKey: 'transfert'
   )
 };
-
-// TODO: tester les notifications sur android
 
 void notifInitialize() async {
   // Vérifie qu'on n'a pas déjà initialisé
@@ -35,6 +41,7 @@ void notifInitialize() async {
   // Fonction quand on clique sur une notification
   void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) {
     String? payload = notificationResponse.payload;
+    debugPrint('Payload notification reçue: $payload');
     if(payload == null) return;
 
     if(payload == 'open-downloads'){
@@ -57,9 +64,9 @@ void notifInitialize() async {
     var initializationSettings = InitializationSettings(iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
   } else if(Platform.isAndroid){
-    var initializationSettingsAndroid = const AndroidInitializationSettings('@mipmap/ic_launcher');
+    var initializationSettingsAndroid = const AndroidInitializationSettings('ic_stat_image');
     var initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
   }
 
   FGBGEvents.stream.listen((event) {
@@ -67,35 +74,44 @@ void notifInitialize() async {
   });
 }
 
-void sendBackgroundNotif(String title, String body, String channelKey, String ?payload) async {
-  // Vérifier si l'app est à l'avant-plan
-  if(appIsInForeground) return;
-  if(!isInitialized) return;
-
-  // Vérifier les permissions
+void askNotifPermission() async {
   if(Platform.isAndroid){
-    // Vérifier uniquement sur Android 13 ou +
-    if (Platform.version.compareTo('33') >= 0) {
-      var status = await Permission.notification.status;
-      if (!status.isGranted) {
-        await Permission.notification.request();
-      }
-    }
+    // Si on sur Android 12 ou -, on ne demande pas la permission
+    var deviceInfo = DeviceInfoPlugin();
+    var androidInfo = await deviceInfo.androidInfo; // on utilisera ça pdnt l'upload pour un user agent plus précis
+    debugPrint("SDK Android: ${androidInfo.version.sdkInt}");
+    if(androidInfo.version.sdkInt <= 32) return;
+
+    // Demander la permission si on ne l'a pas
+    var status = await Permission.notification.status;
+    if (!status.isGranted) await Permission.notification.request();
   } else if(Platform.isIOS){
     final result = await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(
       alert: true,
       badge: true,
       sound: false
     );
-    if(result == false) return; // notifs désactivées
+    debugPrint('Notification permission allowed: $result');
   }
 
+  return;
+}
+
+void sendBackgroundNotif(String title, String body, String channelKey, String ?payload) async {
+  // Vérifier si l'app est à l'avant-plan
+  if(appIsInForeground) return;
+  if(!isInitialized) return;
+
   // Créer et afficher la notification
-  await flutterLocalNotificationsPlugin.show(
-    0,
-    title,
-    body,
-    payload: payload,
-    NotificationDetails(android: channels[channelKey])
-  );
+  try {
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      payload: payload,
+      NotificationDetails(android: channels[channelKey])
+    );
+  } catch (e) {
+    debugPrint('Impossible d\'envoyer une notification: $e');
+  }
 }
