@@ -108,14 +108,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
 
                 child: GestureDetector(
-                  onLongPress: () => {
+                  onLongPress: () {
                     if(storeRelease){
-                      box.write('forceStore', true),
-                      HapticFeedback.lightImpact(),
-                      showSnackBar(context, "Les restrictions seront levées au redémarrage 👀")
+                      box.write('forceStore', true);
+                      HapticFeedback.lightImpact();
+                      showSnackBar(context, "Les restrictions seront levées au redémarrage 👀");
                     } else {
-                      HapticFeedback.lightImpact(),
-                      showSnackBar(context, "Hmm, qu'est ce que tu cherches par ici ?")
+                      HapticFeedback.lightImpact();
+                      showSnackBar(context, "Hmm, qu'est ce que tu cherches par ici ?");
                     }
                   },
                   child: Text(
