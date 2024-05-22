@@ -51,6 +51,8 @@ dependencies:
   open_file_manager: ^1.0.2
   device_info_plus: ^10.1.0
   flutter_code_editor: ^0.3.1
+  highlight: ^0.7.0
+  flutter_highlight: ^0.7.0
 
 dev_dependencies:
   flutter_test:

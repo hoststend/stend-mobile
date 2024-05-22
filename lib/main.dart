@@ -171,7 +171,7 @@ class _MainAppState extends State<MainApp> {
                     const SendPage(),
                     const DownloadPage(),
                     SettingsPage(refresh: refresh),
-                    const DebugPage(),
+                    DebugPage(refresh: refresh),
                   ]
                 ),
               ),
