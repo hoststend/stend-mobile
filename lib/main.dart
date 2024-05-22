@@ -185,11 +185,11 @@ class _MainAppState extends State<MainApp> {
                   _currentIndex = index;
                 });
 
-                _pageController.animateToPage(
-                  index,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.ease,
-                );
+                if(Platform.isAndroid) {
+                  _pageController.animateToPage(index, duration: const Duration(milliseconds: 200), curve: Curves.ease);
+                } else {
+                  _pageController.jumpToPage(index);
+                }
               },
               destinations: [
                 NavigationDestination(
