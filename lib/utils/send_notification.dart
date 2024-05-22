@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
@@ -19,7 +18,6 @@ Map channels = {
     channelDescription: 'Notifications liés à l\'envoi de fichiers',
     category: AndroidNotificationCategory.progress,
     visibility: NotificationVisibility.public,
-    color: Color(0x1B6497FF),
     groupKey: 'transfert'
   ),
   'download': const AndroidNotificationDetails(
@@ -28,7 +26,6 @@ Map channels = {
     channelDescription: 'Notifications liés au téléchargement de fichiers',
     category: AndroidNotificationCategory.progress,
     visibility: NotificationVisibility.public,
-    color: Color(0x1B6497FF),
     groupKey: 'transfert'
   )
 };
@@ -64,7 +61,7 @@ void notifInitialize() async {
     var initializationSettings = InitializationSettings(iOS: initializationSettingsIOS);
     flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
   } else if(Platform.isAndroid){
-    var initializationSettingsAndroid = const AndroidInitializationSettings('ic_stat_image');
+    var initializationSettingsAndroid = const AndroidInitializationSettings('@mipmap/ic_notification');
     var initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
     flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
   }
