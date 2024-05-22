@@ -74,8 +74,8 @@ class DownloadPage extends StatefulWidget {
   State<DownloadPage> createState() => _DownloadPageState();
 }
 
-class _DownloadPageState extends State<DownloadPage> {
-  late GetStorage box;
+class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClientMixin {
+  final box = GetStorage();
 
   late TextEditingController urlController;
 
@@ -89,27 +89,28 @@ class _DownloadPageState extends State<DownloadPage> {
   List tips = [];
 
   late bool storeRelease;
+  late String iconLib;
+  late bool disableHistory;
 
   @override
   void initState() {
-    box = GetStorage();
     urlController = TextEditingController();
     storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
+    iconLib = box.read('iconLib') ?? (Platform.isIOS ? 'Lucide' : 'Material');
+    disableHistory = box.read('disableHistory') ?? false;
 
-    setState(() {
-      historic = box.read('historic') ?? [];
-      if (box.read('tips') != null) {
-        tips = box.read('tips');
-      } else {
-        tips = [
-          storeRelease ? null : "Télécharger des fichiers depuis des services tiers comme WeTransfer, Smash, TikTok ou YouTube.",
-          "Appuyer longuement sur un transfert dans l'historique pour le partager, ou appuyer simplement pour le retélécharger.",
-          "Personnaliser la page d'accueil et l'apparence de l'application depuis les réglages."
-        ];
-        tips.removeWhere((element) => element == null);
-        box.write('tips', tips);
-      }
-    });
+    historic = box.read('historic') ?? [];
+    if (box.read('tips') != null) {
+      tips = box.read('tips');
+    } else {
+      tips = [
+        storeRelease ? null : "Télécharger des fichiers depuis des services tiers comme WeTransfer, Smash, TikTok ou YouTube.",
+        "Appuyer longuement sur un transfert dans l'historique pour le partager, ou appuyer simplement pour le retélécharger.",
+        "Personnaliser la page d'accueil et l'apparence de l'application depuis les réglages."
+      ];
+      tips.removeWhere((element) => element == null);
+      box.write('tips', tips);
+    }
 
     super.initState();
   }
@@ -820,10 +821,12 @@ class _DownloadPageState extends State<DownloadPage> {
     sendBackgroundNotif("Téléchargement terminé", "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "1 fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}", "download", "open-downloads");
   }
 
+  @override
+  bool get wantKeepAlive => true;
+
 	@override
 	Widget build(BuildContext context) {
-    var iconLib = box.read('iconLib');
-    bool disableHistory = box.read('disableHistory') ?? false;
+    super.build(context);
 
 		return SingleChildScrollView(
       child: Center(

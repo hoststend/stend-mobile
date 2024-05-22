@@ -55,11 +55,12 @@ class SendPage extends StatefulWidget {
   State<SendPage> createState() => _SendPageState();
 }
 
-class _SendPageState extends State<SendPage> {
+class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin {
   final box = GetStorage();
 
   final TextEditingController shareKeyController = TextEditingController();
   bool shortUrl = false;
+  late String iconLib;
 
   int selectedExpireTime = 0;
   List selectedFiles = [];
@@ -69,9 +70,11 @@ class _SendPageState extends State<SendPage> {
 
   @override
   void initState() {
-    super.initState();
     if (box.read('shortenUrl') == true) shortUrl = true;
     selectedExpireTime = box.read('defaultExpirationTime') == '+ court' ? 0 : box.read('defaultExpirationTime') == '+ long' ? box.read('recommendedExpireTimes').length - 1 : 0;
+    iconLib = box.read('iconLib') ?? (Platform.isIOS ? 'Lucide' : 'Material');
+
+    super.initState();
   }
 
   @override
@@ -79,9 +82,12 @@ class _SendPageState extends State<SendPage> {
     super.dispose();
   }
 
+  @override
+  bool get wantKeepAlive => true;
+
 	@override
 	Widget build(BuildContext context) {
-    var iconLib = box.read('iconLib');
+    super.build(context);
 
 		return SingleChildScrollView(
       child: Center(

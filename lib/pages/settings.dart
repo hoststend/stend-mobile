@@ -35,7 +35,7 @@ String? appVersion;
 String latestVersion = '';
 bool isUpdateAvailable = false;
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClientMixin {
   bool _isConnected = true;
   late bool storeRelease;
 
@@ -91,8 +91,13 @@ class _SettingsPageState extends State<SettingsPage> {
     checkedUpdate = true;
   }
 
+  @override
+  bool get wantKeepAlive => true;
+
 	@override
 	Widget build(BuildContext context) {
+    super.build(context);
+
 		return SingleChildScrollView(
       child: Center(
         child: Padding(
@@ -849,12 +854,10 @@ class _SettingsPageState extends State<SettingsPage> {
                               // Informer l'utilisateur
                               if (!context.mounted) return;
                               HapticFeedback.mediumImpact();
-                              Navigator.of(context).pop();
                               showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées");
 
-                              setState(() {
-                                _isConnected = false;
-                              });
+                              // Recharger la page
+                              widget.refresh();
                             },
                             child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
                           )
