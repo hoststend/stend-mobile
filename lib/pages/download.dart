@@ -77,6 +77,7 @@ class DownloadPage extends StatefulWidget {
 class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClientMixin {
   final box = GetStorage();
 
+  Function? historicBoxListener;
   late TextEditingController urlController;
 
   QRViewController? qrController;
@@ -100,6 +101,15 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     disableHistory = box.read('disableHistory') ?? false;
 
     historic = box.read('historic') ?? [];
+    historicBoxListener = box.listenKey('historic', (value) {
+      debugPrint("Historic updated!");
+      if (value != null) {
+        historic = value;
+      } else {
+        historic = [];
+      }
+    });
+
     if (box.read('tips') != null) {
       tips = box.read('tips');
     } else {
@@ -119,6 +129,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
   void dispose() {
     urlController.dispose();
     downloadAlertStreamController.close();
+    historicBoxListener?.call();
 
     super.dispose();
   }
