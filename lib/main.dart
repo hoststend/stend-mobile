@@ -10,6 +10,7 @@ import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/pages/download.dart';
 import 'package:stendmobile/pages/send.dart';
 import 'package:stendmobile/pages/settings.dart';
+import 'package:stendmobile/pages/debug.dart';
 
 // Fonction pour convertir une chaîne de caractères HEX en couleur
 Color hexToColor(String code) {
@@ -170,6 +171,7 @@ class _MainAppState extends State<MainApp> {
                     const SendPage(),
                     const DownloadPage(),
                     SettingsPage(refresh: refresh),
+                    const DebugPage(),
                   ]
                 ),
               ),
@@ -198,9 +200,20 @@ class _MainAppState extends State<MainApp> {
                   icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
                   label: 'Télécharger',
                 ),
-                NavigationDestination(
-                  icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.settings : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
-                  label: 'Réglages',
+                GestureDetector(
+                  onLongPress: () {
+                    HapticFeedback.lightImpact();
+                    _pageController.jumpToPage(3);
+                    setState(() {
+                      _currentIndex = 2;
+                    });
+                  },
+
+                  child: NavigationDestination(
+                    tooltip: '',
+                    icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.settings : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
+                    label: 'Réglages',
+                  ),
                 ),
               ],
             )
