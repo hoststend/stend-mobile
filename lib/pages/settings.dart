@@ -508,6 +508,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                   HapticFeedback.lightImpact();
                   setState(() {
                     box.write('disableHistory', value!);
+                    widget.refresh();
                   });
                 },
               ),
