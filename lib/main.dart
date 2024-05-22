@@ -179,7 +179,7 @@ class _MainAppState extends State<MainApp> {
             bottomNavigationBar: NavigationBar(
               selectedIndex: _currentIndex,
               onDestinationSelected: (int index) {
-                if(index != _currentIndex) HapticFeedback.lightImpact();
+                if(index == _currentIndex) return;
 
                 setState(() {
                   _currentIndex = index;
