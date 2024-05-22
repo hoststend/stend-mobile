@@ -50,6 +50,7 @@ dependencies:
   flutter_fgbg: ^0.3.0
   open_file_manager: ^1.0.2
   device_info_plus: ^10.1.0
+  flutter_code_editor: ^0.3.1
 
 dev_dependencies:
   flutter_test:
@@ -57,7 +58,7 @@ dev_dependencies:
 
   flutter_lints: ^2.0.0
 
-# Splash screen, appliquer avec : dart run flutter_native_splash:create
+# Splash screen, appliquer avec utils/clean.sh
 flutter_native_splash:
   color: "#1B6497"
   image: assets/plus.png

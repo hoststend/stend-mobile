@@ -31,7 +31,7 @@ mv build/app-release.apk build/StendMobile-android-$DATE-open.apk
 echo "================= 4/5 - iOS (Store - IPA)"
 # sed -i '' 's/fr.johanstick.stendmobile.dev/fr.johanstick.stendmobile/g' ios/Runner.xcodeproj/project.pbxproj
 flutter build ios --release --dart-define="storeRelease=true"
-sh ./toipa.sh build/ios/iphoneos/Runner.app
+sh ./utils/toipa.sh build/ios/iphoneos/Runner.app
 mv build/ios/iphoneos/Runner.ipa build/
 rm -f build/StendMobile-ios-$DATE-store.ipa
 mv build/Runner.ipa build/StendMobile-ios-$DATE-store.ipa
@@ -41,7 +41,7 @@ echo "================= 5/5 - iOS (Open - IPA)"
 sed -i '' 's/fr.johanstick.stendmobile;/fr.johanstick.stendmobile.dev;/g' ios/Runner.xcodeproj/project.pbxproj
 sed -i '' 's/fr.johanstick.stendmobile.Runner/fr.johanstick.stendmobile.dev.Runner/g' ios/Runner.xcodeproj/project.pbxproj
 flutter build ios --release
-sh ./toipa.sh build/ios/iphoneos/Runner.app
+sh ./utils/toipa.sh build/ios/iphoneos/Runner.app
 mv build/ios/iphoneos/Runner.ipa build/
 rm -f build/StendMobile-ios-$DATE-open.ipa
 mv build/Runner.ipa build/StendMobile-ios-$DATE-open.ipa
