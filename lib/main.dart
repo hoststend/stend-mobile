@@ -180,16 +180,13 @@ class _MainAppState extends State<MainApp> {
               selectedIndex: _currentIndex,
               onDestinationSelected: (int index) {
                 if(index == _currentIndex) return;
+                HapticFeedback.lightImpact();
 
                 setState(() {
                   _currentIndex = index;
                 });
 
-                if(Platform.isAndroid) {
-                  _pageController.animateToPage(index, duration: const Duration(milliseconds: 200), curve: Curves.ease);
-                } else {
-                  _pageController.jumpToPage(index);
-                }
+                _pageController.jumpToPage(index);
               },
               destinations: [
                 NavigationDestination(
