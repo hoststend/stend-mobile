@@ -313,8 +313,32 @@ class _DebugPageState extends State<DebugPage> {
                         )
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
 
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              box.remove('tips');
+                            },
+                            child: const Text("Reset tips"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                            },
+                            child: const Text("Placeholder"),
+                          )
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 32),
 
                     // Réglages de l'app en JSON
                     Text(
