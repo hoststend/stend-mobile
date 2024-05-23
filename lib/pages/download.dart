@@ -10,6 +10,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:stendmobile/utils/format_bytes.dart';
 import 'package:stendmobile/utils/format_date.dart';
 import 'package:stendmobile/utils/send_notification.dart';
+import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/smash_account.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -22,18 +23,7 @@ import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 
-final dio = Dio(BaseOptions(
-  headers: {
-    'User-Agent': 'StendMobile-Flutter/${Platform.operatingSystem}',
-  },
-  contentType: Headers.jsonContentType,
-  connectTimeout: const Duration(milliseconds: 7000),
-  sendTimeout: const Duration(milliseconds: 7000),
-  receiveTimeout: const Duration(milliseconds: 7000),
-  validateStatus: (status) {
-    return true;
-  }
-));
+late Dio dio;
 
 class DownloadDialog extends StatefulWidget {
   final String content;
@@ -99,6 +89,21 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
     iconLib = box.read('iconLib') ?? (Platform.isIOS ? 'Lucide' : 'Material');
     disableHistory = box.read('disableHistory') ?? false;
+
+    deviceUserAgent().then((value) {
+      dio = Dio(BaseOptions(
+        headers: {
+          'User-Agent': value,
+        },
+        contentType: Headers.jsonContentType,
+        connectTimeout: const Duration(milliseconds: 7000),
+        sendTimeout: const Duration(milliseconds: 7000),
+        receiveTimeout: const Duration(milliseconds: 7000),
+        validateStatus: (status) {
+          return true;
+        }
+      ));
+    });
 
     historic = box.read('historic') ?? [];
     historicBoxListener = box.listenKey('historic', (value) {

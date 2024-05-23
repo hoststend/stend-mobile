@@ -8,6 +8,7 @@ import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
+import 'package:stendmobile/utils/user_agent.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
@@ -149,9 +150,11 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              // TODO: on affichera le sdk + les informations de l'appareil qu'on utilisera pour build le user agent
+                              var userAgent = await deviceUserAgent();
+                              if(!context.mounted) return;
+                              showSnackBar(context, userAgent);
                             },
-                            child: const Text("Infos appareil"),
+                            child: const Text("Agent utilisateur"),
                           )
                         ),
 
@@ -263,9 +266,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              throw Exception("Plantage sur demande suite à un appui sur le bouton Crash dans les réglages de débogage");
+                              throw Exception("Throw exception sur demande suite à un appui sur le bouton dédié dans les réglages de débogage");
                             },
-                            child: const Text("Crash"),
+                            child: const Text("Exception"),
                           )
                         )
                       ],

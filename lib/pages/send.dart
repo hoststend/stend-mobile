@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:stendmobile/utils/format_bytes.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
+import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/limit_string_size.dart';
 import 'package:get_storage/get_storage.dart';
@@ -337,7 +338,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   // Créer une instance Dio
                   final dio = Dio(BaseOptions(
                     headers: {
-                      'User-Agent': 'StendMobile-Flutter/${Platform.operatingSystem}',
+                      'User-Agent': await deviceUserAgent(),
                       'Authorization': apiInstancePassword ?? ''
                     },
                     contentType: Headers.jsonContentType,
