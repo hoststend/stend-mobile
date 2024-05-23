@@ -37,7 +37,11 @@ class _MainAppState extends State<MainApp> {
   late GetStorage box;
 
   bool firstBuildPassed = false;
+
   int _currentIndex = 0;
+  int _sameIndexClickedTimes = 0;
+
+  late String iconLib;
 
   late PageController _pageController;
   late int defaultPageIndex;
@@ -63,6 +67,31 @@ class _MainAppState extends State<MainApp> {
     });
   }
 
+  void destinationSelected(int index) {
+    debugPrint('$index ; $_currentIndex ; $_sameIndexClickedTimes');
+    if(index == _currentIndex){
+      _sameIndexClickedTimes++;
+      if(_sameIndexClickedTimes == 3 && index == 2){
+        _sameIndexClickedTimes = 0;
+        HapticFeedback.lightImpact();
+        _pageController.jumpToPage(3);
+        return;
+      } else {
+        return;
+      }
+    } else {
+      _sameIndexClickedTimes = 0;
+    }
+
+    HapticFeedback.lightImpact();
+
+    setState(() {
+      _currentIndex = index;
+    });
+
+    _pageController.jumpToPage(index);
+  }
+
   @override
   void initState() {
     box = GetStorage();
@@ -83,6 +112,14 @@ class _MainAppState extends State<MainApp> {
       defaultPageIndex = 2;
     }
 
+    // Déterminer la bibliothèque d'icônes par défaut
+    if (box.read('iconLib') == null) {
+      iconLib = Platform.isIOS ? 'Lucide' : 'Material';
+      box.write('iconLib', iconLib);
+    } else {
+      iconLib = box.read('iconLib');
+    }
+
     notifInitialize();
     super.initState();
   }
@@ -96,12 +133,6 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     var brightness = box.read('theme') == 'Système' ? MediaQuery.of(context).platformBrightness : box.read('theme') == 'Clair' ? Brightness.light : box.read('theme') == 'Sombre' ? Brightness.dark : MediaQuery.of(context).platformBrightness;
-
-    var iconLib = box.read('iconLib');
-    if (iconLib == null) {
-      iconLib = Platform.isIOS ? 'Lucide' : 'Material';
-      box.write('iconLib', iconLib);
-    }
 
     if (firstBuildPassed == false){
       firstBuildPassed = true;
@@ -161,32 +192,56 @@ class _MainAppState extends State<MainApp> {
             body: SafeArea(
               bottom: true,
 
-              child: Padding(
-                padding: MediaQuery.of(context).size.width > 500 ? const EdgeInsets.symmetric(horizontal: 50.0) : EdgeInsets.zero,
-                child: PageView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  controller: _pageController,
-                  children: [
-                    const SendPage(),
-                    const DownloadPage(),
-                    SettingsPage(refresh: refresh),
-                    DebugPage(refresh: refresh),
-                  ]
-                ),
+              child: Row(
+                children: [
+                  MediaQuery.of(context).size.width > 600 ? NavigationRail(
+                    selectedIndex: _currentIndex,
+                    extended: MediaQuery.of(context).size.width > 900,
+                    onDestinationSelected: destinationSelected,
+                    leading: MediaQuery.of(context).size.width > 900 ? SizedBox(
+                      width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
+                      child: const Padding(
+                        padding: EdgeInsets.only(left: 10.0, top: 4.0, bottom: 4.0),
+                        child: Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
+                      )
+                    ) : null,
+                    destinations: [
+                      NavigationRailDestination(
+                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
+                        label: const Text('Envoyer'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
+                        label: const Text('Télécharger'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.cog : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
+                        label: const Text('Réglages'),
+                      )
+                    ],
+                  ) : const SizedBox(),
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: MediaQuery.of(context).size.width > 500 ? const EdgeInsets.symmetric(horizontal: 50.0) : EdgeInsets.zero,
+                      child: PageView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        controller: _pageController,
+                        children: [
+                          const SendPage(),
+                          const DownloadPage(),
+                          SettingsPage(refresh: refresh),
+                          DebugPage(refresh: refresh),
+                        ]
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            bottomNavigationBar: NavigationBar(
+            bottomNavigationBar: MediaQuery.of(context).size.width > 600 ? null : NavigationBar(
               selectedIndex: _currentIndex,
-              onDestinationSelected: (int index) {
-                if(index == _currentIndex) return;
-                HapticFeedback.lightImpact();
-
-                setState(() {
-                  _currentIndex = index;
-                });
-
-                _pageController.jumpToPage(index);
-              },
+              onDestinationSelected: destinationSelected,
               destinations: [
                 NavigationDestination(
                   icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
@@ -196,20 +251,9 @@ class _MainAppState extends State<MainApp> {
                   icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
                   label: 'Télécharger',
                 ),
-                GestureDetector(
-                  onLongPress: () {
-                    HapticFeedback.lightImpact();
-                    _pageController.jumpToPage(3);
-                    setState(() {
-                      _currentIndex = 2;
-                    });
-                  },
-
-                  child: NavigationDestination(
-                    tooltip: '',
-                    icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.settings : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
-                    label: 'Réglages',
-                  ),
+                NavigationDestination(
+                  icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.settings : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
+                  label: 'Réglages',
                 ),
               ],
             )
