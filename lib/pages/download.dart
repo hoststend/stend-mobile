@@ -993,7 +993,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                 itemBuilder: (BuildContext context, int index) {
                   return Card(
                     child: ListTile(
-                      subtitle: Text(tips[index]),
+                      title: Text(tips[index], style: const TextStyle(fontSize: 14)),
                       trailing: IconButton(
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                         onPressed: () {
