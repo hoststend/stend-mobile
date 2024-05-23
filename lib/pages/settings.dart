@@ -160,7 +160,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               final url = Uri.parse('https://github.com/johan-perso/stend-mobile/releases/latest');
                               launchUrl(url, mode: Platform.isIOS ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
                             },
-                            child: Text(Platform.isIOS ? "Voir le changelog" : "Mettre à jour"),
+                            child: const Text("Lire le changelog"),
                           ),
                         ],
                       )

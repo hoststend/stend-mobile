@@ -87,7 +87,6 @@ class _MainAppState extends State<MainApp> {
     super.initState();
   }
 
-  // TODO: chercher comment faire pour que on laisse l'état précédent de la page quand on change de page, et que on ne recharge pas tout à chaque fois
   @override
   void dispose() {
     _pageController.dispose();
