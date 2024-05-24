@@ -112,25 +112,13 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
               Padding(
                 padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
 
-                child: GestureDetector(
-                  onLongPress: () {
-                    if(storeRelease){
-                      box.write('forceStore', true);
-                      Haptic().micro();
-                      showSnackBar(context, "Les restrictions seront levées au redémarrage 👀");
-                    } else {
-                      Haptic().micro();
-                      showSnackBar(context, "Hmm, qu'est ce que tu cherches par ici ?");
-                    }
-                  },
-                  child: Text(
-                    "Réglages généraux",
+                child: Text(
+                  "Réglages généraux",
 
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
-                    )
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
                   )
                 )
               ),

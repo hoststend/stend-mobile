@@ -47,6 +47,13 @@ class _DebugPageState extends State<DebugPage> {
     super.dispose();
   }
 
+  /* Note:
+  - Entre chaque élément, espace de 12 pixels
+  - En bas de la page, espace de 10 pixels
+  - À la fin d'un section, 32 pixels pour des boutons, 25 pixels pour une SwitchListTile
+  - Après un titre : 16 pixels pour des boutons, 12 pixels pour une SwitchListTile
+  */
+
   String exportSettingsToJson() {
     // Obtenir les clés et les valeurs
     var keys = box.getKeys();
@@ -68,6 +75,7 @@ class _DebugPageState extends State<DebugPage> {
     return json;  
   }
 
+// TODO: bouton dans "actions de test" pour afficher une snackbar avec un texte personnalisé
 	@override
 	Widget build(BuildContext context) {
 		return SingleChildScrollView(
@@ -304,6 +312,31 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
+                              box.remove('tips');
+                            },
+                            child: const Text("Reset tips"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                            },
+                            child: const Text("Placeholder"),
+                          )
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
                               widget.refresh();
                             },
                             child: const Text("Reload"),
@@ -362,32 +395,40 @@ class _DebugPageState extends State<DebugPage> {
                         )
                       ],
                     ),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              box.remove('tips');
-                            },
-                            child: const Text("Reset tips"),
-                          )
-                        ),
-
-                        const SizedBox(width: 12.0),
-
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                            },
-                            child: const Text("Placeholder"),
-                          )
-                        )
-                      ],
-                    ),
                     const SizedBox(height: 32),
+
+                    // Type de release
+                    Text(
+                      "Type de release",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 6),
+
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: SwitchListTile(
+                        title: const Text("Forcer la version libre"),
+                        subtitle: const Text("Réactive les fonctionnalités désactivées dans la version publiée sur les stores"),
+                        value: box.read('forceStore') ?? false,
+                        contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                        onChanged: (bool? value) {
+                          Haptic().micro();
+                          setState(() {
+                            box.write('forceStore', value!);
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 25),
 
                     // Réglages de l'app en JSON
                     Text(

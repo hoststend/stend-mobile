@@ -198,7 +198,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     else if (downloadKey.startsWith('https://bilibili.com/') || downloadKey.startsWith('https://bilibili.tv/') || downloadKey.startsWith('https://youtube.com/watch?v=') || downloadKey.startsWith('https://www.youtube.com/watch?v=') || downloadKey.startsWith('https://m.youtube.com/watch?v=') || downloadKey.startsWith('https://youtu.be/') || downloadKey.startsWith('https://youtube.com/embed/') || downloadKey.startsWith('https://youtube.com/shorts/') || downloadKey.startsWith('https://youtube.com/watch/') || downloadKey.startsWith('https://vimeo.com/') || downloadKey.startsWith('https://soundcloud.com/') || downloadKey.startsWith('https://on.soundcloud.com/') || downloadKey.startsWith('https://m.soundcloud.com/') || downloadKey.startsWith('https://twitch.tv/') || downloadKey.startsWith('https://clips.twitch.tv/') || downloadKey.startsWith('https://www.twitch.tv/') || downloadKey.startsWith('https://dailymotion.com/video/') || downloadKey.startsWith('https://www.dailymotion.com/video/') || downloadKey.startsWith('https://dai.ly/')) {
       if(storeRelease) { // sur les stores, on permet pas de télécharger depuis ces services
         Haptic().warning();
-        showSnackBar(context, "Le store de votre appareil refuse le téléchargement depuis ce service");
+        showSnackBar(context, "Le store de votre appareil refuse les médias de ce service");
         return;
       }
       service = 'cobalt';
