@@ -217,7 +217,7 @@ class _MainAppState extends State<MainApp> {
               enableFeedback: false,
               child: const Icon(Icons.refresh),
             ) : null,
-            floatingActionButtonLocation: MediaQuery.of(context).size.width > 600 ? FloatingActionButtonLocation.startFloat : FloatingActionButtonLocation.centerFloat,
+            floatingActionButtonLocation: MediaQuery.of(context).size.width > 600 ? FloatingActionButtonLocation.startFloat : FloatingActionButtonLocation.endFloat,
             body: SafeArea(
               bottom: true,
 
