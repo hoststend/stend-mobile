@@ -13,6 +13,7 @@ import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/smash_account.dart';
+import 'package:stendmobile/utils/haptic.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -149,6 +150,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
 
     // Si l'utilisateur n'a rien entré, on arrête là
     if (downloadKey.isEmpty) {
+      Haptic().warning();
       showSnackBar(context, "Veuillez entrer un lien ou une clé de partage");
       return;
     }
@@ -195,6 +197,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     }
     else if (downloadKey.startsWith('https://bilibili.com/') || downloadKey.startsWith('https://bilibili.tv/') || downloadKey.startsWith('https://youtube.com/watch?v=') || downloadKey.startsWith('https://www.youtube.com/watch?v=') || downloadKey.startsWith('https://m.youtube.com/watch?v=') || downloadKey.startsWith('https://youtu.be/') || downloadKey.startsWith('https://youtube.com/embed/') || downloadKey.startsWith('https://youtube.com/shorts/') || downloadKey.startsWith('https://youtube.com/watch/') || downloadKey.startsWith('https://vimeo.com/') || downloadKey.startsWith('https://soundcloud.com/') || downloadKey.startsWith('https://on.soundcloud.com/') || downloadKey.startsWith('https://m.soundcloud.com/') || downloadKey.startsWith('https://twitch.tv/') || downloadKey.startsWith('https://clips.twitch.tv/') || downloadKey.startsWith('https://www.twitch.tv/') || downloadKey.startsWith('https://dailymotion.com/video/') || downloadKey.startsWith('https://www.dailymotion.com/video/') || downloadKey.startsWith('https://dai.ly/')) {
       if(storeRelease) { // sur les stores, on permet pas de télécharger depuis ces services
+        Haptic().warning();
         showSnackBar(context, "Le store de votre appareil refuse le téléchargement depuis ce service");
         return;
       }
@@ -218,7 +221,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
               actions: [
                 TextButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     Navigator.pop(context);
                   },
                   child: const Text("Continuer"),
@@ -301,6 +304,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
           debugPrint(e.toString());
           if (!mounted) return;
           Navigator.pop(context);
+          Haptic().error();
           showSnackBar(context, e.toString().contains("was manually cancelled by the user") ? "La requête n'a pas pu être validé" : "Le lien entré n'est pas accessible, vérifier votre connexion");
           return;
         }
@@ -314,12 +318,14 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
           } catch (e) {
             debugPrint(e.toString());
             Navigator.pop(context);
+            Haptic().error();
             showSnackBar(context, "Nous n'avons pas pu obtenir les infos sur le serveur");
             return;
           }
         }
         else {
           Navigator.pop(context);
+          Haptic().error();
           showSnackBar(context, "La page ne contient pas les infos sur le serveur");
           return;
         }
@@ -331,6 +337,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (apiUrl.isEmpty) {
           if (!mounted) return;
           Navigator.pop(context);
+          Haptic().warning();
           showSnackBar(context, "L'API n'a pas été configurée depuis les réglages");
           return;
         }
@@ -376,6 +383,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       }
       else {
         Navigator.pop(context);
+        Haptic().error();
         showSnackBar(context, "Nous n'avons pas pu obtenir l'URL après redirection");
         return;
       }
@@ -389,6 +397,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (downloadKey.isEmpty || secondKey.isEmpty) {
         if (!mounted) return;
         Navigator.pop(context);
+        Haptic().error();
         showSnackBar(context, "Impossible de récupérer les clés de téléchargement");
         return;
       }
@@ -403,6 +412,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (token.startsWith('err_')) {
         if (!mounted) return;
         Navigator.pop(context);
+        Haptic().error();
         showSnackBar(context, token.substring(4));
         return;
       }
@@ -415,6 +425,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (downloadKey.isEmpty) {
         if (!mounted) return;
         Navigator.pop(context);
+        Haptic().error();
         showSnackBar(context, "Impossible de récupérer la clé de téléchargement");
         return;
       }
@@ -426,6 +437,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     if (downloadKey.isEmpty) {
       if (!mounted) return;
       Navigator.pop(context);
+      Haptic().error();
       showSnackBar(context, "Aucune clé de téléchargement n'est spécifiée");
       return;
     }
@@ -457,6 +469,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (!mounted) return;
           Navigator.pop(context);
           debugPrint(e.toString());
+          Haptic().error();
           showSnackBar(context, "Impossible de récupérer la région du transfert");
           return;
         }
@@ -464,6 +477,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (transfertRegionJson['target']['region'] == null) {
           if (!mounted) return;
           Navigator.pop(context);
+          Haptic().error();
           showSnackBar(context, "L'API n'a pas retourné la région du transfert");
           return;
         }
@@ -499,6 +513,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       } else {
         if (!mounted) return;
         Navigator.pop(context);
+        Haptic().error();
         showSnackBar(context, "Ce service n'est pas supporté. Cela ne devrait pas arrivé. Signalez ce problème");
         return;
       }
@@ -506,6 +521,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (!mounted) return;
       Navigator.pop(context);
       debugPrint(e.toString());
+      Haptic().error();
       showSnackBar(context, "Impossible de récupérer les infos via l'API");
       return;
     }
@@ -518,6 +534,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     } catch (e) {
       Navigator.pop(context);
       debugPrint(e.toString());
+      Haptic().error();
       showSnackBar(context, "L'API n'a pas retourné des informations valides");
       return;
     }
@@ -526,6 +543,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     if (transfertInfoJson.containsKey("message") || transfertInfoJson.containsKey("text") || transfertInfoJson.containsKey("error") || (transfertInfoJson.containsKey("status") && transfertInfoJson["status"] == "error")) {
       Navigator.pop(context);
       debugPrint(transfertInfoJson.toString());
+      Haptic().warning();
       showSnackBar(context, (transfertInfoJson["message"] == 'Forbidden' ? "Ce transfert n'a pas pu être obtenu en raison d'une autorisation manquante (transfert protégé ?)" : transfertInfoJson["message"] == "Object not found" || transfertInfoJson["message"] == "Transfer not found" || transfertInfoJson["message"] == "Not Found" ? "Le transfert est introuvable, vérifier l'URL" : transfertInfoJson["message"]) ?? transfertInfoJson["text"] ?? transfertInfoJson["error"] ?? "Impossible de récupérer les infos du transfert");
       return;
     }
@@ -534,6 +552,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     if (transfertInfo.statusCode != 200) {
       if (!mounted) return;
       Navigator.pop(context);
+      Haptic().error();
       showSnackBar(context, "L'API n'a pas retourné d'infos avec succès");
       return;
     }
@@ -541,6 +560,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     // Vérification additionnelle pour les WeTransfer (protégé par mdp)
     if (service == 'wetransfer' && transfertInfoJson["password_protected"] == true) {
       Navigator.pop(context);
+      Haptic().error();
       showSnackBar(context, "Stend ne supporte pas les liens protégés");
       return;
     }
@@ -548,6 +568,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     // Vérification additionnelle pour les SwissTransfer (protégé par mdp et autres avertissements)
     if (service == 'swisstransfer' && transfertInfoJson["data"] != null && transfertInfoJson["data"]["message"] != null) {
       Navigator.pop(context);
+      Haptic().error();
       showSnackBar(context, transfertInfoJson["data"]["message"]);
       return;
     }
@@ -589,6 +610,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         // Vérification additionnelle pour les transferts Free
         if (service == 'free' && subTransfertInfoJson["url"] != null && subTransfertInfoJson["url"].toString().contains("/free-transfert.zip?X-Amz-Algorithm=")) {
           if (!mounted) return;
+          Haptic().error();
           showSnackBar(context, "Un des fichiers du transfert n'a pas pu être obtenu en raison d'un nom incorrect. Signalez le problème");
           continue;
         }
@@ -632,6 +654,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     else if (service == 'cobalt') {
       if (transfertInfoJson["status"] == "picker") {
         if (!mounted) return;
+        Haptic().error();
         showSnackBar(context, "Stend ne supporte pas les liens avec plusieurs médias");
         Navigator.pop(context);
         return;
@@ -687,6 +710,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     // Si on a pas de transferts à télécharger, on annule tout
     if (transfertsDownloads.isEmpty) {
       if (!mounted) return;
+      Haptic().warning();
       showSnackBar(context, "Le groupe de transfert est vide ou a expiré");
       Navigator.pop(context);
       return;
@@ -712,6 +736,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       // Vérifier les propriétés
       if (!transfert.containsKey("fileName") || !transfert.containsKey("downloadLink")) {
         if (!mounted) return;
+        Haptic().error();
         showSnackBar(context, "Un des transferts est mal formé (problème avec l'API ?)");
         Navigator.pop(context);
         return;
@@ -748,6 +773,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       await Future.delayed(const Duration(milliseconds: 200)); // jsp ça fix un bug quand on fait trop de requêtes trop vite
       if (response.statusCode != 200) {
         if (!mounted) return;
+        Haptic().error();
         showSnackBar(context, "Impossible de télécharger le fichier $fileName");
         Navigator.pop(context);
         return;
@@ -798,6 +824,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
             final hasAccess = await Gal.hasAccess();
             if (!hasAccess) {
               if (!mounted) return;
+              Haptic().warning();
               showSnackBar(context, "La permission pour enregistrer dans la galerie a été refusée, le fichier se trouve dans le dossier téléchargement");
             } else {
               shouldContinue = true;
@@ -822,6 +849,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
               await file.delete();
             } catch (e) {
               debugPrint(e.toString());
+              Haptic().error();
               if (!mounted) return;
               showSnackBar(context, "Impossible d'enregistrer le fichier dans la galerie");
             }
@@ -836,7 +864,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     Navigator.pop(context);
 
     // Indiquer à l'user que le téléchargement est terminé
-    HapticFeedback.heavyImpact();
+    Haptic().success();
     showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "Le fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}");
     sendBackgroundNotif("Téléchargement terminé", "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "1 fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}", "download", "open-downloads");
   }
@@ -900,7 +928,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
-                        HapticFeedback.lightImpact();
+                        Haptic().micro();
 
                         // Lire le presse-papier
                         var data = await Clipboard.getData('text/plain');
@@ -908,6 +936,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
 
                         // Si le presse-papier fait moins de 3 caractères ou plus de 256 caractères, on ne le prend pas en compte
                         if (clipboard == null || clipboard.length < 3 || clipboard.length > 256) {
+                          Haptic().warning();
                           if (!context.mounted) return;
                           showSnackBar(context, "Aucun lien valide dans le presse-papier");
                         }
@@ -927,7 +956,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
-                        HapticFeedback.lightImpact();
+                        Haptic().micro();
 
                         // Ouvrir une bottom sheet pour scanner un QR Code
                         showModalBottomSheet(
@@ -997,7 +1026,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                       trailing: IconButton(
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          Haptic().micro();
                           setState(() {
                             tips.removeAt(index);
                             box.write('tips', tips);
@@ -1040,7 +1069,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                         title: Text(historic[index]["filename"], overflow: TextOverflow.ellipsis, maxLines: 3),
                         subtitle: Text("${formatDate(historic[index]["date"])} ― ${formatBytes(historic[index]["filesize"] ?? '0')}${historic[index]["filetype"] != null && historic[index]["filetype"].isNotEmpty ? " ― ${historic[index]["filetype"]}" : ""}"),
                         onLongPress: () {
-                          HapticFeedback.lightImpact();
+                          Haptic().micro();
 
                           final screenSize = MediaQuery.of(context).size;
                           final rect = Rect.fromCenter(
@@ -1051,14 +1080,14 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                           Share.share(historic[index]["access"], sharePositionOrigin: rect);
                         },
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          Haptic().micro();
                           urlController.text = historic[index]["access"];
                           startDownload();
                         },
                         trailing: IconButton(
                           icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                           onPressed: () {
-                            HapticFeedback.lightImpact();
+                            Haptic().micro();
 
                             // Afficher un dialogue pour demander une confirmation
                             showAdaptiveDialog(
@@ -1070,14 +1099,14 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                                   actions: [
                                     TextButton(
                                       onPressed: () {
-                                        HapticFeedback.lightImpact();
+                                        Haptic().micro();
                                         Navigator.pop(context);
                                       },
                                       child: const Text("Annuler"),
                                     ),
                                     TextButton(
                                       onPressed: () async {
-                                        HapticFeedback.lightImpact();
+                                        Haptic().micro();
 
                                         // Faire une requête pour supprimer le fichier
                                         var response = await dio.delete(
@@ -1100,6 +1129,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                                         // On parse le JSON et affiche l'erreur si le status code n'est pas 200
                                         if (!context.mounted) return;
                                         if (response.statusCode != 200) {
+                                          Haptic().error();
                                           try {
                                             showSnackBar(context, response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert");
                                           } catch (e) {

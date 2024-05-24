@@ -6,6 +6,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/pages/download.dart';
 import 'package:stendmobile/pages/send.dart';
@@ -71,9 +72,9 @@ class _MainAppState extends State<MainApp> {
     debugPrint('$index ; $_currentIndex ; $_sameIndexClickedTimes');
     if(index == _currentIndex){
       _sameIndexClickedTimes++;
-      if(_sameIndexClickedTimes == 3 && index == 2){
+      if(_sameIndexClickedTimes == 2 && index == 2){
         _sameIndexClickedTimes = 0;
-        HapticFeedback.lightImpact();
+        Haptic().micro();
         _pageController.jumpToPage(3);
         return;
       } else {
@@ -83,7 +84,7 @@ class _MainAppState extends State<MainApp> {
       _sameIndexClickedTimes = 0;
     }
 
-    HapticFeedback.lightImpact();
+    Haptic().micro();
 
     setState(() {
       _currentIndex = index;

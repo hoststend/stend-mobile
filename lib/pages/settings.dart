@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
+import 'package:stendmobile/utils/haptic.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:get_storage/get_storage.dart';
@@ -116,10 +116,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                   onLongPress: () {
                     if(storeRelease){
                       box.write('forceStore', true);
-                      HapticFeedback.lightImpact();
+                      Haptic().micro();
                       showSnackBar(context, "Les restrictions seront levées au redémarrage 👀");
                     } else {
-                      HapticFeedback.lightImpact();
+                      Haptic().micro();
                       showSnackBar(context, "Hmm, qu'est ce que tu cherches par ici ?");
                     }
                   },
@@ -156,7 +156,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         children: [
                           FilledButton(
                             onPressed: () async {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               final url = Uri.parse('https://github.com/johan-perso/stend-mobile/releases/latest');
                               launchUrl(url, mode: Platform.isIOS ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
                             },
@@ -192,7 +192,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         children: [
                           OutlinedButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               showAdaptiveDialog(
                                 context: context,
                                 builder: (context) => AlertDialog.adaptive(
@@ -201,14 +201,14 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   actions: [
                                     TextButton(
                                       onPressed: () {
-                                        HapticFeedback.lightImpact();
+                                        Haptic().micro();
                                         Navigator.of(context).pop();
                                       },
                                       child: Text(Platform.isIOS ? "OK" : "Fermer"),
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        HapticFeedback.lightImpact();
+                                        Haptic().micro();
                                         Navigator.of(context).pop();
 
                                         final Uri url = Uri.parse('https://stend-docs.johanstick.fr');
@@ -227,7 +227,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
                           FilledButton(
                             onPressed: () async {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               String apiUrlFromWeb = '';
 
                               // On récupère l'URL du client web de l'instance via un dialogue
@@ -266,6 +266,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
                                 if (!checkURL(webUrl.single)) {
                                   showSnackBar(context, "L'URL entrée n'est pas valide");
+                                  Haptic().warning();
                                   return;
                                 }
 
@@ -274,6 +275,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 // Vérifier que l'URL soit valide
                                 if (!urlParsed.isAbsolute) {
                                   showSnackBar(context, "L'URL entrée n'est pas valide");
+                                  Haptic().warning();
                                   return;
                                 }
 
@@ -283,6 +285,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   if (response.statusCode != 200) { // Si on a pas accès à l'URL, on dit que ça marche pas
                                     if (!context.mounted) return;
                                     showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
+                                    Haptic().error();
                                     return;
                                   } else { // Si on y a accès, on essaye de parser l'URL de l'API
                                     try {
@@ -295,6 +298,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   debugPrint(e.toString());
                                   if (!context.mounted) return;
                                   showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
+                                  Haptic().error();
                                   return;
                                 }
 
@@ -324,6 +328,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               if (!context.mounted) return;
                               if (apiUrl == null || apiUrl.toString().length < 2) {
                                 showSnackBar(context, "Une URL d'API est nécessaire pour continuer");
+                                Haptic().warning();
                                 return;
                               }
 
@@ -342,6 +347,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               // On vérifie que l'URL de l'API soit valide
                               if (!checkURL(apiUrlStringInstance)) {
                                 showSnackBar(context, "L'URL de l'API semble invalide");
+                                Haptic().warning();
                                 return;
                               }
 
@@ -351,6 +357,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               if (!context.mounted) return;
                               if (!url.isAbsolute) {
                                 showSnackBar(context, "L'URL entrée n'est pas valide");
+                                Haptic().warning();
                                 return;
                               }
 
@@ -361,6 +368,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 if (response.statusCode != 200) {
                                   if (!context.mounted) return;
                                   showSnackBar(context, "La requête n'a pas abouti. Vérifier l'URL");
+                                  Haptic().error();
                                   return;
                                 }
 
@@ -375,6 +383,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 if (!context.mounted) return;
                                 showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
                                 debugPrint(e.toString());
+                                Haptic().error();
                                 return;
                               }
 
@@ -433,7 +442,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               debugPrint('API Instance URL : ${box.read('apiInstanceUrl')}');
                               if (box.read('apiInstanceUrl') != null) {
                                 if (!context.mounted) return;
-                                HapticFeedback.lightImpact();
+                                Haptic().success();
                                 showSnackBar(context, "Vous êtes maintenant connecté à votre instance");
                                 setState(() {
                                   _isConnected = true;
@@ -457,7 +466,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Les médias téléchargés seront enregistrés dans la galerie"),
                 value: box.read('saveMediasInGallery') ?? false,
                 onChanged: (bool? value) {
-                  HapticFeedback.lightImpact();
+                  Haptic().micro();
                   setState(() {
                     box.write('saveMediasInGallery', value!);
                   });
@@ -469,7 +478,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Copie dans le presser-papier le lien d'un transfert lorsqu'il se termine"),
                 value: box.read('copyUrlAfterSend') ?? false,
                 onChanged: (bool? value) {
-                  HapticFeedback.lightImpact();
+                  Haptic().micro();
                   setState(() {
                     box.write('copyUrlAfterSend', value!);
                   });
@@ -481,7 +490,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Les fichiers seront téléchargés dans un sous-dossier nommé \"Stend\""),
                 value: box.read('downloadInSubFolder') ?? false,
                 onChanged: (bool? value) {
-                  HapticFeedback.lightImpact();
+                  Haptic().micro();
                   setState(() {
                     box.write('downloadInSubFolder', value!);
                   });
@@ -493,7 +502,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Coche par défaut l'option pour raccourcir un lien avant un envoi"),
                 value: box.read('shortenUrl') ?? false,
                 onChanged: (bool? value) {
-                  HapticFeedback.lightImpact();
+                  Haptic().micro();
                   setState(() {
                     box.write('shortenUrl', value!);
                   });
@@ -505,7 +514,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Empêche Stend d'ajouter de nouveaux liens à l'historique de transferts"),
                 value: box.read('disableHistory') ?? false,
                 onChanged: (bool? value) {
-                  HapticFeedback.lightImpact();
+                  Haptic().micro();
                   setState(() {
                     box.write('disableHistory', value!);
                     widget.refresh();
@@ -518,9 +527,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Définissez la durée avant expiration par défaut d'un fichier"),
                 trailing: DropdownButton<String>(
                   value: box.read('defaultExpirationTime') ?? '+ court',
-                  onTap: () { HapticFeedback.lightImpact(); },
+                  onTap: () { Haptic().micro(); },
                   onChanged: (String? newValue) {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     setState(() {
                       box.write('defaultExpirationTime', newValue!);
                     });
@@ -540,9 +549,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Choisissez le thème de l'appli"),
                 trailing: DropdownButton<String>(
                   value: box.read('theme') ?? 'Système',
-                  onTap: () { HapticFeedback.lightImpact(); },
+                  onTap: () { Haptic().micro(); },
                   onChanged: (String? newValue) {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     setState(() {
                       box.write('theme', newValue!);
                       widget.refresh();
@@ -563,9 +572,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Choisissez le style d'icône utilisé"),
                 trailing: DropdownButton<String>(
                   value: box.read('iconLib') ?? 'Material',
-                  onTap: () { HapticFeedback.lightImpact(); },
+                  onTap: () { Haptic().micro(); },
                   onChanged: (String? newValue) {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     setState(() {
                       box.write('iconLib', newValue!);
                       widget.refresh();
@@ -586,9 +595,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Définissez la page qui s'ouvrira au démarrage de l'appli"),
                 trailing: DropdownButton<String>(
                   value: box.read('defaultPage') ?? 'Envoyer',
-                  onTap: () { HapticFeedback.lightImpact(); },
+                  onTap: () { Haptic().micro(); },
                   onChanged: (String? newValue) {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     setState(() {
                       box.write('defaultPage', newValue!);
                     });
@@ -608,9 +617,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Définissez le service utilisé pour racourcir les URLs"),
                 trailing: DropdownButton<String>(
                   value: box.read('shortenService') ?? 'mdrr.fr',
-                  onTap: () { HapticFeedback.lightImpact(); },
+                  onTap: () { Haptic().micro(); },
                   onChanged: (String? newValue) {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     setState(() {
                       box.write('shortenService', newValue!);
                     });
@@ -630,9 +639,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 subtitle: const Text("Définissez la caméra qui sera utilisée pour scanner les QR Codes"),
                 trailing: DropdownButton<String>(
                   value: box.read('cameraFacing') ?? 'Arrière',
-                  onTap: () { HapticFeedback.lightImpact(); },
+                  onTap: () { Haptic().micro(); },
                   onChanged: (String? newValue) {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     setState(() {
                       box.write('cameraFacing', newValue!);
                     });
@@ -653,7 +662,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 trailing: IconButton(
                   onPressed: () async {
                     debugPrint(box.read('appColor').toString());
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     await showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -711,7 +720,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       }
 
                       // Afficher les variables
-                      HapticFeedback.lightImpact();
+                      Haptic().micro();
                       await showAdaptiveDialog(
                         context: context,
                         builder: (context) => AlertDialog(
@@ -732,7 +741,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           actions: [
                             TextButton(
                               onPressed: () {
-                                HapticFeedback.lightImpact();
+                                Haptic().micro();
                                 Navigator.of(context).pop();
                               },
                               child: Text(Platform.isIOS ? "OK" : "Fermer"),
@@ -793,7 +802,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           actions: [
                             TextButton(
                               onPressed: () {
-                                HapticFeedback.lightImpact();
+                                Haptic().micro();
                                 Navigator.of(context).pop();
                               },
                               child: Text(Platform.isIOS ? "OK" : "Fermer"),
@@ -806,7 +815,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                   ),
                   OutlinedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      Haptic().micro();
                       box.remove('historic');
                       showSnackBar(context, "L'historique a été effacé");
                     },
@@ -820,7 +829,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
               Center(
                 child: FilledButton(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    Haptic().warning();
                     showAdaptiveDialog(
                       context: context,
                       builder: (context) => AlertDialog.adaptive(
@@ -829,7 +838,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         actions: [
                           TextButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               Navigator.of(context).pop();
                             },
                             child: const Text("Annuler"),
@@ -850,11 +859,12 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 debugPrint(e.toString());
                                 if (!context.mounted) return;
                                 showSnackBar(context, "Impossible d'effacer le cache");
+                                Haptic().error();
                               }
 
                               // Informer l'utilisateur
                               if (!context.mounted) return;
-                              HapticFeedback.mediumImpact();
+                              Haptic().success();
                               showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées");
 
                               // Recharger la page
@@ -897,7 +907,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         children: [
                           IconButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.globe),
@@ -905,7 +915,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ),
                           IconButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               launchUrl(Uri.parse('https://github.com/johan-perso/stend-mobile'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.github),
@@ -913,7 +923,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ),
                           IconButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               launchUrl(Uri.parse('https://twitter.com/johan_stickman'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.twitter),
@@ -921,7 +931,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ),
                           IconButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               launchUrl(Uri.parse('https://johanstick.fr/#donate'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.circleDollarSign),

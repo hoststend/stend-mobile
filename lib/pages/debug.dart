@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
@@ -9,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/user_agent.dart';
+import 'package:stendmobile/utils/haptic.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
@@ -97,7 +97,7 @@ class _DebugPageState extends State<DebugPage> {
 
               // Padding principal
               Padding(
-                padding: const EdgeInsets.only(left: 14.0, right: 14.0, bottom: 14.0),
+                padding: const EdgeInsets.only(top: 10.0, left: 14.0, right: 14.0, bottom: 14.0),
 
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -198,6 +198,55 @@ class _DebugPageState extends State<DebugPage> {
                         )
                       ],
                     ),
+                    const SizedBox(height: 32),
+
+                    // Retours haptiques
+                    Text(
+                      "Retours haptiques",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              Haptic().micro();
+                            },
+                            child: const Text("Micro"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              Haptic().light();
+                            },
+                            child: const Text("Léger"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              Haptic().medium();
+                            },
+                            child: const Text("Moyen"),
+                          )
+                        )
+                      ],
+                    ),
                     const SizedBox(height: 12),
 
                     Row(
@@ -206,9 +255,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              HapticFeedback.lightImpact();
+                              Haptic().success();
                             },
-                            child: const Text("Light"),
+                            child: const Text("Succès"),
                           )
                         ),
 
@@ -217,9 +266,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              HapticFeedback.mediumImpact();
+                              Haptic().warning();
                             },
-                            child: const Text("Medium"),
+                            child: const Text("Warning"),
                           )
                         ),
 
@@ -228,9 +277,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              HapticFeedback.heavyImpact();
+                              Haptic().error();
                             },
-                            child: const Text("Heavy"),
+                            child: const Text("Erreur"),
                           )
                         )
                       ],

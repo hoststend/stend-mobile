@@ -9,6 +9,7 @@ import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/limit_string_size.dart';
+import 'package:stendmobile/utils/haptic.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -126,7 +127,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          HapticFeedback.lightImpact();
+                          Haptic().micro();
 
                           FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
 
@@ -148,7 +149,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          HapticFeedback.lightImpact();
+                          Haptic().micro();
 
                           try {
                             List<XFile> files = await ImagePicker().pickMultiImage();
@@ -161,6 +162,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                           } catch (e) {
                             debugPrint(e.toString());
                             if (!context.mounted) return;
+                            Haptic().error();
                             showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifier les permissions de l'app");
                           }
                         },
@@ -174,7 +176,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          HapticFeedback.lightImpact();
+                          Haptic().micro();
 
                           try {
                             XFile? video = await ImagePicker().pickVideo(source: ImageSource.gallery);
@@ -186,6 +188,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                           } catch (e) {
                             debugPrint(e.toString());
                             if (!context.mounted) return;
+                            Haptic().error();
                             showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifier les permissions de l'app");
                           }
                         },
@@ -199,7 +202,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          HapticFeedback.lightImpact();
+                          Haptic().micro();
 
                           XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
                           if (image == null) return;
@@ -250,9 +253,9 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     child: Text(expireTime['label']),
                   );
                 }).toList(),
-                onTap: () { HapticFeedback.lightImpact(); },
+                onTap: () { Haptic().micro(); },
                 onChanged: (int? value) {
-                  HapticFeedback.lightImpact();
+                  Haptic().micro();
                   setState(() {
                     selectedExpireTime = value!;
                   });
@@ -281,7 +284,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   title: const Text("Raccourcir l'URL finale"),
                   value: shortUrl, // valeur par défaut
                   onChanged: (bool value) {
-                    HapticFeedback.lightImpact();
+                    Haptic().micro();
                     setState(() {
                       shortUrl = value;
                     });
@@ -323,11 +326,12 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   List historic = box.read('historic') ?? [];
 
                   // Haptic
-                  HapticFeedback.lightImpact();
+                  Haptic().micro();
 
                   // Vérifier que l'instance est configurée
                   if (apiInstanceUrl.isEmpty || apiInstanceUrl.length < 8 || !apiInstanceUrl.startsWith('http')) {
                     showSnackBar(context, "Vous devez vous authentifier depuis les réglages");
+                    Haptic().warning();
                     return;
                   }
 
@@ -383,6 +387,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   } catch (e) {
                     if (!context.mounted) return;
                     debugPrint(e.toString());
+                    Haptic().warning();
                     showSnackBar(context, "Impossible de se connecter à l'instance");
                     Navigator.pop(context);
                     return;
@@ -393,6 +398,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   if (response.statusCode != 200) {
                     showSnackBar(context, "L'instance a retourné une erreur HTTP ${response.statusCode}");
                     Navigator.pop(context);
+                    Haptic().error();
                     return;
                   }
 
@@ -407,6 +413,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     box.remove('apiInstanceUrl');
                     box.remove('apiInstancePassword');
                     Navigator.pop(context);
+                    Haptic().error();
                     return;
                   }
 
@@ -414,6 +421,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   if (selectedFiles.length > maxTransfersInMerge) {
                     showSnackBar(context, "Vous ne pouvez pas envoyer plus de $maxTransfersInMerge fichiers");
                     Navigator.pop(context);
+                    Haptic().warning();
                     return;
                   }
 
@@ -424,11 +432,13 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     if (fileSize > fileMaxSize) {
                       showSnackBar(context, "Un des fichiers dépasse la limite de ${formatBytes(fileMaxSize)}");
                       Navigator.pop(context);
+                      Haptic().warning();
                       return;
                     }
                     if (fileSize == 0) {
                       showSnackBar(context, "Impossible d'envoyer un fichier de 0 octet");
                       Navigator.pop(context);
+                      Haptic().warning();
                       return;
                     }
                   }
@@ -456,6 +466,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     if (transfertInfo.statusCode != 200 || (transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty)) {
                       showSnackBar(context, "Impossible de créer un transfert${transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty ? ": ${transfertInfo.data['message']}" : ""}");
                       Navigator.pop(context);
+                      Haptic().error();
                       return;
                     }
 
@@ -508,6 +519,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                         if (!context.mounted) return;
                         showSnackBar(context, "Impossible de gérer le transfert : $e");
                         Navigator.pop(context);
+                        Haptic().error();
                         return;
                       }
 
@@ -516,6 +528,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       if (chunkResponse.statusCode != 200 || (chunkResponse.data.isNotEmpty && chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty)) {
                         showSnackBar(context, "Impossible de gérer le transfert${chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty ? ": ${chunkResponse.data['message']}" : ""}");
                         Navigator.pop(context); 
+                        Haptic().error();
                         return;
                       }
 
@@ -594,6 +607,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     if (mergeResponse.statusCode != 200 || (mergeResponse.data.isNotEmpty && mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty)) {
                       showSnackBar(context, "Impossible de créer un groupe de liens${mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty ? ": ${mergeResponse.data['message']}" : ""}");
                       Navigator.pop(context);
+                      Haptic().error();
                       return;
                     }
 
@@ -627,10 +641,10 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   Navigator.pop(context);
 
                   // Envoyer une notification si l'app est en arrière plan
+                  Haptic().success();
                   sendBackgroundNotif("Transfert terminé", "${selectedFiles.length} ${selectedFiles.length > 1 ? "fichiers ont été envoyés" : "fichier a été envoyé"} vers Stend", "upload", null);
 
                   // On affiche un nouveau dialogue avec les infos d'accès (on propose d'ouvrir ou de partager)
-                  HapticFeedback.heavyImpact();
                   showAdaptiveDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -647,15 +661,16 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                         actions: [
                           TextButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               Navigator.pop(context);
                             },
                             child: Text(Platform.isIOS ? "OK" : "Fermer")
                           ),
                           TextButton(
                             onPressed: () async {
-                              HapticFeedback.lightImpact();
+                              Haptic().micro();
                               Navigator.pop(context);
+
                               final screenSize = MediaQuery.of(context).size;
                               final rect = Rect.fromCenter(
                                 center: Offset(screenSize.width / 2, screenSize.height / 2),
@@ -708,7 +723,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       trailing: IconButton(
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                         onPressed: () {
-                          HapticFeedback.mediumImpact();
+                          Haptic().micro();
                           setState(() {
                             selectedFiles.removeAt(index);
                           });
