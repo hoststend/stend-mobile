@@ -1,5 +1,3 @@
-// TODO: au lieu de reload quand on change un réglage (y compris ceux de "comportement" qui doivent être re-recupéré dans chaque page), on affiche un fav qui propose de refresh
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -23,8 +21,9 @@ Color hexToColor(String code) {
 
 class SettingsPage extends StatefulWidget {
   final Function refresh;
+  final Function showRefreshButton;
 
-  const SettingsPage({Key? key, required this.refresh}) : super(key: key);
+  const SettingsPage({Key? key, required this.refresh, required this.showRefreshButton}) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -561,6 +560,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               Haptic().micro();
                               setState(() {
                                 box.write('shortenUrl', value!);
+                                widget.showRefreshButton(true);
                               });
                             },
                           ),
@@ -575,6 +575,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 Haptic().micro();
                                 setState(() {
                                   box.write('defaultExpirationTime', newValue!);
+                                  widget.showRefreshButton(true);
                                 });
                               },
                               items: <String>['+ court', '+ long']
@@ -645,7 +646,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 Haptic().micro();
                                 setState(() {
                                   box.write('theme', newValue!);
-                                  widget.refresh();
+                                  widget.showRefreshButton(true);
                                 });
                               },
                               items: <String>['Système', 'Clair', 'Sombre']
@@ -669,7 +670,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 Haptic().micro();
                                 setState(() {
                                   box.write('iconLib', newValue!);
-                                  widget.refresh();
+                                  widget.showRefreshButton(true);
                                 });
                               },
                               items: <String>['Material', 'iOS', 'Lucide', 'Lucide (alt)']
@@ -711,7 +712,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                           child: const Text('Enregistrer'),
                                           onPressed: () {
                                             Navigator.of(context).pop();
-                                            widget.refresh();
+                                            widget.showRefreshButton(true);
                                           },
                                         ),
                                       ],
@@ -757,7 +758,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               Haptic().micro();
                               setState(() {
                                 box.write('disableHistory', value!);
-                                widget.refresh();
+                                widget.showRefreshButton(true);
                               });
                             },
                           ),

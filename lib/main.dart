@@ -38,6 +38,7 @@ class _MainAppState extends State<MainApp> {
   late GetStorage box;
 
   bool firstBuildPassed = false;
+  bool showRefreshButton = false;
 
   int _currentIndex = 0;
   int _sameIndexClickedTimes = 0;
@@ -72,6 +73,7 @@ class _MainAppState extends State<MainApp> {
 
     setState(() {
       _currentIndex = defaultPageIndex;
+      showRefreshButton = false;
       _refreshKey = UniqueKey();
     });
   }
@@ -198,6 +200,24 @@ class _MainAppState extends State<MainApp> {
             ),
           ),
           home: Scaffold(
+            floatingActionButton: showRefreshButton && MediaQuery.of(context).size.width > 900
+            ? FloatingActionButton.extended(
+              onPressed: () {
+                Haptic().micro();
+                refresh();
+              },
+              enableFeedback: false,
+              label: const Text('Rafraîchir'),
+              icon: const Icon(Icons.refresh),
+            ) : showRefreshButton ? FloatingActionButton(
+              onPressed: () {
+                Haptic().micro();
+                refresh();
+              },
+              enableFeedback: false,
+              child: const Icon(Icons.refresh),
+            ) : null,
+            floatingActionButtonLocation: MediaQuery.of(context).size.width > 600 ? FloatingActionButtonLocation.startFloat : FloatingActionButtonLocation.centerFloat,
             body: SafeArea(
               bottom: true,
 
@@ -239,7 +259,7 @@ class _MainAppState extends State<MainApp> {
                         children: [
                           const SendPage(),
                           const DownloadPage(),
-                          SettingsPage(refresh: refresh),
+                          SettingsPage(refresh: refresh, showRefreshButton: (bool value) { setState(() { showRefreshButton = value; }); }),
                           DebugPage(refresh: refresh),
                         ]
                       ),
