@@ -73,8 +73,15 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
   @override
   void initState() {
     if (box.read('shortenUrl') == true) shortUrl = true;
-    selectedExpireTime = box.read('defaultExpirationTime') == '+ court' ? 0 : box.read('defaultExpirationTime') == '+ long' ? box.read('recommendedExpireTimes').length - 1 : 0;
     iconLib = box.read('iconLib') ?? (Platform.isIOS ? 'Lucide' : 'Material');
+
+    if(box.read('recommendedExpireTimes') != null && box.read('recommendedExpireTimes').isNotEmpty) {
+      selectedExpireTime = box.read('defaultExpirationTime') == '+ court'
+      ? 0
+      : box.read('defaultExpirationTime') == '+ long'
+        ? box.read('recommendedExpireTimes').length - 1
+        : 0;
+    }
 
     super.initState();
   }
@@ -283,6 +290,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                 child: SwitchListTile(
                   title: const Text("Raccourcir l'URL finale"),
                   value: shortUrl, // valeur par défaut
+                  contentPadding: const EdgeInsets.all(0.0),
                   onChanged: (bool value) {
                     Haptic().micro();
                     setState(() {

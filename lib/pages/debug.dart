@@ -47,13 +47,6 @@ class _DebugPageState extends State<DebugPage> {
     super.dispose();
   }
 
-  /* Note:
-  - Entre chaque élément, espace de 12 pixels
-  - En bas de la page, espace de 10 pixels
-  - À la fin d'un section, 32 pixels pour des boutons, 25 pixels pour une SwitchListTile
-  - Après un titre : 16 pixels pour des boutons, 12 pixels pour une SwitchListTile
-  */
-
   String exportSettingsToJson() {
     // Obtenir les clés et les valeurs
     var keys = box.getKeys();
@@ -74,6 +67,13 @@ class _DebugPageState extends State<DebugPage> {
     String json = const JsonEncoder.withIndent('  ').convert(settings);
     return json;  
   }
+
+  /* Note:
+  - Entre chaque élément, espace de 12 pixels
+  - En bas de la page, espace de 10 pixels
+  - À la fin d'un section, 32 pixels pour des boutons, 25 pixels pour une SwitchListTile
+  - Après un titre : 16 pixels pour des boutons, 12 pixels pour une SwitchListTile
+  */
 
 // TODO: bouton dans "actions de test" pour afficher une snackbar avec un texte personnalisé
 	@override
@@ -415,18 +415,22 @@ class _DebugPageState extends State<DebugPage> {
                         splashColor: Colors.transparent,
                         highlightColor: Colors.transparent,
                       ),
-                      child: SwitchListTile(
-                        title: const Text("Forcer la version libre"),
-                        subtitle: const Text("Réactive les fonctionnalités désactivées dans la version publiée sur les stores"),
-                        value: box.read('forceStore') ?? false,
-                        contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
-                        onChanged: (bool? value) {
-                          Haptic().micro();
-                          setState(() {
-                            box.write('forceStore', value!);
-                          });
-                        },
-                      ),
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            title: const Text("Forcer la version libre"),
+                            subtitle: const Text("Réactive les fonctionnalités désactivées dans la version publiée sur les stores"),
+                            value: box.read('forceStore') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().micro();
+                              setState(() {
+                                box.write('forceStore', value!);
+                              });
+                            },
+                          ),
+                        ]
+                      )
                     ),
                     const SizedBox(height: 25),
 

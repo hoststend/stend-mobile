@@ -1,3 +1,5 @@
+// TODO: au lieu de reload quand on change un réglage (y compris ceux de "comportement" qui doivent être re-recupéré dans chaque page), on affiche un fav qui propose de refresh
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -93,6 +95,13 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
   @override
   bool get wantKeepAlive => true;
+
+  /* Note:
+  - Entre chaque élément, espace de 12 pixels
+  - En bas de la page, espace de 10 pixels
+  - À la fin d'un section, 32 pixels pour des boutons, 25 pixels pour une SwitchListTile
+  - Après un titre : 16 pixels pour des boutons, 12 pixels pour une SwitchListTile
+  */
 
 	@override
 	Widget build(BuildContext context) {
@@ -448,245 +457,366 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 )
               ) : const SizedBox.shrink(),
 
-              // Différents réglages
-              SwitchListTile(
-                title: const Text("Enregistrer dans la galerie"),
-                subtitle: const Text("Les médias téléchargés seront enregistrés dans la galerie"),
-                value: box.read('saveMediasInGallery') ?? false,
-                onChanged: (bool? value) {
-                  Haptic().micro();
-                  setState(() {
-                    box.write('saveMediasInGallery', value!);
-                  });
-                },
-              ),
+              // Espace entre les cartes et les autres éléments
+              isUpdateAvailable || !_isConnected ? const SizedBox(height: 12) : const SizedBox.shrink(),
 
-              SwitchListTile(
-                title: const Text("Copier l'URL après un envoi"),
-                subtitle: const Text("Copie dans le presser-papier le lien d'un transfert lorsqu'il se termine"),
-                value: box.read('copyUrlAfterSend') ?? false,
-                onChanged: (bool? value) {
-                  Haptic().micro();
-                  setState(() {
-                    box.write('copyUrlAfterSend', value!);
-                  });
-                },
-              ),
+              // Padding principal
+              Padding(
+                padding: const EdgeInsets.only(top: 10.0, left: 14.0, right: 14.0, bottom: 14.0),
 
-              Platform.isAndroid ? SwitchListTile(
-                title: const Text("Télécharger dans un dossier"),
-                subtitle: const Text("Les fichiers seront téléchargés dans un sous-dossier nommé \"Stend\""),
-                value: box.read('downloadInSubFolder') ?? false,
-                onChanged: (bool? value) {
-                  Haptic().micro();
-                  setState(() {
-                    box.write('downloadInSubFolder', value!);
-                  });
-                },
-              ) : const SizedBox.shrink(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
-              SwitchListTile(
-                title: const Text("Raccourcir l'URL par défaut"),
-                subtitle: const Text("Coche par défaut l'option pour raccourcir un lien avant un envoi"),
-                value: box.read('shortenUrl') ?? false,
-                onChanged: (bool? value) {
-                  Haptic().micro();
-                  setState(() {
-                    box.write('shortenUrl', value!);
-                  });
-                },
-              ),
+                  children: [
+                    // Comportement
+                    Text(
+                      "Comportement",
 
-              SwitchListTile(
-                title: const Text("Désactiver l'historique"),
-                subtitle: const Text("Empêche Stend d'ajouter de nouveaux liens à l'historique de transferts"),
-                value: box.read('disableHistory') ?? false,
-                onChanged: (bool? value) {
-                  Haptic().micro();
-                  setState(() {
-                    box.write('disableHistory', value!);
-                    widget.refresh();
-                  });
-                },
-              ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 6),
 
-              ListTile(
-                title: const Text("Durée avant expiration"),
-                subtitle: const Text("Définissez la durée avant expiration par défaut d'un fichier"),
-                trailing: DropdownButton<String>(
-                  value: box.read('defaultExpirationTime') ?? '+ court',
-                  onTap: () { Haptic().micro(); },
-                  onChanged: (String? newValue) {
-                    Haptic().micro();
-                    setState(() {
-                      box.write('defaultExpirationTime', newValue!);
-                    });
-                  },
-                  items: <String>['+ court', '+ long']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              ListTile(
-                title: const Text("Thème"),
-                subtitle: const Text("Choisissez le thème de l'appli"),
-                trailing: DropdownButton<String>(
-                  value: box.read('theme') ?? 'Système',
-                  onTap: () { Haptic().micro(); },
-                  onChanged: (String? newValue) {
-                    Haptic().micro();
-                    setState(() {
-                      box.write('theme', newValue!);
-                      widget.refresh();
-                    });
-                  },
-                  items: <String>['Système', 'Clair', 'Sombre']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              ListTile(
-                title: const Text("Icônes"),
-                subtitle: const Text("Choisissez le style d'icône utilisé"),
-                trailing: DropdownButton<String>(
-                  value: box.read('iconLib') ?? 'Material',
-                  onTap: () { Haptic().micro(); },
-                  onChanged: (String? newValue) {
-                    Haptic().micro();
-                    setState(() {
-                      box.write('iconLib', newValue!);
-                      widget.refresh();
-                    });
-                  },
-                  items: <String>['Material', 'iOS', 'Lucide', 'Lucide (alt)']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              ListTile(
-                title: const Text("Page par défaut"),
-                subtitle: const Text("Définissez la page qui s'ouvrira au démarrage de l'appli"),
-                trailing: DropdownButton<String>(
-                  value: box.read('defaultPage') ?? 'Envoyer',
-                  onTap: () { Haptic().micro(); },
-                  onChanged: (String? newValue) {
-                    Haptic().micro();
-                    setState(() {
-                      box.write('defaultPage', newValue!);
-                    });
-                  },
-                  items: <String>['Envoyer', 'Télécharger', 'Réglages']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              ListTile(
-                title: const Text("Service d'URLs courts"),
-                subtitle: const Text("Définissez le service utilisé pour racourcir les URLs"),
-                trailing: DropdownButton<String>(
-                  value: box.read('shortenService') ?? 'mdrr.fr',
-                  onTap: () { Haptic().micro(); },
-                  onChanged: (String? newValue) {
-                    Haptic().micro();
-                    setState(() {
-                      box.write('shortenService', newValue!);
-                    });
-                  },
-                  items: <String>['mdrr.fr', 'ptdrr.com', 's.3vm.cl', 's.erc.hr']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              ListTile(
-                title: const Text("Caméra pour les QR Codes"),
-                subtitle: const Text("Définissez la caméra qui sera utilisée pour scanner les QR Codes"),
-                trailing: DropdownButton<String>(
-                  value: box.read('cameraFacing') ?? 'Arrière',
-                  onTap: () { Haptic().micro(); },
-                  onChanged: (String? newValue) {
-                    Haptic().micro();
-                    setState(() {
-                      box.write('cameraFacing', newValue!);
-                    });
-                  },
-                  items: <String>['Arrière', 'Avant']
-                  .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-
-              Platform.isIOS ? ListTile(
-                title: const Text("Choix des couleurs"),
-                subtitle: const Text("Choisissez une couleur clé qui sera utilisée dans l'appli"),
-                trailing: IconButton(
-                  onPressed: () async {
-                    debugPrint(box.read('appColor').toString());
-                    Haptic().micro();
-                    await showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Choix des couleurs'),
-                          content: SingleChildScrollView(
-                            child: ColorPicker(
-                              pickerColor: box.read('appColor') != null ? hexToColor(box.read('appColor')) : Colors.blueAccent,
-                              enableAlpha: false,
-                              hexInputBar: true,
-                              labelTypes: const [],
-                              onColorChanged: (Color color) {
-                                box.write('appColor', '#${color.value.toRadixString(16).substring(2)}');
-                              },
-                            ),
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            title: const Text("Enregistrer dans la galerie"),
+                            subtitle: const Text("Les médias téléchargés seront enregistrés dans la galerie"),
+                            value: box.read('saveMediasInGallery') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().micro();
+                              setState(() {
+                                box.write('saveMediasInGallery', value!);
+                              });
+                            },
                           ),
-                          actions: [
-                            ElevatedButton(
-                              child: const Text('Enregistrer'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                widget.refresh();
+
+                          SwitchListTile(
+                            title: const Text("Copier l'URL après un envoi"),
+                            subtitle: const Text("Copie dans le presser-papier le lien d'un transfert lorsqu'il se termine"),
+                            value: box.read('copyUrlAfterSend') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().micro();
+                              setState(() {
+                                box.write('copyUrlAfterSend', value!);
+                              });
+                            },
+                          ),
+
+                          Platform.isAndroid ? SwitchListTile(
+                            title: const Text("Télécharger dans un dossier"),
+                            subtitle: const Text("Les fichiers seront téléchargés dans un sous-dossier nommé \"Stend\""),
+                            value: box.read('downloadInSubFolder') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().micro();
+                              setState(() {
+                                box.write('downloadInSubFolder', value!);
+                              });
+                            },
+                          ) : const SizedBox.shrink(),
+                        ]
+                      )
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Par défaut
+                    Text(
+                      "Par défaut",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 6),
+
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            title: const Text("Raccourcir l'URL par défaut"),
+                            subtitle: const Text("L'option pour raccourcir le lien d'un transfert sera coché au lancement"),
+                            value: box.read('shortenUrl') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().micro();
+                              setState(() {
+                                box.write('shortenUrl', value!);
+                              });
+                            },
+                          ),
+
+                          ListTile(
+                            title: const Text("Durée avant expiration"),
+                            subtitle: const Text("Définissez la durée avant expiration par défaut d'un fichier"),
+                            trailing: DropdownButton<String>(
+                              value: box.read('defaultExpirationTime') ?? '+ court',
+                              onTap: () { Haptic().micro(); },
+                              onChanged: (String? newValue) {
+                                Haptic().micro();
+                                setState(() {
+                                  box.write('defaultExpirationTime', newValue!);
+                                });
                               },
+                              items: <String>['+ court', '+ long']
+                              .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                                );
+                              }).toList(),
                             ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  icon: const Icon(Icons.color_lens),
-                ),
-              ) : const SizedBox.shrink(),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+
+                          ListTile(
+                            title: const Text("Page à l'ouverture"),
+                            subtitle: const Text("Définissez la page qui s'ouvrira au démarrage de l'appli"),
+                            trailing: DropdownButton<String>(
+                              value: box.read('defaultPage') ?? 'Envoyer',
+                              onTap: () { Haptic().micro(); },
+                              onChanged: (String? newValue) {
+                                Haptic().micro();
+                                setState(() {
+                                  box.write('defaultPage', newValue!);
+                                });
+                              },
+                              items: <String>['Envoyer', 'Télécharger', 'Réglages']
+                              .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+                        ]
+                      )
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Apparence
+                    Text(
+                      "Apparence",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 6),
+
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            title: const Text("Thème"),
+                            subtitle: const Text("Choisissez le thème de l'appli"),
+                            trailing: DropdownButton<String>(
+                              value: box.read('theme') ?? 'Système',
+                              onTap: () { Haptic().micro(); },
+                              onChanged: (String? newValue) {
+                                Haptic().micro();
+                                setState(() {
+                                  box.write('theme', newValue!);
+                                  widget.refresh();
+                                });
+                              },
+                              items: <String>['Système', 'Clair', 'Sombre']
+                              .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+
+                          ListTile(
+                            title: const Text("Icônes"),
+                            subtitle: const Text("Choisissez le style d'icône utilisé"),
+                            trailing: DropdownButton<String>(
+                              value: box.read('iconLib') ?? 'Material',
+                              onTap: () { Haptic().micro(); },
+                              onChanged: (String? newValue) {
+                                Haptic().micro();
+                                setState(() {
+                                  box.write('iconLib', newValue!);
+                                  widget.refresh();
+                                });
+                              },
+                              items: <String>['Material', 'iOS', 'Lucide', 'Lucide (alt)']
+                              .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+
+                          Platform.isIOS ? ListTile(
+                            title: const Text("Choix des couleurs"),
+                            subtitle: const Text("Choisissez une couleur clé qui sera utilisée dans l'appli"),
+                            trailing: IconButton(
+                              onPressed: () async {
+                                debugPrint(box.read('appColor').toString());
+                                Haptic().micro();
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Choix des couleurs'),
+                                      content: SingleChildScrollView(
+                                        child: ColorPicker(
+                                          pickerColor: box.read('appColor') != null ? hexToColor(box.read('appColor')) : Colors.blueAccent,
+                                          enableAlpha: false,
+                                          hexInputBar: true,
+                                          labelTypes: const [],
+                                          onColorChanged: (Color color) {
+                                            box.write('appColor', '#${color.value.toRadixString(16).substring(2)}');
+                                          },
+                                        ),
+                                      ),
+                                      actions: [
+                                        ElevatedButton(
+                                          child: const Text('Enregistrer'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                            widget.refresh();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              icon: const Icon(Icons.color_lens),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ) : const SizedBox.shrink(),
+                        ]
+                      )
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Options supplémentaires
+                    Text(
+                      "Options supplémentaires",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 6),
+
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            title: const Text("Désactiver l'historique"),
+                            subtitle: const Text("Empêche Stend d'ajouter de nouveaux liens à l'historique de transferts"),
+                            value: box.read('disableHistory') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().micro();
+                              setState(() {
+                                box.write('disableHistory', value!);
+                                widget.refresh();
+                              });
+                            },
+                          ),
+
+                          ListTile(
+                            title: const Text("Service d'URLs courts"),
+                            subtitle: const Text("Définissez le service utilisé pour racourcir les URLs"),
+                            trailing: DropdownButton<String>(
+                              value: box.read('shortenService') ?? 'mdrr.fr',
+                              onTap: () { Haptic().micro(); },
+                              onChanged: (String? newValue) {
+                                Haptic().micro();
+                                setState(() {
+                                  box.write('shortenService', newValue!);
+                                });
+                              },
+                              items: <String>['mdrr.fr', 'ptdrr.com', 's.3vm.cl', 's.erc.hr']
+                              .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+
+                          ListTile(
+                            title: const Text("Caméra pour les QR Codes"),
+                            subtitle: const Text("Définissez la caméra qui sera utilisée pour scanner les QR Codes"),
+                            trailing: DropdownButton<String>(
+                              value: box.read('cameraFacing') ?? 'Arrière',
+                              onTap: () { Haptic().micro(); },
+                              onChanged: (String? newValue) {
+                                Haptic().micro();
+                                setState(() {
+                                  box.write('cameraFacing', newValue!);
+                                });
+                              },
+                              items: <String>['Arrière', 'Avant']
+                              .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                                );
+                              }).toList(),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+                        ]
+                      )
+                    ),
+                  ],
+                )
+              ),
+
+              const SizedBox(height: 10),
 
               // Boutons d'actions
-              const SizedBox(height: 12),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [

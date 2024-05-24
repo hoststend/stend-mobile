@@ -49,7 +49,7 @@ class _MainAppState extends State<MainApp> {
 
   Key _refreshKey = UniqueKey();
   void refresh() {
-    // mettre à jour la page par défaut
+    // Mettre à jour la page par défaut
     var defaultPage = box.read('defaultPage');
     if (defaultPage == null || defaultPage == 'Envoyer') {
        _pageController = PageController(initialPage: 0);
@@ -60,6 +60,14 @@ class _MainAppState extends State<MainApp> {
     } else if (defaultPage == 'Réglages') {
        _pageController = PageController(initialPage: 2);
       defaultPageIndex = 2;
+    }
+
+    // Déterminer la bibliothèque d'icônes par défaut
+    if (box.read('iconLib') == null) {
+      iconLib = Platform.isIOS ? 'Lucide' : 'Material';
+      box.write('iconLib', iconLib);
+    } else {
+      iconLib = box.read('iconLib');
     }
 
     setState(() {
