@@ -208,14 +208,14 @@ class _MainAppState extends State<MainApp> {
               },
               enableFeedback: false,
               label: const Text('Rafraîchir'),
-              icon: const Icon(Icons.refresh),
+              icon: Icon(iconLib == 'Lucide' ? LucideIcons.rotateCw : iconLib == 'Lucide (alt)' ? LucideIcons.rotateCw : iconLib == 'iOS' ? CupertinoIcons.refresh : Icons.refresh),
             ) : showRefreshButton ? FloatingActionButton(
               onPressed: () {
                 Haptic().micro();
                 refresh();
               },
               enableFeedback: false,
-              child: const Icon(Icons.refresh),
+              child: Icon(iconLib == 'Lucide' ? LucideIcons.rotateCw : iconLib == 'Lucide (alt)' ? LucideIcons.rotateCw : iconLib == 'iOS' ? CupertinoIcons.refresh : Icons.refresh),
             ) : null,
             floatingActionButtonLocation: MediaQuery.of(context).size.width > 600 ? FloatingActionButtonLocation.startFloat : FloatingActionButtonLocation.endFloat,
             body: SafeArea(
