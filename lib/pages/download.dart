@@ -223,7 +223,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
               actions: [
                 TextButton(
                   onPressed: () {
-                    Haptic().micro();
+                    Haptic().light();
                     Navigator.pop(context);
                   },
                   child: const Text("Continuer"),
@@ -930,7 +930,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
-                        Haptic().micro();
+                        Haptic().light();
 
                         // Lire le presse-papier
                         var data = await Clipboard.getData('text/plain');
@@ -958,7 +958,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
-                        Haptic().micro();
+                        Haptic().light();
 
                         // Ouvrir une bottom sheet pour scanner un QR Code
                         showModalBottomSheet(
@@ -1028,7 +1028,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                       trailing: IconButton(
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                         onPressed: () {
-                          Haptic().micro();
+                          Haptic().light();
                           setState(() {
                             tips.removeAt(index);
                             box.write('tips', tips);
@@ -1071,7 +1071,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                         title: Text(historic[index]["filename"], overflow: TextOverflow.ellipsis, maxLines: 3),
                         subtitle: Text("${formatDate(historic[index]["date"])} ― ${formatBytes(historic[index]["filesize"] ?? '0')}${historic[index]["filetype"] != null && historic[index]["filetype"].isNotEmpty ? " ― ${historic[index]["filetype"]}" : ""}"),
                         onLongPress: () {
-                          Haptic().micro();
+                          Haptic().light();
 
                           final screenSize = MediaQuery.of(context).size;
                           final rect = Rect.fromCenter(
@@ -1082,14 +1082,14 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                           Share.share(historic[index]["access"], sharePositionOrigin: rect);
                         },
                         onTap: () {
-                          Haptic().micro();
+                          Haptic().light();
                           urlController.text = historic[index]["access"];
                           startDownload();
                         },
                         trailing: IconButton(
                           icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                           onPressed: () {
-                            Haptic().micro();
+                            Haptic().light();
 
                             // Afficher un dialogue pour demander une confirmation
                             showAdaptiveDialog(
@@ -1101,14 +1101,14 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                                   actions: [
                                     TextButton(
                                       onPressed: () {
-                                        Haptic().micro();
+                                        Haptic().light();
                                         Navigator.pop(context);
                                       },
                                       child: const Text("Annuler"),
                                     ),
                                     TextButton(
                                       onPressed: () async {
-                                        Haptic().micro();
+                                        Haptic().light();
 
                                         // Faire une requête pour supprimer le fichier
                                         var response = await dio.delete(

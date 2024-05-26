@@ -136,7 +136,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          Haptic().micro();
+                          Haptic().light();
 
                           FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
 
@@ -158,7 +158,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          Haptic().micro();
+                          Haptic().light();
 
                           try {
                             List<XFile> files = await ImagePicker().pickMultiImage();
@@ -185,7 +185,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          Haptic().micro();
+                          Haptic().light();
 
                           try {
                             XFile? video = await ImagePicker().pickVideo(source: ImageSource.gallery);
@@ -211,7 +211,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          Haptic().micro();
+                          Haptic().light();
 
                           XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
                           if (image == null) return;
@@ -264,9 +264,9 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     child: Text(expireTime['label']),
                   );
                 }).toList(),
-                onTap: () { Haptic().micro(); },
+                onTap: () { Haptic().light(); },
                 onChanged: (int? value) {
-                  Haptic().micro();
+                  Haptic().light();
                   setState(() {
                     selectedExpireTime = value!;
                   });
@@ -296,7 +296,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   value: shortUrl, // valeur par défaut
                   contentPadding: const EdgeInsets.all(0.0),
                   onChanged: (bool value) {
-                    Haptic().micro();
+                    Haptic().light();
                     setState(() {
                       shortUrl = value;
                     });
@@ -338,7 +338,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   List historic = box.read('historic') ?? [];
 
                   // Haptic
-                  Haptic().micro();
+                  Haptic().light();
 
                   // Vérifier que l'instance est configurée
                   if (apiInstanceUrl.isEmpty || apiInstanceUrl.length < 8 || !apiInstanceUrl.startsWith('http')) {
@@ -673,14 +673,14 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                         actions: [
                           TextButton(
                             onPressed: () {
-                              Haptic().micro();
+                              Haptic().light();
                               Navigator.pop(context);
                             },
                             child: Text(Platform.isIOS ? "OK" : "Fermer")
                           ),
                           TextButton(
                             onPressed: () async {
-                              Haptic().micro();
+                              Haptic().light();
                               Navigator.pop(context);
 
                               final screenSize = MediaQuery.of(context).size;
@@ -735,7 +735,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       trailing: IconButton(
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                         onPressed: () {
-                          Haptic().micro();
+                          Haptic().light();
                           setState(() {
                             selectedFiles.removeAt(index);
                           });

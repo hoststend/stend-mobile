@@ -2,16 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
 
 class Haptic {
-  void micro() {
-    HapticFeedback.lightImpact();
-  }
-
   void light() {
-    Haptics.vibrate(HapticsType.light);
-  }
-
-  void medium() {
-    Haptics.vibrate(HapticsType.medium);
+    HapticFeedback.lightImpact();
   }
 
   void heavy() {

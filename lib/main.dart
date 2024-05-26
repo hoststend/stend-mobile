@@ -94,7 +94,7 @@ class _MainAppState extends State<MainApp> {
       _sameIndexClickedTimes++;
       if(_sameIndexClickedTimes == 2 && index == 2){
         _sameIndexClickedTimes = 0;
-        Haptic().micro();
+        Haptic().light();
         _pageController.jumpToPage(3);
         return;
       } else {
@@ -104,7 +104,7 @@ class _MainAppState extends State<MainApp> {
       _sameIndexClickedTimes = 0;
     }
 
-    Haptic().micro();
+    Haptic().light();
 
     setState(() {
       _currentIndex = index;
@@ -226,7 +226,7 @@ class _MainAppState extends State<MainApp> {
             floatingActionButton: showRefreshButton && MediaQuery.of(context).size.width > 900
             ? FloatingActionButton.extended(
               onPressed: () {
-                Haptic().micro();
+                Haptic().light();
                 refresh();
               },
               enableFeedback: false,
@@ -234,7 +234,7 @@ class _MainAppState extends State<MainApp> {
               icon: Icon(iconLib == 'Lucide' ? LucideIcons.rotateCw : iconLib == 'Lucide (alt)' ? LucideIcons.rotateCw : iconLib == 'iOS' ? CupertinoIcons.refresh : Icons.refresh),
             ) : showRefreshButton ? FloatingActionButton(
               onPressed: () {
-                Haptic().micro();
+                Haptic().light();
                 refresh();
               },
               enableFeedback: false,

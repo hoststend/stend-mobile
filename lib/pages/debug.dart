@@ -76,7 +76,6 @@ class _DebugPageState extends State<DebugPage> {
   - Après un titre : 16 pixels pour des boutons, 12 pixels pour une SwitchListTile
   */
 
-// TODO: bouton dans "actions de test" pour afficher une snackbar avec un texte personnalisé
 	@override
 	Widget build(BuildContext context) {
 		return SingleChildScrollView(
@@ -207,6 +206,32 @@ class _DebugPageState extends State<DebugPage> {
                         )
                       ],
                     ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              openFileManager(androidConfig: AndroidConfig(folderType: FolderType.download));
+                            },
+                            child: const Text("Ouvrir Fichiers"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
+                            },
+                            child: const Text("Ouvrir un lien"),
+                          )
+                        )
+                      ],
+                    ),
                     const SizedBox(height: 32),
 
                     // Retours haptiques
@@ -227,7 +252,7 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              Haptic().micro();
+                              Haptic().light();
                             },
                             child: const Text("Micro"),
                           )
@@ -238,20 +263,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              Haptic().light();
+                              Haptic().success();
                             },
-                            child: const Text("Léger"),
-                          )
-                        ),
-
-                        const SizedBox(width: 12.0),
-
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              Haptic().medium();
-                            },
-                            child: const Text("Moyen"),
+                            child: const Text("Succès"),
                           )
                         )
                       ],
@@ -261,17 +275,6 @@ class _DebugPageState extends State<DebugPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              Haptic().success();
-                            },
-                            child: const Text("Succès"),
-                          )
-                        ),
-
-                        const SizedBox(width: 12.0),
-
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
@@ -424,7 +427,7 @@ class _DebugPageState extends State<DebugPage> {
                             value: box.read('forceStore') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
-                              Haptic().micro();
+                              Haptic().light();
                               setState(() {
                                 box.write('forceStore', value!);
                               });

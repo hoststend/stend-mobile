@@ -111,7 +111,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     }
 
     // Afficher les variables
-    Haptic().micro();
+    Haptic().light();
     await showAdaptiveDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -132,7 +132,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
         actions: [
           TextButton(
             onPressed: () {
-              Haptic().micro();
+              Haptic().light();
               Navigator.of(context).pop();
             },
             child: Text(Platform.isIOS ? "OK" : "Fermer"),
@@ -193,7 +193,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
         actions: [
           TextButton(
             onPressed: () {
-              Haptic().micro();
+              Haptic().light();
               Navigator.of(context).pop();
             },
             child: Text(Platform.isIOS ? "OK" : "Fermer"),
@@ -204,7 +204,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
   }
 
   void clearHistory() {
-    Haptic().micro();
+    Haptic().light();
     box.remove('historic');
     showSnackBar(context, "L'historique a été effacé");
   }
@@ -269,7 +269,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         children: [
                           FilledButton(
                             onPressed: () async {
-                              Haptic().micro();
+                              Haptic().light();
                               final url = Uri.parse('https://github.com/johan-perso/stend-mobile/releases/latest');
                               launchUrl(url, mode: Platform.isIOS ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
                             },
@@ -305,7 +305,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         children: [
                           OutlinedButton(
                             onPressed: () {
-                              Haptic().micro();
+                              Haptic().light();
                               showAdaptiveDialog(
                                 context: context,
                                 builder: (context) => AlertDialog.adaptive(
@@ -314,14 +314,14 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   actions: [
                                     TextButton(
                                       onPressed: () {
-                                        Haptic().micro();
+                                        Haptic().light();
                                         Navigator.of(context).pop();
                                       },
                                       child: Text(Platform.isIOS ? "OK" : "Fermer"),
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        Haptic().micro();
+                                        Haptic().light();
                                         Navigator.of(context).pop();
 
                                         final Uri url = Uri.parse('https://stend-docs.johanstick.fr');
@@ -340,7 +340,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
                           FilledButton(
                             onPressed: () async {
-                              Haptic().micro();
+                              Haptic().light();
                               String apiUrlFromWeb = '';
 
                               // On récupère l'URL du client web de l'instance via un dialogue
@@ -611,7 +611,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             value: box.read('saveMediasInGallery') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
-                              Haptic().micro();
+                              Haptic().light();
                               setState(() {
                                 box.write('saveMediasInGallery', value!);
                               });
@@ -624,7 +624,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             value: box.read('copyUrlAfterSend') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
-                              Haptic().micro();
+                              Haptic().light();
                               setState(() {
                                 box.write('copyUrlAfterSend', value!);
                               });
@@ -637,7 +637,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             value: box.read('downloadInSubFolder') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
-                              Haptic().micro();
+                              Haptic().light();
                               setState(() {
                                 box.write('downloadInSubFolder', value!);
                               });
@@ -674,7 +674,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             value: box.read('shortenUrl') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
-                              Haptic().micro();
+                              Haptic().light();
                               setState(() {
                                 box.write('shortenUrl', value!);
                                 widget.showRefreshButton(true);
@@ -689,9 +689,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               borderRadius: BorderRadius.circular(10.0),
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('defaultExpirationTime') ?? '+ court',
-                              onTap: () { Haptic().micro(); },
+                              onTap: () { Haptic().light(); },
                               onChanged: (String? newValue) {
-                                Haptic().micro();
+                                Haptic().light();
                                 setState(() {
                                   box.write('defaultExpirationTime', newValue!);
                                   widget.showRefreshButton(true);
@@ -715,9 +715,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               borderRadius: BorderRadius.circular(10.0),
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('defaultPage') ?? 'Envoyer',
-                              onTap: () { Haptic().micro(); },
+                              onTap: () { Haptic().light(); },
                               onChanged: (String? newValue) {
-                                Haptic().micro();
+                                Haptic().light();
                                 setState(() {
                                   box.write('defaultPage', newValue!);
                                 });
@@ -764,9 +764,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               borderRadius: BorderRadius.circular(10.0),
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('theme') ?? 'Système',
-                              onTap: () { Haptic().micro(); },
+                              onTap: () { Haptic().light(); },
                               onChanged: (String? newValue) {
-                                Haptic().micro();
+                                Haptic().light();
                                 setState(() {
                                   box.write('theme', newValue!);
                                   widget.updateState();
@@ -790,9 +790,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               borderRadius: BorderRadius.circular(10.0),
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('iconLib') ?? 'Material',
-                              onTap: () { Haptic().micro(); },
+                              onTap: () { Haptic().light(); },
                               onChanged: (String? newValue) {
-                                Haptic().micro();
+                                Haptic().light();
                                 setState(() {
                                   box.write('iconLib', newValue!);
                                   widget.showRefreshButton(true);
@@ -815,7 +815,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             trailing: IconButton(
                               onPressed: () async {
                                 debugPrint(box.read('appColor').toString());
-                                Haptic().micro();
+                                Haptic().light();
                                 await showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
@@ -856,7 +856,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             value: box.read('useMaterialYou') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
-                              Haptic().micro();
+                              Haptic().light();
                               setState(() {
                                 box.write('useMaterialYou', value!);
                                 widget.showRefreshButton(true);
@@ -894,7 +894,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             value: box.read('disableHistory') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
-                              Haptic().micro();
+                              Haptic().light();
                               setState(() {
                                 box.write('disableHistory', value!);
                                 widget.showRefreshButton(true);
@@ -909,9 +909,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               borderRadius: BorderRadius.circular(10.0),
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('shortenService') ?? 'mdrr.fr',
-                              onTap: () { Haptic().micro(); },
+                              onTap: () { Haptic().light(); },
                               onChanged: (String? newValue) {
-                                Haptic().micro();
+                                Haptic().light();
                                 setState(() {
                                   box.write('shortenService', newValue!);
                                 });
@@ -934,9 +934,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               borderRadius: BorderRadius.circular(10.0),
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('cameraFacing') ?? 'Arrière',
-                              onTap: () { Haptic().micro(); },
+                              onTap: () { Haptic().light(); },
                               onChanged: (String? newValue) {
-                                Haptic().micro();
+                                Haptic().light();
                                 setState(() {
                                   box.write('cameraFacing', newValue!);
                                 });
@@ -1011,7 +1011,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               actions: [
                                 TextButton(
                                   onPressed: () {
-                                    Haptic().micro();
+                                    Haptic().light();
                                     Navigator.of(context).pop();
                                   },
                                   child: const Text("Annuler"),
@@ -1082,7 +1082,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         children: [
                           IconButton(
                             onPressed: () {
-                              Haptic().micro();
+                              Haptic().light();
                               launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.globe),
@@ -1090,7 +1090,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ),
                           IconButton(
                             onPressed: () {
-                              Haptic().micro();
+                              Haptic().light();
                               launchUrl(Uri.parse('https://github.com/johan-perso/stend-mobile'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.github),
@@ -1098,7 +1098,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ),
                           IconButton(
                             onPressed: () {
-                              Haptic().micro();
+                              Haptic().light();
                               launchUrl(Uri.parse('https://twitter.com/johan_stickman'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.twitter),
@@ -1106,7 +1106,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ),
                           IconButton(
                             onPressed: () {
-                              Haptic().micro();
+                              Haptic().light();
                               launchUrl(Uri.parse('https://johanstick.fr/#donate'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.circleDollarSign),
