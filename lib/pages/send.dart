@@ -51,7 +51,9 @@ class UploadDialogState extends State<UploadDialog> {
 }
 
 class SendPage extends StatefulWidget {
-  const SendPage({Key? key}) : super(key: key);
+  final bool useCupertino;
+
+  const SendPage({Key? key, required this.useCupertino}) : super(key: key);
 
   @override
   State<SendPage> createState() => _SendPageState();
@@ -246,6 +248,8 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
               // Sélection de la durée de partage
               DropdownButtonFormField<int>(
+                borderRadius: BorderRadius.circular(10.0),
+                dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Temps avant expiration",
@@ -287,7 +291,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
               // Checkbox pour raccourcir l'URL finale
               Align(
                 alignment: Alignment.centerLeft,
-                child: SwitchListTile(
+                child: SwitchListTile.adaptive(
                   title: const Text("Raccourcir l'URL finale"),
                   value: shortUrl, // valeur par défaut
                   contentPadding: const EdgeInsets.all(0.0),

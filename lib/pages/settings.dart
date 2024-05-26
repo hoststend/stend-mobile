@@ -22,8 +22,10 @@ Color hexToColor(String code) {
 class SettingsPage extends StatefulWidget {
   final Function refresh;
   final Function showRefreshButton;
+  final Function updateState;
+  final bool useCupertino;
 
-  const SettingsPage({Key? key, required this.refresh, required this.showRefreshButton}) : super(key: key);
+  const SettingsPage({Key? key, required this.refresh, required this.showRefreshButton, required this.updateState, required this.useCupertino}) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -603,7 +605,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile(
+                          SwitchListTile.adaptive(
                             title: const Text("Enregistrer dans la galerie"),
                             subtitle: const Text("Les médias téléchargés seront enregistrés dans la galerie"),
                             value: box.read('saveMediasInGallery') ?? false,
@@ -616,7 +618,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
-                          SwitchListTile(
+                          SwitchListTile.adaptive(
                             title: const Text("Copier l'URL après un envoi"),
                             subtitle: const Text("Copie dans le presser-papier le lien d'un transfert lorsqu'il se termine"),
                             value: box.read('copyUrlAfterSend') ?? false,
@@ -629,7 +631,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
-                          Platform.isAndroid ? SwitchListTile(
+                          Platform.isAndroid ? SwitchListTile.adaptive(
                             title: const Text("Télécharger dans un dossier"),
                             subtitle: const Text("Les fichiers seront téléchargés dans un sous-dossier nommé \"Stend\""),
                             value: box.read('downloadInSubFolder') ?? false,
@@ -666,7 +668,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile(
+                          SwitchListTile.adaptive(
                             title: const Text("Raccourcir l'URL par défaut"),
                             subtitle: const Text("L'option pour raccourcir le lien d'un transfert sera coché au lancement"),
                             value: box.read('shortenUrl') ?? false,
@@ -684,6 +686,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             title: const Text("Durée avant expiration"),
                             subtitle: const Text("Définissez la durée avant expiration par défaut d'un fichier"),
                             trailing: DropdownButton<String>(
+                              borderRadius: BorderRadius.circular(10.0),
+                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('defaultExpirationTime') ?? '+ court',
                               onTap: () { Haptic().micro(); },
                               onChanged: (String? newValue) {
@@ -696,8 +700,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               items: <String>['+ court', '+ long']
                               .map<DropdownMenuItem<String>>((String value) {
                                 return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
+                                  value: value,
+                                  child: Text(value),
                                 );
                               }).toList(),
                             ),
@@ -708,6 +712,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             title: const Text("Page à l'ouverture"),
                             subtitle: const Text("Définissez la page qui s'ouvrira au démarrage de l'appli"),
                             trailing: DropdownButton<String>(
+                              borderRadius: BorderRadius.circular(10.0),
+                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('defaultPage') ?? 'Envoyer',
                               onTap: () { Haptic().micro(); },
                               onChanged: (String? newValue) {
@@ -719,8 +725,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               items: <String>['Envoyer', 'Télécharger', 'Réglages']
                               .map<DropdownMenuItem<String>>((String value) {
                                 return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
+                                  value: value,
+                                  child: Text(value),
                                 );
                               }).toList(),
                             ),
@@ -755,20 +761,22 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             title: const Text("Thème"),
                             subtitle: const Text("Choisissez le thème de l'appli"),
                             trailing: DropdownButton<String>(
+                              borderRadius: BorderRadius.circular(10.0),
+                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('theme') ?? 'Système',
                               onTap: () { Haptic().micro(); },
                               onChanged: (String? newValue) {
                                 Haptic().micro();
                                 setState(() {
                                   box.write('theme', newValue!);
-                                  widget.showRefreshButton(true);
+                                  widget.updateState();
                                 });
                               },
                               items: <String>['Système', 'Clair', 'Sombre']
                               .map<DropdownMenuItem<String>>((String value) {
                                 return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
+                                  value: value,
+                                  child: Text(value),
                                 );
                               }).toList(),
                             ),
@@ -779,6 +787,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             title: const Text("Icônes"),
                             subtitle: const Text("Choisissez le style d'icône utilisé"),
                             trailing: DropdownButton<String>(
+                              borderRadius: BorderRadius.circular(10.0),
+                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('iconLib') ?? 'Material',
                               onTap: () { Haptic().micro(); },
                               onChanged: (String? newValue) {
@@ -791,8 +801,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               items: <String>['Material', 'iOS', 'Lucide', 'Lucide (alt)']
                               .map<DropdownMenuItem<String>>((String value) {
                                 return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
+                                  value: value,
+                                  child: Text(value),
                                 );
                               }).toList(),
                             ),
@@ -827,7 +837,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                           child: const Text('Enregistrer'),
                                           onPressed: () {
                                             Navigator.of(context).pop();
-                                            widget.showRefreshButton(true);
+                                            widget.updateState();
                                           },
                                         ),
                                       ],
@@ -840,9 +850,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ) : const SizedBox.shrink(),
 
-                          Platform.isIOS ? SwitchListTile(
+                          Platform.isIOS ? SwitchListTile.adaptive(
                             title: const Text("Utiliser Material You"),
-                            subtitle: const Text("L'appli sera affichée avec des composants de design Material"),
+                            subtitle: const Text("L'interface changera pour utiliser des composants de design Material 3"),
                             value: box.read('useMaterialYou') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
@@ -878,7 +888,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile(
+                          SwitchListTile.adaptive(
                             title: const Text("Désactiver l'historique"),
                             subtitle: const Text("Empêche Stend d'ajouter de nouveaux liens à l'historique de transferts"),
                             value: box.read('disableHistory') ?? false,
@@ -896,6 +906,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             title: const Text("Service d'URLs courts"),
                             subtitle: const Text("Définissez le service utilisé pour racourcir les URLs"),
                             trailing: DropdownButton<String>(
+                              borderRadius: BorderRadius.circular(10.0),
+                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('shortenService') ?? 'mdrr.fr',
                               onTap: () { Haptic().micro(); },
                               onChanged: (String? newValue) {
@@ -907,8 +919,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               items: <String>['mdrr.fr', 'ptdrr.com', 's.3vm.cl', 's.erc.hr']
                               .map<DropdownMenuItem<String>>((String value) {
                                 return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
+                                  value: value,
+                                  child: Text(value),
                                 );
                               }).toList(),
                             ),
@@ -919,6 +931,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             title: const Text("Caméra pour les QR Codes"),
                             subtitle: const Text("Définissez la caméra qui sera utilisée pour scanner les QR Codes"),
                             trailing: DropdownButton<String>(
+                              borderRadius: BorderRadius.circular(10.0),
+                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('cameraFacing') ?? 'Arrière',
                               onTap: () { Haptic().micro(); },
                               onChanged: (String? newValue) {
@@ -930,8 +944,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               items: <String>['Arrière', 'Avant']
                               .map<DropdownMenuItem<String>>((String value) {
                                 return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
+                                  value: value,
+                                  child: Text(value),
                                 );
                               }).toList(),
                             ),

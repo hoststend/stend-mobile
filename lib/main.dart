@@ -144,6 +144,8 @@ class _MainAppState extends State<MainApp> {
     // Déterminer si on utilise Cupertino ou Material
     if (box.read('useMaterialYou') == null && Platform.isIOS) {
       useCupertino = true;
+    } else if (box.read('useMaterialYou') == null && !Platform.isIOS) {
+      useCupertino = false;
     } else if (box.read('useMaterialYou') == true) {
       useCupertino = false;
     } else {
@@ -205,6 +207,7 @@ class _MainAppState extends State<MainApp> {
             splashFactory: Platform.isIOS ? NoSplash.splashFactory : null,
             splashColor: Platform.isIOS ? Colors.transparent : null,
             highlightColor: Platform.isIOS ? Colors.transparent : null,
+            platform: !useCupertino ? TargetPlatform.android : null,
           ),
           darkTheme: ThemeData(
             colorScheme: darkColorScheme,
@@ -217,6 +220,7 @@ class _MainAppState extends State<MainApp> {
             cupertinoOverrideTheme: const CupertinoThemeData(
               textTheme: CupertinoTextThemeData(),
             ),
+            platform: !useCupertino ? TargetPlatform.android : null,
           ),
           home: Scaffold(
             floatingActionButton: showRefreshButton && MediaQuery.of(context).size.width > 900
@@ -249,8 +253,8 @@ class _MainAppState extends State<MainApp> {
                     indicatorColor: useCupertino ? Colors.transparent : null,
                     selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
                     selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
-                    unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey.shade400) : null,
-                    unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey.shade400) : null,
+                    unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey[400]) : null,
+                    unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[400]) : null,
                     leading: MediaQuery.of(context).size.width > 900 ? SizedBox(
                       width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
                       child: const Padding(
@@ -281,10 +285,10 @@ class _MainAppState extends State<MainApp> {
                         physics: const NeverScrollableScrollPhysics(),
                         controller: _pageController,
                         children: [
-                          const SendPage(),
-                          const DownloadPage(),
-                          SettingsPage(refresh: refresh, showRefreshButton: (bool value) { setState(() { showRefreshButton = value; }); }),
-                          DebugPage(refresh: refresh),
+                          SendPage(useCupertino: useCupertino),
+                          DownloadPage(useCupertino: useCupertino),
+                          SettingsPage(refresh: refresh, showRefreshButton: (bool value) { setState(() { showRefreshButton = value; }); }, updateState: () { setState(() {}); }, useCupertino: useCupertino),
+                          DebugPage(refresh: refresh, useCupertino: useCupertino),
                         ]
                       ),
                     ),

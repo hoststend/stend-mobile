@@ -17,8 +17,9 @@ import 'package:flutter_highlight/themes/gruvbox-dark.dart';
 
 class DebugPage extends StatefulWidget {
   final Function refresh;
+  final bool useCupertino;
 
-  const DebugPage({Key? key, required this.refresh}) : super(key: key);
+  const DebugPage({Key? key, required this.refresh, required this.useCupertino}) : super(key: key);
 
   @override
   State<DebugPage> createState() => _DebugPageState();
@@ -417,7 +418,7 @@ class _DebugPageState extends State<DebugPage> {
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile(
+                          SwitchListTile.adaptive(
                             title: const Text("Forcer la version libre"),
                             subtitle: const Text("Réactive les fonctionnalités désactivées dans la version publiée sur les stores"),
                             value: box.read('forceStore') ?? false,

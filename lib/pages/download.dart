@@ -59,7 +59,9 @@ class DownloadDialogState extends State<DownloadDialog> {
 }
 
 class DownloadPage extends StatefulWidget {
-  const DownloadPage({Key? key}) : super(key: key);
+  final bool useCupertino;
+
+  const DownloadPage({Key? key, required this.useCupertino}) : super(key: key);
 
   @override
   State<DownloadPage> createState() => _DownloadPageState();
