@@ -44,6 +44,7 @@ class _MainAppState extends State<MainApp> {
   int _sameIndexClickedTimes = 0;
 
   late String iconLib;
+  bool useCupertino = false;
 
   late PageController _pageController;
   late int defaultPageIndex;
@@ -69,6 +70,15 @@ class _MainAppState extends State<MainApp> {
       box.write('iconLib', iconLib);
     } else {
       iconLib = box.read('iconLib');
+    }
+
+    // Déterminer si on utilise Cupertino ou Material
+    if (box.read('useMaterialYou') == null && Platform.isIOS) {
+      useCupertino = true;
+    } else if (box.read('useMaterialYou') == true) {
+      useCupertino = false;
+    } else {
+      useCupertino = true;
     }
 
     setState(() {
@@ -129,6 +139,15 @@ class _MainAppState extends State<MainApp> {
       box.write('iconLib', iconLib);
     } else {
       iconLib = box.read('iconLib');
+    }
+
+    // Déterminer si on utilise Cupertino ou Material
+    if (box.read('useMaterialYou') == null && Platform.isIOS) {
+      useCupertino = true;
+    } else if (box.read('useMaterialYou') == true) {
+      useCupertino = false;
+    } else {
+      useCupertino = true;
     }
 
     notifInitialize();
@@ -227,11 +246,11 @@ class _MainAppState extends State<MainApp> {
                     selectedIndex: _currentIndex,
                     extended: MediaQuery.of(context).size.width > 900,
                     onDestinationSelected: destinationSelected,
-                    indicatorColor: Platform.isIOS ? Colors.transparent : null,
-                    selectedIconTheme: Platform.isIOS ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
-                    selectedLabelTextStyle: Platform.isIOS ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
-                    unselectedIconTheme: Platform.isIOS ? IconThemeData(color: Colors.grey.shade400) : null,
-                    unselectedLabelTextStyle: Platform.isIOS ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey.shade400) : null,
+                    indicatorColor: useCupertino ? Colors.transparent : null,
+                    selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
+                    selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
+                    unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey.shade400) : null,
+                    unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey.shade400) : null,
                     leading: MediaQuery.of(context).size.width > 900 ? SizedBox(
                       width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
                       child: const Padding(
@@ -273,7 +292,7 @@ class _MainAppState extends State<MainApp> {
                 ],
               ),
             ),
-            bottomNavigationBar: MediaQuery.of(context).size.width > 600 ? null : Platform.isIOS
+            bottomNavigationBar: MediaQuery.of(context).size.width > 600 ? null : useCupertino
             ? CupertinoTabBar(
               currentIndex: _currentIndex,
               onTap: destinationSelected,
@@ -307,7 +326,6 @@ class _MainAppState extends State<MainApp> {
             : NavigationBar(
               selectedIndex: _currentIndex,
               onDestinationSelected: destinationSelected,
-              indicatorColor: Platform.isIOS ? Colors.transparent : null,
               destinations: [
                 NavigationDestination(
                   icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),

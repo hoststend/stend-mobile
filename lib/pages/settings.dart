@@ -839,6 +839,20 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             ),
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ) : const SizedBox.shrink(),
+
+                          Platform.isIOS ? SwitchListTile(
+                            title: const Text("Utiliser Material You"),
+                            subtitle: const Text("L'appli sera affichée avec des composants de design Material"),
+                            value: box.read('useMaterialYou') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().micro();
+                              setState(() {
+                                box.write('useMaterialYou', value!);
+                                widget.showRefreshButton(true);
+                              });
+                            },
+                          ) : const SizedBox.shrink(),
                         ]
                       )
                     ),
