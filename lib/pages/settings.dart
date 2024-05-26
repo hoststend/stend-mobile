@@ -110,38 +110,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
       }
     }
 
-    // Afficher les variables
-    Haptic().light();
-    await showAdaptiveDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Variables enregistrées"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("URL du client WEB :\n▶️ ${webInstanceUrl ?? "Non disponible"}"),
-              Text("\nURL de l'API :\n▶️ ${apiInstanceUrl ?? "Non configuré"}"),
-              Text("\nMot de passe requis par l'API :\n▶️ ${requirePassword == null ? "Non disponible" : requirePassword ? "Oui" : "Non"}"),
-              Text("\nMot de passe de l'API :\n▶️ ${apiInstancePassword != null ? "Présent" : "Non disponible"}"),
-              Text("\nDurées d'expiration recommandées :\n▶️ ${expireTimes.isEmpty ? 'Non disponible' : expireTimes.join("\n▶️ ")}"),
-            ],
-          )
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Haptic().light();
-              Navigator.of(context).pop();
-            },
-            child: Text(Platform.isIOS ? "OK" : "Fermer"),
-          )
-        ],
-      ),
-    );
-
     // Afficher une snackbar pour informer l'utilisateur
+    Haptic().light();
     if (!mounted) return;
     showSnackBar(context, "Début de la vérification de l'instance...", icon: "info", useCupertino: widget.useCupertino);
 
@@ -180,14 +150,13 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     if (!mounted) return;
     await showAdaptiveDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => AlertDialog.adaptive(
         title: const Text("État de l'instance"), 
         content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: widget.useCupertino ? CrossAxisAlignment.center : CrossAxisAlignment.start,
           children: [
-            Text("Client WEB :\n▶️ ${webInstanceUrl != null ? "${webResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${webResponseCode == 0 ? 'impossible à déterminer' : webResponseCode})" : "Non configuré"}"),
-            Text("\nAPI :\n▶️ ${apiInstanceUrl != null ? "${apiResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${apiResponseCode == 0 ? 'impossible à déterminer' : apiResponseCode})" : "Non configuré"}"),
+            Text("Client WEB :${widget.useCupertino ? ' ' : '\n'}${webInstanceUrl != null ? "${webResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${webResponseCode == 0 ? 'impossible à déterminer' : webResponseCode})" : "Non configuré"}"),
+            Text("\nAPI :${widget.useCupertino ? ' ' : '\n'}${apiInstanceUrl != null ? "${apiResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${apiResponseCode == 0 ? 'impossible à déterminer' : apiResponseCode})" : "Non configuré"}"),
           ],
         ),
         actions: [
@@ -196,7 +165,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
               Haptic().light();
               Navigator.of(context).pop();
             },
-            child: Text(Platform.isIOS ? "OK" : "Fermer"),
+            child: Text(widget.useCupertino ? "OK" : "Fermer"),
           )
         ],
       )
@@ -293,7 +262,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
                       child: ListTile(
                         title: Text("Stend n'est pas encore configuré"),
-                        subtitle: Text("Pour commencer à transférer vers Stend, vous aurez besoin de vous authentifier à une instance.\n\nUne instance est un serveur sur lequel vous enverrez vos fichiers. Celui-ci aura un accès aux données que vous lui envoyez."),
+                        subtitle: Text("Pour commencer à transférer vers Stend, vous aurez besoin de vous connecter à une instance.\n\nUne instance est un serveur sur lequel vous enverrez vos fichiers. Celui-ci aura un accès aux données que vous lui envoyez."),
                       )
                     ),
 
@@ -310,14 +279,14 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 context: context,
                                 builder: (context) => AlertDialog.adaptive(
                                   title: const Text("Configuration de Stend"),
-                                  content: Text("Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\n${Platform.isIOS ? '' : 'Pour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation. '}Une instance de démonstration est disponible ${Platform.isIOS ? 'sur la documentation' : 'sur celle-ci'}."),
+                                  content: Text("Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\n${widget.useCupertino ? '' : 'Pour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation. '}Une instance de démonstration est disponible ${widget.useCupertino ? 'sur la documentation' : 'sur celle-ci'}."),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
                                         Haptic().light();
                                         Navigator.of(context).pop();
                                       },
-                                      child: Text(Platform.isIOS ? "OK" : "Fermer"),
+                                      child: Text(widget.useCupertino ? "OK" : "Fermer"),
                                     ),
                                     TextButton(
                                       onPressed: () {
@@ -506,7 +475,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 final password = await showTextInputDialog(
                                   context: context,
                                   title: "Mot de passe",
-                                  message: "Un mot de passe est nécessaire pour se connecter à cette API.",
+                                  message: "Un mot de passe est nécessaire pour se authentifier à cette API.",
                                   okLabel: 'Valider',
                                   cancelLabel: 'Annuler',
                                   textFields: const [
@@ -1010,7 +979,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             context: context,
                             builder: (context) => AlertDialog.adaptive(
                               title: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages"),
-                              content: Text("Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Cette action est irréversible."}"),
+                              content: Text("Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Tous les réglages seront effacés."}"),
                               actions: [
                                 TextButton(
                                   onPressed: () {
