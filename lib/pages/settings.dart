@@ -143,7 +143,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
     // Afficher une snackbar pour informer l'utilisateur
     if (!mounted) return;
-    showSnackBar(context, "Début de la vérification de l'instance...");
+    showSnackBar(context, "Début de la vérification de l'instance...", icon: "info", useCupertino: widget.useCupertino);
 
     // Vérifier si l'API retourne HTTP 200
     var apiResponseCode = 0;
@@ -206,7 +206,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
   void clearHistory() {
     Haptic().light();
     box.remove('historic');
-    showSnackBar(context, "L'historique a été effacé");
+    showSnackBar(context, "L'historique a été effacé", icon: "success", useCupertino: widget.useCupertino);
   }
 
   @override
@@ -378,7 +378,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 }
 
                                 if (!checkURL(webUrl.single)) {
-                                  showSnackBar(context, "L'URL entrée n'est pas valide");
+                                  showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
                                   Haptic().warning();
                                   return;
                                 }
@@ -387,7 +387,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
                                 // Vérifier que l'URL soit valide
                                 if (!urlParsed.isAbsolute) {
-                                  showSnackBar(context, "L'URL entrée n'est pas valide");
+                                  showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
                                   Haptic().warning();
                                   return;
                                 }
@@ -397,7 +397,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   final response = await http.get(urlParsed);
                                   if (response.statusCode != 200) { // Si on a pas accès à l'URL, on dit que ça marche pas
                                     if (!context.mounted) return;
-                                    showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
+                                    showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
                                     Haptic().error();
                                     return;
                                   } else { // Si on y a accès, on essaye de parser l'URL de l'API
@@ -410,7 +410,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 } catch (e) {
                                   debugPrint(e.toString());
                                   if (!context.mounted) return;
-                                  showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
+                                  showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
                                   Haptic().error();
                                   return;
                                 }
@@ -440,7 +440,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               // On vérifie qu'on a entré une URL d'API
                               if (!context.mounted) return;
                               if (apiUrl == null || apiUrl.toString().length < 2) {
-                                showSnackBar(context, "Une URL d'API est nécessaire pour continuer");
+                                showSnackBar(context, "Une URL d'API est nécessaire pour continuer", icon: "warning", useCupertino: widget.useCupertino);
                                 Haptic().warning();
                                 return;
                               }
@@ -459,7 +459,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
                               // On vérifie que l'URL de l'API soit valide
                               if (!checkURL(apiUrlStringInstance)) {
-                                showSnackBar(context, "L'URL de l'API semble invalide");
+                                showSnackBar(context, "L'URL de l'API semble invalide", icon: "warning", useCupertino: widget.useCupertino);
                                 Haptic().warning();
                                 return;
                               }
@@ -469,7 +469,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               // Vérifier que l'URL soit valide
                               if (!context.mounted) return;
                               if (!url.isAbsolute) {
-                                showSnackBar(context, "L'URL entrée n'est pas valide");
+                                showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
                                 Haptic().warning();
                                 return;
                               }
@@ -480,7 +480,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 final response = await http.get(url);
                                 if (response.statusCode != 200) {
                                   if (!context.mounted) return;
-                                  showSnackBar(context, "La requête n'a pas abouti. Vérifier l'URL");
+                                  showSnackBar(context, "La requête n'a pas abouti. Vérifier l'URL", icon: "error", useCupertino: widget.useCupertino);
                                   Haptic().error();
                                   return;
                                 }
@@ -494,7 +494,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 box.write('apiInstanceUrl', apiUrlString);
                               } catch (e) {
                                 if (!context.mounted) return;
-                                showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée");
+                                showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
                                 debugPrint(e.toString());
                                 Haptic().error();
                                 return;
@@ -538,15 +538,18 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                       box.write('apiInstancePassword', passwordString);
                                     } else {
                                       box.remove('apiInstanceUrl');
-                                      showSnackBar(context, jsonData['message']);
+                                      Haptic().error();
+                                      showSnackBar(context, jsonData['message'], icon: "error", useCupertino: widget.useCupertino);
                                     }
                                   } catch (e) {
                                     box.remove('apiInstanceUrl');
-                                    showSnackBar(context, jsonData['message']);
+                                    Haptic().error();
+                                    showSnackBar(context, jsonData['message'], icon: "error", useCupertino: widget.useCupertino);
                                   }
                                 } else {
                                   if (!context.mounted) return;
-                                  showSnackBar(context, "La configuration de l'API a été annulée");
+                                  Haptic().warning();
+                                  showSnackBar(context, "La configuration de l'API a été annulée", icon: "warning", useCupertino: widget.useCupertino);
                                   return;
                                 }
                               }
@@ -556,7 +559,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               if (box.read('apiInstanceUrl') != null) {
                                 if (!context.mounted) return;
                                 Haptic().success();
-                                showSnackBar(context, "Vous êtes maintenant connecté à votre instance");
+                                showSnackBar(context, "Vous êtes maintenant connecté à votre instance", icon: "success", useCupertino: widget.useCupertino);
                                 setState(() {
                                   _isConnected = true;
                                 });
@@ -1031,14 +1034,14 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                     } catch (e) {
                                       debugPrint(e.toString());
                                       if (!context.mounted) return;
-                                      showSnackBar(context, "Impossible d'effacer le cache");
+                                      showSnackBar(context, "Impossible d'effacer le cache", icon: "error", useCupertino: widget.useCupertino);
                                       Haptic().error();
                                     }
 
                                     // Informer l'utilisateur
                                     if (!context.mounted) return;
                                     Haptic().success();
-                                    showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées");
+                                    showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées", icon: "success", useCupertino: widget.useCupertino);
 
                                     // Recharger la page
                                     widget.refresh();

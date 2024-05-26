@@ -153,7 +153,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     // Si l'utilisateur n'a rien entré, on arrête là
     if (downloadKey.isEmpty) {
       Haptic().warning();
-      showSnackBar(context, "Veuillez entrer un lien ou une clé de partage");
+      showSnackBar(context, "Veuillez entrer un lien ou une clé de partage", icon: "warning", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -200,7 +200,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     else if (downloadKey.startsWith('https://bilibili.com/') || downloadKey.startsWith('https://bilibili.tv/') || downloadKey.startsWith('https://youtube.com/watch?v=') || downloadKey.startsWith('https://www.youtube.com/watch?v=') || downloadKey.startsWith('https://m.youtube.com/watch?v=') || downloadKey.startsWith('https://youtu.be/') || downloadKey.startsWith('https://youtube.com/embed/') || downloadKey.startsWith('https://youtube.com/shorts/') || downloadKey.startsWith('https://youtube.com/watch/') || downloadKey.startsWith('https://vimeo.com/') || downloadKey.startsWith('https://soundcloud.com/') || downloadKey.startsWith('https://on.soundcloud.com/') || downloadKey.startsWith('https://m.soundcloud.com/') || downloadKey.startsWith('https://twitch.tv/') || downloadKey.startsWith('https://clips.twitch.tv/') || downloadKey.startsWith('https://www.twitch.tv/') || downloadKey.startsWith('https://dailymotion.com/video/') || downloadKey.startsWith('https://www.dailymotion.com/video/') || downloadKey.startsWith('https://dai.ly/')) {
       if(storeRelease) { // sur les stores, on permet pas de télécharger depuis ces services
         Haptic().warning();
-        showSnackBar(context, "Le store de votre appareil refuse les médias de ce service");
+        showSnackBar(context, "Le store de votre appareil n'autorise pas le téléchargement depuis ce service", icon: "warning", useCupertino: widget.useCupertino);
         return;
       }
       service = 'cobalt';
@@ -307,7 +307,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
           if (!mounted) return;
           Navigator.pop(context);
           Haptic().error();
-          showSnackBar(context, e.toString().contains("was manually cancelled by the user") ? "La requête n'a pas pu être validé" : "Le lien entré n'est pas accessible, vérifier votre connexion");
+          showSnackBar(context, e.toString().contains("was manually cancelled by the user") ? "La requête n'a pas pu être validé" : "Le lien entré n'est pas accessible, vérifier votre connexion", icon: "error", useCupertino: widget.useCupertino);
           return;
         }
 
@@ -321,14 +321,14 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
             debugPrint(e.toString());
             Navigator.pop(context);
             Haptic().error();
-            showSnackBar(context, "Nous n'avons pas pu obtenir les infos sur le serveur");
+            showSnackBar(context, "Nous n'avons pas pu obtenir les infos sur le serveur", icon: "error", useCupertino: widget.useCupertino);
             return;
           }
         }
         else {
           Navigator.pop(context);
           Haptic().error();
-          showSnackBar(context, "La page ne contient pas les infos sur le serveur");
+          showSnackBar(context, "La page ne contient pas les infos sur le serveur", icon: "error", useCupertino: widget.useCupertino);
           return;
         }
       }
@@ -340,7 +340,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
           if (!mounted) return;
           Navigator.pop(context);
           Haptic().warning();
-          showSnackBar(context, "L'API n'a pas été configurée depuis les réglages");
+          showSnackBar(context, "L'API n'a pas été configurée depuis les réglages", icon: "warning", useCupertino: widget.useCupertino);
           return;
         }
       }
@@ -386,7 +386,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       else {
         Navigator.pop(context);
         Haptic().error();
-        showSnackBar(context, "Nous n'avons pas pu obtenir l'URL après redirection");
+        showSnackBar(context, "Nous n'avons pas pu obtenir l'URL après redirection", icon: "error", useCupertino: widget.useCupertino);
         return;
       }
     }
@@ -400,7 +400,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (!mounted) return;
         Navigator.pop(context);
         Haptic().error();
-        showSnackBar(context, "Impossible de récupérer les clés de téléchargement");
+        showSnackBar(context, "Impossible de récupérer les clés de téléchargement", icon: "error", useCupertino: widget.useCupertino);
         return;
       }
     }
@@ -415,7 +415,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (!mounted) return;
         Navigator.pop(context);
         Haptic().error();
-        showSnackBar(context, token.substring(4));
+        showSnackBar(context, token.substring(4), icon: "error", useCupertino: widget.useCupertino);
         return;
       }
     }
@@ -428,7 +428,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (!mounted) return;
         Navigator.pop(context);
         Haptic().error();
-        showSnackBar(context, "Impossible de récupérer la clé de téléchargement");
+        showSnackBar(context, "Impossible de récupérer la clé de téléchargement", icon: "error", useCupertino: widget.useCupertino);
         return;
       }
     }
@@ -440,7 +440,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (!mounted) return;
       Navigator.pop(context);
       Haptic().error();
-      showSnackBar(context, "Aucune clé de téléchargement n'est spécifiée");
+      showSnackBar(context, "Aucune clé de téléchargement n'est spécifiée", icon: "error", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -472,7 +472,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
           Navigator.pop(context);
           debugPrint(e.toString());
           Haptic().error();
-          showSnackBar(context, "Impossible de récupérer la région du transfert");
+          showSnackBar(context, "Impossible de récupérer la région du transfert", icon: "error", useCupertino: widget.useCupertino);
           return;
         }
 
@@ -480,7 +480,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
           if (!mounted) return;
           Navigator.pop(context);
           Haptic().error();
-          showSnackBar(context, "L'API n'a pas retourné la région du transfert");
+          showSnackBar(context, "L'API n'a pas retourné la région du transfert", icon: "error", useCupertino: widget.useCupertino);
           return;
         }
 
@@ -516,7 +516,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (!mounted) return;
         Navigator.pop(context);
         Haptic().error();
-        showSnackBar(context, "Ce service n'est pas supporté. Cela ne devrait pas arrivé. Signalez ce problème");
+        showSnackBar(context, "Ce service n'est pas supporté. Cela ne devrait pas arrivé. Signalez ce problème", icon: "error", useCupertino: widget.useCupertino);
         return;
       }
     } catch (e) {
@@ -524,7 +524,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       Navigator.pop(context);
       debugPrint(e.toString());
       Haptic().error();
-      showSnackBar(context, "Impossible de récupérer les infos via l'API");
+      showSnackBar(context, "Impossible de récupérer les infos via l'API", icon: "error", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -537,7 +537,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       Navigator.pop(context);
       debugPrint(e.toString());
       Haptic().error();
-      showSnackBar(context, "L'API n'a pas retourné des informations valides");
+      showSnackBar(context, "L'API n'a pas retourné des informations valides", icon: "error", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -546,7 +546,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       Navigator.pop(context);
       debugPrint(transfertInfoJson.toString());
       Haptic().warning();
-      showSnackBar(context, (transfertInfoJson["message"] == 'Forbidden' ? "Ce transfert n'a pas pu être obtenu en raison d'une autorisation manquante (transfert protégé ?)" : transfertInfoJson["message"] == "Object not found" || transfertInfoJson["message"] == "Transfer not found" || transfertInfoJson["message"] == "Not Found" ? "Le transfert est introuvable, vérifier l'URL" : transfertInfoJson["message"]) ?? transfertInfoJson["text"] ?? transfertInfoJson["error"] ?? "Impossible de récupérer les infos du transfert");
+      showSnackBar(context, (transfertInfoJson["message"] == 'Forbidden' ? "Ce transfert n'a pas pu être obtenu en raison d'une autorisation manquante (transfert protégé ?)" : transfertInfoJson["message"] == "Object not found" || transfertInfoJson["message"] == "Transfer not found" || transfertInfoJson["message"] == "Not Found" ? "Le transfert est introuvable, vérifier l'URL" : transfertInfoJson["message"]) ?? transfertInfoJson["text"] ?? transfertInfoJson["error"] ?? "Impossible de récupérer les infos du transfert", icon: "warning", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -555,7 +555,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (!mounted) return;
       Navigator.pop(context);
       Haptic().error();
-      showSnackBar(context, "L'API n'a pas retourné d'infos avec succès");
+      showSnackBar(context, "L'API n'a pas retourné d'infos avec succès", icon: "error", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -563,7 +563,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     if (service == 'wetransfer' && transfertInfoJson["password_protected"] == true) {
       Navigator.pop(context);
       Haptic().error();
-      showSnackBar(context, "Stend ne supporte pas les liens protégés");
+      showSnackBar(context, "Stend ne supporte pas les liens protégés", icon: "error", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -571,7 +571,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     if (service == 'swisstransfer' && transfertInfoJson["data"] != null && transfertInfoJson["data"]["message"] != null) {
       Navigator.pop(context);
       Haptic().error();
-      showSnackBar(context, transfertInfoJson["data"]["message"]);
+      showSnackBar(context, transfertInfoJson["data"]["message"], icon: "error", useCupertino: widget.useCupertino);
       return;
     }
 
@@ -613,7 +613,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         if (service == 'free' && subTransfertInfoJson["url"] != null && subTransfertInfoJson["url"].toString().contains("/free-transfert.zip?X-Amz-Algorithm=")) {
           if (!mounted) return;
           Haptic().error();
-          showSnackBar(context, "Un des fichiers du transfert n'a pas pu être obtenu en raison d'un nom incorrect. Signalez le problème");
+          showSnackBar(context, "Un des fichiers du transfert n'a pas pu être obtenu en raison d'un nom incorrect. Signalez le problème", icon: "error", useCupertino: widget.useCupertino);
           continue;
         }
 
@@ -657,7 +657,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (transfertInfoJson["status"] == "picker") {
         if (!mounted) return;
         Haptic().error();
-        showSnackBar(context, "Stend ne supporte pas les liens avec plusieurs médias");
+        showSnackBar(context, "Stend ne supporte pas les liens avec plusieurs médias", icon: "error", useCupertino: widget.useCupertino);
         Navigator.pop(context);
         return;
       }
@@ -713,7 +713,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     if (transfertsDownloads.isEmpty) {
       if (!mounted) return;
       Haptic().warning();
-      showSnackBar(context, "Le groupe de transfert est vide ou a expiré");
+      showSnackBar(context, "Le groupe de transfert est vide ou a expiré", icon: "warning", useCupertino: widget.useCupertino);
       Navigator.pop(context);
       return;
     }
@@ -739,7 +739,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (!transfert.containsKey("fileName") || !transfert.containsKey("downloadLink")) {
         if (!mounted) return;
         Haptic().error();
-        showSnackBar(context, "Un des transferts est mal formé (problème avec l'API ?)");
+        showSnackBar(context, "Un des transferts est mal formé (problème avec l'API ?)", icon: "error", useCupertino: widget.useCupertino);
         Navigator.pop(context);
         return;
       }
@@ -776,7 +776,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       if (response.statusCode != 200) {
         if (!mounted) return;
         Haptic().error();
-        showSnackBar(context, "Impossible de télécharger le fichier $fileName");
+        showSnackBar(context, "Impossible de télécharger le fichier $fileName", icon: "error", useCupertino: widget.useCupertino);
         Navigator.pop(context);
         return;
       }
@@ -827,7 +827,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
             if (!hasAccess) {
               if (!mounted) return;
               Haptic().warning();
-              showSnackBar(context, "La permission pour enregistrer dans la galerie a été refusée, le fichier se trouve dans le dossier téléchargement");
+              showSnackBar(context, "La permission pour enregistrer dans la galerie a été refusée, le fichier se trouve dans le dossier téléchargement", icon: "warning", useCupertino: widget.useCupertino);
             } else {
               shouldContinue = true;
             }
@@ -853,7 +853,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
               debugPrint(e.toString());
               Haptic().error();
               if (!mounted) return;
-              showSnackBar(context, "Impossible d'enregistrer le fichier dans la galerie");
+              showSnackBar(context, "Impossible d'enregistrer le fichier dans la galerie", icon: "error", useCupertino: widget.useCupertino);
             }
           }
         }
@@ -867,7 +867,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
 
     // Indiquer à l'user que le téléchargement est terminé
     Haptic().success();
-    showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "Le fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}");
+    showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "Le fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}", icon: "success", useCupertino: widget.useCupertino);
     sendBackgroundNotif("Téléchargement terminé", "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "1 fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}", "download", "open-downloads");
   }
 
@@ -940,7 +940,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                         if (clipboard == null || clipboard.length < 3 || clipboard.length > 256) {
                           Haptic().warning();
                           if (!context.mounted) return;
-                          showSnackBar(context, "Aucun lien valide dans le presse-papier");
+                          showSnackBar(context, "Aucun lien valide dans le presse-papier", icon: "warning", useCupertino: widget.useCupertino);
                         }
 
                         // Mettre à jour l'input avec le presse-papier
@@ -1133,9 +1133,9 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                                         if (response.statusCode != 200) {
                                           Haptic().error();
                                           try {
-                                            showSnackBar(context, response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert");
+                                            showSnackBar(context, response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert", icon: "error", useCupertino: widget.useCupertino);
                                           } catch (e) {
-                                            showSnackBar(context, "Impossible de supprimer le transfert");
+                                            showSnackBar(context, "Impossible de supprimer le transfert", icon: "error", useCupertino: widget.useCupertino);
                                           }
                                         }
 

@@ -172,7 +172,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                             debugPrint(e.toString());
                             if (!context.mounted) return;
                             Haptic().error();
-                            showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifier les permissions de l'app");
+                            showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifier les permissions de l'app", icon: "error", useCupertino: widget.useCupertino);
                           }
                         },
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileImage : iconLib == 'Lucide (alt)' ? LucideIcons.image : Icons.image),
@@ -198,7 +198,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                             debugPrint(e.toString());
                             if (!context.mounted) return;
                             Haptic().error();
-                            showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifier les permissions de l'app");
+                            showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifier les permissions de l'app", icon: "error", useCupertino: widget.useCupertino);
                           }
                         },
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileVideo : iconLib == 'Lucide (alt)' ? LucideIcons.film : Icons.movie),
@@ -342,7 +342,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
                   // Vérifier que l'instance est configurée
                   if (apiInstanceUrl.isEmpty || apiInstanceUrl.length < 8 || !apiInstanceUrl.startsWith('http')) {
-                    showSnackBar(context, "Vous devez vous authentifier depuis les réglages");
+                    showSnackBar(context, "Vous devez vous connecter à une instance depuis les réglages", icon: "warning", useCupertino: widget.useCupertino);
                     Haptic().warning();
                     return;
                   }
@@ -400,7 +400,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     if (!context.mounted) return;
                     debugPrint(e.toString());
                     Haptic().warning();
-                    showSnackBar(context, "Impossible de se connecter à l'instance");
+                    showSnackBar(context, "Impossible de se connecter à l'instance", icon: "warning", useCupertino: widget.useCupertino);
                     Navigator.pop(context);
                     return;
                   }
@@ -408,7 +408,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   // On vérifie le code de statut
                   if (!context.mounted) return;
                   if (response.statusCode != 200) {
-                    showSnackBar(context, "L'instance a retourné une erreur HTTP ${response.statusCode}");
+                    showSnackBar(context, "L'instance a retourné une erreur HTTP ${response.statusCode}", icon: "error", useCupertino: widget.useCupertino);
                     Navigator.pop(context);
                     Haptic().error();
                     return;
@@ -421,7 +421,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
                   // Si l'instance demande un mot de passe, vérifier qu'il est configuré
                   if (requirePassword && apiInstancePassword == null) {
-                    showSnackBar(context, "Cette instance requiert un mot de passe, veuillez vous reauthentifier depuis les réglages");
+                    showSnackBar(context, "Cette instance requiert un mot de passe, veuillez vous reauthentifier depuis les réglages", icon: "error", useCupertino: widget.useCupertino);
                     box.remove('apiInstanceUrl');
                     box.remove('apiInstancePassword');
                     Navigator.pop(context);
@@ -431,7 +431,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
                   // Vérifier que l'on ne dépasse pas la limite de fichiers
                   if (selectedFiles.length > maxTransfersInMerge) {
-                    showSnackBar(context, "Vous ne pouvez pas envoyer plus de $maxTransfersInMerge fichiers");
+                    showSnackBar(context, "Vous ne pouvez pas envoyer plus de $maxTransfersInMerge fichiers", icon: "warning", useCupertino: widget.useCupertino);
                     Navigator.pop(context);
                     Haptic().warning();
                     return;
@@ -442,13 +442,13 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     var fileSize = file.lengthSync();
 
                     if (fileSize > fileMaxSize) {
-                      showSnackBar(context, "Un des fichiers dépasse la limite de ${formatBytes(fileMaxSize)}");
+                      showSnackBar(context, "Un des fichiers dépasse la limite de ${formatBytes(fileMaxSize)}", icon: "warning", useCupertino: widget.useCupertino);
                       Navigator.pop(context);
                       Haptic().warning();
                       return;
                     }
                     if (fileSize == 0) {
-                      showSnackBar(context, "Impossible d'envoyer un fichier de 0 octet");
+                      showSnackBar(context, "Impossible d'envoyer un fichier de 0 octet", icon: "warning", useCupertino: widget.useCupertino);
                       Navigator.pop(context);
                       Haptic().warning();
                       return;
@@ -476,7 +476,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     // On vérifie le code de statut
                     if (!context.mounted) return;
                     if (transfertInfo.statusCode != 200 || (transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty)) {
-                      showSnackBar(context, "Impossible de créer un transfert${transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty ? ": ${transfertInfo.data['message']}" : ""}");
+                      showSnackBar(context, "Impossible de créer un transfert${transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty ? ": ${transfertInfo.data['message']}" : ""}", icon: "error", useCupertino: widget.useCupertino);
                       Navigator.pop(context);
                       Haptic().error();
                       return;
@@ -529,7 +529,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       } catch (e) {
                         debugPrint(e.toString());
                         if (!context.mounted) return;
-                        showSnackBar(context, "Impossible de gérer le transfert : $e");
+                        showSnackBar(context, "Impossible de gérer le transfert : $e", icon: "error", useCupertino: widget.useCupertino);
                         Navigator.pop(context);
                         Haptic().error();
                         return;
@@ -538,7 +538,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       // On vérifie le code de statut
                       if (!context.mounted) return;
                       if (chunkResponse.statusCode != 200 || (chunkResponse.data.isNotEmpty && chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty)) {
-                        showSnackBar(context, "Impossible de gérer le transfert${chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty ? ": ${chunkResponse.data['message']}" : ""}");
+                        showSnackBar(context, "Impossible de gérer le transfert${chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty ? ": ${chunkResponse.data['message']}" : ""}", icon: "error", useCupertino: widget.useCupertino);
                         Navigator.pop(context); 
                         Haptic().error();
                         return;
@@ -617,7 +617,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     // On vérifie le code de statut
                     if (!context.mounted) return;
                     if (mergeResponse.statusCode != 200 || (mergeResponse.data.isNotEmpty && mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty)) {
-                      showSnackBar(context, "Impossible de créer un groupe de liens${mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty ? ": ${mergeResponse.data['message']}" : ""}");
+                      showSnackBar(context, "Impossible de créer un groupe de liens${mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty ? ": ${mergeResponse.data['message']}" : ""}", icon: "error", useCupertino: widget.useCupertino);
                       Navigator.pop(context);
                       Haptic().error();
                       return;

@@ -49,6 +49,25 @@ class _DebugPageState extends State<DebugPage> {
     super.dispose();
   }
 
+  void showCustomSnackbar(bool useCupertino) async {
+    var text = await showTextInputDialog(
+      context: context,
+      title: 'Snackbar personnalisé',
+      message: "Entrer un texte à afficher dans une snackbar personnalisé",
+      okLabel: 'Valider',
+      cancelLabel: 'Annuler',
+      textFields: const [
+        DialogTextField(
+          autocorrect: true,
+          keyboardType: TextInputType.text
+        ),
+      ],
+    );
+
+    if(!mounted) return;
+    if (text != null) showSnackBar(context, text.single, icon: 'info', useCupertino: useCupertino);
+  }
+
   String exportSettingsToJson() {
     // Obtenir les clés et les valeurs
     var keys = box.getKeys();
@@ -207,7 +226,19 @@ class _DebugPageState extends State<DebugPage> {
                         )
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 32),
+
+                    // Snackbars
+                    Text(
+                      "Snackbars",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 16),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -215,24 +246,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              var text = await showTextInputDialog(
-                                context: context,
-                                title: 'Snackbar personnalisé',
-                                message: "Entrer un texte à afficher dans une snackbar personnalisé",
-                                okLabel: 'Valider',
-                                cancelLabel: 'Annuler',
-                                textFields: const [
-                                  DialogTextField(
-                                    autocorrect: true,
-                                    keyboardType: TextInputType.text
-                                  ),
-                                ],
-                              );
-
-                              if(!context.mounted) return;
-                              if (text != null) showSnackBar(context, text.single);
+                              showCustomSnackbar(false);
                             },
-                            child: const Text("Snackbar"),
+                            child: const Text("Custom Material"),
                           )
                         ),
 
@@ -241,8 +257,62 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
+                              showCustomSnackbar(true);
                             },
-                            child: const Text("Placeholder"),
+                            child: const Text("Custom Cupertino"),
+                          )
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              showSnackBar(context, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vestibulum venenatis...", icon: 'info', useCupertino: widget.useCupertino);
+                            },
+                            child: const Text("Ex. info"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              showSnackBar(context, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vestibulum venenatis...", icon: 'success', useCupertino: widget.useCupertino);
+                            },
+                            child: const Text("Ex. succès"),
+                          )
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              showSnackBar(context, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vestibulum venenatis...", icon: 'warning', useCupertino: widget.useCupertino);
+                            },
+                            child: const Text("Ex. warning"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              showSnackBar(context, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vestibulum venenatis...", icon: 'error', useCupertino: widget.useCupertino);
+                            },
+                            child: const Text("Ex. erreur"),
                           )
                         )
                       ],
