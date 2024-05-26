@@ -92,6 +92,121 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     checkedUpdate = true;
   }
 
+  void checkInstance() async {
+    // Obtenir certaines variables depuis les préférences
+    final webInstanceUrl = box.read('webInstanceUrl');
+    final apiInstanceUrl = box.read('apiInstanceUrl');
+    final apiInstancePassword = box.read('apiInstancePassword');
+    final requirePassword = box.read('requirePassword');
+    final recommendedExpireTimes = box.read('recommendedExpireTimes');
+
+    // Parse et mettre en forme les durées d'expiration
+    List<String> expireTimes = [];
+    if (recommendedExpireTimes != null) {
+      for (var i = 0; i < recommendedExpireTimes.length; i++) {
+        expireTimes.add("${recommendedExpireTimes[i]['label']} (value: ${recommendedExpireTimes[i]['value']})");
+      }
+    }
+
+    // Afficher les variables
+    Haptic().micro();
+    await showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Variables enregistrées"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("URL du client WEB :\n▶️ ${webInstanceUrl ?? "Non disponible"}"),
+              Text("\nURL de l'API :\n▶️ ${apiInstanceUrl ?? "Non configuré"}"),
+              Text("\nMot de passe requis par l'API :\n▶️ ${requirePassword == null ? "Non disponible" : requirePassword ? "Oui" : "Non"}"),
+              Text("\nMot de passe de l'API :\n▶️ ${apiInstancePassword != null ? "Présent" : "Non disponible"}"),
+              Text("\nDurées d'expiration recommandées :\n▶️ ${expireTimes.isEmpty ? 'Non disponible' : expireTimes.join("\n▶️ ")}"),
+            ],
+          )
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Haptic().micro();
+              Navigator.of(context).pop();
+            },
+            child: Text(Platform.isIOS ? "OK" : "Fermer"),
+          )
+        ],
+      ),
+    );
+
+    // Afficher une snackbar pour informer l'utilisateur
+    if (!mounted) return;
+    showSnackBar(context, "Début de la vérification de l'instance...");
+
+    // Vérifier si l'API retourne HTTP 200
+    var apiResponseCode = 0;
+    if (apiInstanceUrl != null) {
+      http.Response response;
+      try {
+        final url = Uri.parse('${apiInstanceUrl}instance');
+        // Faire un timeout de 5sec
+        response = await http.get(url).timeout(const Duration(seconds: 4));
+        apiResponseCode = response.statusCode;
+      } catch (e) {
+        debugPrint(e.toString());
+        if (!context.mounted) return;
+        apiResponseCode = 0;
+      }
+    }
+
+    // Vérifier le client WEB si on l'a
+    var webResponseCode = 0;
+    if (webInstanceUrl != null) {
+      http.Response webResponse;
+      try {
+        final webUrl = Uri.parse(webInstanceUrl);
+        webResponse = await http.get(webUrl).timeout(const Duration(seconds: 4));
+        webResponseCode = webResponse.statusCode;
+      } catch (e) {
+        debugPrint(e.toString());
+        if (!context.mounted) return;
+        webResponseCode = 0;
+      }
+    }
+
+    // Afficher les résultats
+    if (!mounted) return;
+    await showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("État de l'instance"), 
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Client WEB :\n▶️ ${webInstanceUrl != null ? "${webResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${webResponseCode == 0 ? 'impossible à déterminer' : webResponseCode})" : "Non configuré"}"),
+            Text("\nAPI :\n▶️ ${apiInstanceUrl != null ? "${apiResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${apiResponseCode == 0 ? 'impossible à déterminer' : apiResponseCode})" : "Non configuré"}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Haptic().micro();
+              Navigator.of(context).pop();
+            },
+            child: Text(Platform.isIOS ? "OK" : "Fermer"),
+          )
+        ],
+      )
+    );
+  }
+
+  void clearHistory() {
+    Haptic().micro();
+    box.remove('historic');
+    showSnackBar(context, "L'historique a été effacé");
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -818,190 +933,103 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
               const SizedBox(height: 10),
 
               // Boutons d'actions
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  OutlinedButton(
-                    onPressed: () async {
-                      // Obtenir certaines variables depuis les préférences
-                      final webInstanceUrl = box.read('webInstanceUrl');
-                      final apiInstanceUrl = box.read('apiInstanceUrl');
-                      final apiInstancePassword = box.read('apiInstancePassword');
-                      final requirePassword = box.read('requirePassword');
-                      final recommendedExpireTimes = box.read('recommendedExpireTimes');
-                      
-                      // Parse et mettre en forme les durées d'expiration
-                      List<String> expireTimes = [];
-                      if (recommendedExpireTimes != null) {
-                        for (var i = 0; i < recommendedExpireTimes.length; i++) {
-                          expireTimes.add("${recommendedExpireTimes[i]['label']} (value: ${recommendedExpireTimes[i]['value']})");
-                        }
-                      }
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width > 400 ? 12 : 24.0),
 
-                      // Afficher les variables
-                      Haptic().micro();
-                      await showAdaptiveDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("Variables enregistrées"),
-                          content: SingleChildScrollView(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("URL du client WEB :\n▶️ ${webInstanceUrl ?? "Non disponible"}"),
-                                Text("\nURL de l'API :\n▶️ ${apiInstanceUrl ?? "Non configuré"}"),
-                                Text("\nMot de passe requis par l'API :\n▶️ ${requirePassword == null ? "Non disponible" : requirePassword ? "Oui" : "Non"}"),
-                                Text("\nMot de passe de l'API :\n▶️ ${apiInstancePassword != null ? "Présent" : "Non disponible"}"),
-                                Text("\nDurées d'expiration recommandées :\n▶️ ${expireTimes.isEmpty ? 'Non disponible' : expireTimes.join("\n▶️ ")}"),
-                              ],
-                            )
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Haptic().micro();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(Platform.isIOS ? "OK" : "Fermer"),
-                            )
-                          ],
+                child: Column(
+                  children: [
+                    MediaQuery.of(context).size.width > 400 ? Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () { checkInstance(); },
+                          child: const Text("Vérifier l'instance"),
                         ),
-                      );
-
-                      // Afficher une snackbar pour informer l'utilisateur
-                      if (!context.mounted) return;
-                      showSnackBar(context, "Début de la vérification de l'instance...");
-
-                      // Vérifier si l'API retourne HTTP 200
-                      var apiResponseCode = 0;
-                      if (apiInstanceUrl != null) {
-                        http.Response response;
-                        try {
-                          final url = Uri.parse('${apiInstanceUrl}instance');
-                          // Faire un timeout de 5sec
-                          response = await http.get(url).timeout(const Duration(seconds: 4));
-                          apiResponseCode = response.statusCode;
-                        } catch (e) {
-                          debugPrint(e.toString());
-                          if (!context.mounted) return;
-                          apiResponseCode = 0;
-                        }
-                      }
-
-                      // Vérifier le client WEB si on l'a
-                      var webResponseCode = 0;
-                      if (webInstanceUrl != null) {
-                        http.Response webResponse;
-                        try {
-                          final webUrl = Uri.parse(webInstanceUrl);
-                          webResponse = await http.get(webUrl).timeout(const Duration(seconds: 4));
-                          webResponseCode = webResponse.statusCode;
-                        } catch (e) {
-                          debugPrint(e.toString());
-                          if (!context.mounted) return;
-                          webResponseCode = 0;
-                        }
-                      }
-
-                      // Afficher les résultats
-                      if (!context.mounted) return;
-                      await showAdaptiveDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("État de l'instance"), 
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Client WEB :\n▶️ ${webInstanceUrl != null ? "${webResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${webResponseCode == 0 ? 'impossible à déterminer' : webResponseCode})" : "Non configuré"}"),
-                              Text("\nAPI :\n▶️ ${apiInstanceUrl != null ? "${apiResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${apiResponseCode == 0 ? 'impossible à déterminer' : apiResponseCode})" : "Non configuré"}"),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Haptic().micro();
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(Platform.isIOS ? "OK" : "Fermer"),
-                            )
-                          ],
+                        OutlinedButton(
+                          onPressed: () { clearHistory(); },
+                          child: const Text("Effacer l'historique"),
                         )
-                      );
-                    },
-                    child: const Text("Vérifier l'instance"),
-                  ),
-                  OutlinedButton(
-                    onPressed: () {
-                      Haptic().micro();
-                      box.remove('historic');
-                      showSnackBar(context, "L'historique a été effacé");
-                    },
-                    child: const Text("Effacer l'historique"),
-                  )
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              Center(
-                child: FilledButton(
-                  onPressed: () {
-                    Haptic().warning();
-                    showAdaptiveDialog(
-                      context: context,
-                      builder: (context) => AlertDialog.adaptive(
-                        title: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages"),
-                        content: Text("Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Cette action est irréversible."}"),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Haptic().micro();
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("Annuler"),
+                      ],
+                    ) : Center(
+                      child: Column(
+                        children: [
+                          OutlinedButton(
+                            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
+                            onPressed: () { checkInstance(); },
+                            child: const Text("Vérifier l'instance"),
                           ),
-
-                          TextButton(
-                            onPressed: () async {
-                              // Supprimer les réglages
-                              box.erase();
-
-                              // Supprimer les fichiers caches
-                              try {
-                                var tempDir = await getTemporaryDirectory();
-                                if (tempDir.existsSync()) {
-                                  tempDir.deleteSync(recursive: true);
-                                }
-                              } catch (e) {
-                                debugPrint(e.toString());
-                                if (!context.mounted) return;
-                                showSnackBar(context, "Impossible d'effacer le cache");
-                                Haptic().error();
-                              }
-
-                              // Informer l'utilisateur
-                              if (!context.mounted) return;
-                              Haptic().success();
-                              showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées");
-
-                              // Recharger la page
-                              widget.refresh();
-                            },
-                            child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
+                          const SizedBox(height: 6),
+                          OutlinedButton(
+                            style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
+                            onPressed: () { clearHistory(); },
+                            child: const Text("Effacer l'historique"),
                           )
                         ],
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                    child: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages")
-                  ),
+                      )
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Center(
+                      child: FilledButton(
+                        style: MediaQuery.of(context).size.width > 400 ? null : FilledButton.styleFrom(minimumSize: const Size.fromHeight(40)),
+                        onPressed: () {
+                          Haptic().warning();
+                          showAdaptiveDialog(
+                            context: context,
+                            builder: (context) => AlertDialog.adaptive(
+                              title: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages"),
+                              content: Text("Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Cette action est irréversible."}"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Haptic().micro();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text("Annuler"),
+                                ),
+
+                                TextButton(
+                                  onPressed: () async {
+                                    // Supprimer les réglages
+                                    box.erase();
+
+                                    // Supprimer les fichiers caches
+                                    try {
+                                      var tempDir = await getTemporaryDirectory();
+                                      if (tempDir.existsSync()) {
+                                        tempDir.deleteSync(recursive: true);
+                                      }
+                                    } catch (e) {
+                                      debugPrint(e.toString());
+                                      if (!context.mounted) return;
+                                      showSnackBar(context, "Impossible d'effacer le cache");
+                                      Haptic().error();
+                                    }
+
+                                    // Informer l'utilisateur
+                                    if (!context.mounted) return;
+                                    Haptic().success();
+                                    showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées");
+
+                                    // Recharger la page
+                                    widget.refresh();
+                                  },
+                                  child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                          child: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages")
+                        ),
+                      )
+                    ),
+                  ]
                 )
               ),
-
               const SizedBox(height: 10),
 
               Center(

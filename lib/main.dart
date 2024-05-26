@@ -227,10 +227,15 @@ class _MainAppState extends State<MainApp> {
                     selectedIndex: _currentIndex,
                     extended: MediaQuery.of(context).size.width > 900,
                     onDestinationSelected: destinationSelected,
+                    indicatorColor: Platform.isIOS ? Colors.transparent : null,
+                    selectedIconTheme: Platform.isIOS ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
+                    selectedLabelTextStyle: Platform.isIOS ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
+                    unselectedIconTheme: Platform.isIOS ? IconThemeData(color: Colors.grey.shade400) : null,
+                    unselectedLabelTextStyle: Platform.isIOS ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey.shade400) : null,
                     leading: MediaQuery.of(context).size.width > 900 ? SizedBox(
                       width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
                       child: const Padding(
-                        padding: EdgeInsets.only(left: 10.0, top: 4.0, bottom: 4.0),
+                        padding: EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
                         child: Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
                       )
                     ) : null,
@@ -268,9 +273,41 @@ class _MainAppState extends State<MainApp> {
                 ],
               ),
             ),
-            bottomNavigationBar: MediaQuery.of(context).size.width > 600 ? null : NavigationBar(
+            bottomNavigationBar: MediaQuery.of(context).size.width > 600 ? null : Platform.isIOS
+            ? CupertinoTabBar(
+              currentIndex: _currentIndex,
+              onTap: destinationSelected,
+              height: 60,
+              iconSize: 28,
+              backgroundColor: Colors.transparent,
+              items: [
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
+                  ),
+                  label: 'Envoyer',
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
+                  ),
+                  label: 'Télécharger',
+                ),
+                BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: const EdgeInsets.only(top: 6.0),
+                    child: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.cog : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
+                  ),
+                  label: 'Réglages',
+                ),
+              ],
+            )
+            : NavigationBar(
               selectedIndex: _currentIndex,
               onDestinationSelected: destinationSelected,
+              indicatorColor: Platform.isIOS ? Colors.transparent : null,
               destinations: [
                 NavigationDestination(
                   icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
