@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
@@ -214,9 +215,24 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              openFileManager(androidConfig: AndroidConfig(folderType: FolderType.download));
+                              var text = await showTextInputDialog(
+                                context: context,
+                                title: 'Snackbar personnalisé',
+                                message: "Entrer un texte à afficher dans une snackbar personnalisé",
+                                okLabel: 'Valider',
+                                cancelLabel: 'Annuler',
+                                textFields: const [
+                                  DialogTextField(
+                                    autocorrect: true,
+                                    keyboardType: TextInputType.text
+                                  ),
+                                ],
+                              );
+
+                              if(!context.mounted) return;
+                              if (text != null) showSnackBar(context, text.single);
                             },
-                            child: const Text("Ouvrir Fichiers"),
+                            child: const Text("Snackbar"),
                           )
                         ),
 
@@ -225,9 +241,8 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
                             },
-                            child: const Text("Ouvrir un lien"),
+                            child: const Text("Placeholder"),
                           )
                         )
                       ],
