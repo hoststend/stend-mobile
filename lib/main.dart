@@ -75,6 +75,8 @@ class _MainAppState extends State<MainApp> {
     // Déterminer si on utilise Cupertino ou Material
     if (box.read('useMaterialYou') == null && Platform.isIOS) {
       useCupertino = true;
+    } else if (box.read('useMaterialYou') == null && !Platform.isIOS) {
+      useCupertino = false;
     } else if (box.read('useMaterialYou') == true) {
       useCupertino = false;
     } else {

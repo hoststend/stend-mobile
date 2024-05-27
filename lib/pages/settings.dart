@@ -98,17 +98,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     // Obtenir certaines variables depuis les préférences
     final webInstanceUrl = box.read('webInstanceUrl');
     final apiInstanceUrl = box.read('apiInstanceUrl');
-    final apiInstancePassword = box.read('apiInstancePassword');
-    final requirePassword = box.read('requirePassword');
-    final recommendedExpireTimes = box.read('recommendedExpireTimes');
-
-    // Parse et mettre en forme les durées d'expiration
-    List<String> expireTimes = [];
-    if (recommendedExpireTimes != null) {
-      for (var i = 0; i < recommendedExpireTimes.length; i++) {
-        expireTimes.add("${recommendedExpireTimes[i]['label']} (value: ${recommendedExpireTimes[i]['value']})");
-      }
-    }
 
     // Afficher une snackbar pour informer l'utilisateur
     Haptic().light();
@@ -1037,14 +1026,22 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      // Texte
-                      Text(
-                        "Stend Mobile${appVersion != null ? ' v$appVersion' : ''} (${storeRelease ? 'Release Store' : 'Release Libre'})\nDéveloppé par Johan",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
-                        ),
+                      // Textes
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+
+                        children: [
+                          Text("Stend Mobile${appVersion != null ? ' v$appVersion' : ''} ", textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black)),
+                          GestureDetector(
+                            onTap: () {
+                              Haptic().light();
+                              launchUrl(Uri.parse('https://stend-docs.johanstick.fr/mobile-docs/release-type#release-${storeRelease ? 'store' : 'libre'}'), mode: LaunchMode.inAppBrowserView);
+                            },
+                            child: Text("(${storeRelease ? 'Release Store' : 'Release Libre'})", textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black))
+                          )
+                        ],
                       ),
+                      Text("Développé par Johan", textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black)),
 
                       const SizedBox(height: 2),
 
