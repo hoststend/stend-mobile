@@ -101,8 +101,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
     // Afficher une snackbar pour informer l'utilisateur
     Haptic().light();
-    if (!mounted) return;
-    showSnackBar(context, "Début de la vérification de l'instance...", icon: "info", useCupertino: widget.useCupertino);
+    if(apiInstanceUrl != null || webInstanceUrl != null){
+      if (!mounted) return;
+      showSnackBar(context, "Début de la vérification de l'instance...", icon: "info", useCupertino: widget.useCupertino);
+    }
 
     // Vérifier si l'API retourne HTTP 200
     var apiResponseCode = 0;
@@ -142,7 +144,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
       builder: (context) => AlertDialog.adaptive(
         title: const Text("État de l'instance"), 
         content: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: widget.useCupertino ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+
           children: [
             Text("Client WEB :${widget.useCupertino ? ' ' : '\n'}${webInstanceUrl != null ? "${webResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${webResponseCode == 0 ? 'impossible à déterminer' : webResponseCode})" : "Non configuré"}"),
             Text("\nAPI :${widget.useCupertino ? ' ' : '\n'}${apiInstanceUrl != null ? "${apiResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${apiResponseCode == 0 ? 'impossible à déterminer' : apiResponseCode})" : "Non configuré"}"),
