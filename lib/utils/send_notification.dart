@@ -75,7 +75,7 @@ void askNotifPermission() async {
   if(Platform.isAndroid){
     // Si on sur Android 12 ou -, on ne demande pas la permission
     var deviceInfo = DeviceInfoPlugin();
-    var androidInfo = await deviceInfo.androidInfo; // on utilisera ça pdnt l'upload pour un user agent plus précis
+    var androidInfo = await deviceInfo.androidInfo;
     debugPrint("SDK Android: ${androidInfo.version.sdkInt}");
     if(androidInfo.version.sdkInt <= 32) return;
 

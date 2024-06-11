@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:stendmobile/utils/format_bytes.dart';
 import 'package:stendmobile/utils/format_date.dart';
 import 'package:stendmobile/utils/send_notification.dart';
@@ -716,6 +718,27 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       showSnackBar(context, "Le groupe de transfert est vide ou a expiré", icon: "warning", useCupertino: widget.useCupertino);
       Navigator.pop(context);
       return;
+    }
+
+    // Si on est sur Android, on demande la permission de stockage
+    if (Platform.isAndroid) {
+      // Si on est sur une version inférieure à Android 13, on demande la permission
+      var deviceInfo = DeviceInfoPlugin();
+      var androidInfo = await deviceInfo.androidInfo;
+      debugPrint("sdkInt: ${androidInfo.version.sdkInt}");
+      if(androidInfo.version.sdkInt < 33) {
+        debugPrint("SDK inférieur à 33, on demande la permission de stockage");
+        var storagePermission = await Permission.storage.request();
+        if (storagePermission != PermissionStatus.granted) {
+          if (!mounted) return;
+          Haptic().error();
+          showSnackBar(context, "Vous devez autoriser l'accès au stockage pour télécharger les fichiers", icon: "error", useCupertino: widget.useCupertino);
+          Navigator.pop(context);
+          return;
+        }
+      } else {
+        debugPrint("SDK supérieur ou égal à 33, on ne demande pas la permission de stockage");
+      }
     }
 
     // On détermine le chemin du fichier où télécharger
