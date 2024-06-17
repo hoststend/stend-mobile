@@ -15,6 +15,7 @@ import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
 import 'package:flutter_highlight/themes/gruvbox-light.dart';
 import 'package:flutter_highlight/themes/gruvbox-dark.dart';
+// TODO: déplacer l'action "exception" (throw une erreur) dans "actions de test"
 
 class DebugPage extends StatefulWidget {
   final Function refresh;
