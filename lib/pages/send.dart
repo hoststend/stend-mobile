@@ -19,11 +19,12 @@ import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 
 class UploadDialog extends StatefulWidget {
+  final bool useCupertino;
   final String content;
   final double? value;
   final String? details;
 
-  const UploadDialog({Key? key, required this.content, this.value, this.details}) : super(key: key);
+  const UploadDialog({Key? key, required this.useCupertino, required this.content, this.value, this.details}) : super(key: key);
 
   @override
   UploadDialogState createState() => UploadDialogState();
@@ -38,12 +39,12 @@ class UploadDialogState extends State<UploadDialog> {
         mainAxisSize: MainAxisSize.min,
 
         children: [
-          Platform.isAndroid ? Text(widget.content, textAlign: TextAlign.center) : Platform.isIOS && widget.details != null ? Text(widget.details!, textAlign: TextAlign.center) : const SizedBox(),
+          !widget.useCupertino ? Text(widget.content, textAlign: TextAlign.center) : widget.useCupertino && widget.details != null ? Text(widget.details!, textAlign: TextAlign.center) : const SizedBox(),
 
           const SizedBox(height: 12.0),
           LinearProgressIndicator(value: widget.value),
           const SizedBox(height: 12.0),
-          Platform.isIOS ? Text(widget.content) : Platform.isAndroid && widget.details != null ? Text(widget.details!) : const SizedBox(),
+          widget.useCupertino ? Text(widget.content) : !widget.useCupertino && widget.details != null ? Text(widget.details!) : const SizedBox(),
         ],
       ),
     );
@@ -385,7 +386,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                           String? details = snapshot.data.item3;
                           return PopScope(
                             canPop: false,
-                            child: UploadDialog(content: content, value: value, details: details)
+                            child: UploadDialog(useCupertino: widget.useCupertino, content: content, value: value, details: details)
                           );
                         }
                       );
@@ -676,7 +677,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                               Haptic().light();
                               Navigator.pop(context);
                             },
-                            child: Text(Platform.isIOS ? "OK" : "Fermer")
+                            child: Text(widget.useCupertino ? "OK" : "Fermer")
                           ),
                           TextButton(
                             onPressed: () async {

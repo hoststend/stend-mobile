@@ -15,7 +15,6 @@ import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
 import 'package:flutter_highlight/themes/gruvbox-light.dart';
 import 'package:flutter_highlight/themes/gruvbox-dark.dart';
-// TODO: déplacer l'action "exception" (throw une erreur) dans "actions de test"
 
 class DebugPage extends StatefulWidget {
   final Function refresh;
@@ -413,34 +412,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                            },
-                            child: const Text("Placeholder"),
-                          )
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
                               widget.refresh();
                             },
                             child: const Text("Reload"),
-                          )
-                        ),
-
-                        const SizedBox(width: 12.0),
-
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () async {
-                              throw Exception("Throw exception sur demande suite à un appui sur le bouton dédié dans les réglages de débogage");
-                            },
-                            child: const Text("Exception"),
                           )
                         )
                       ],

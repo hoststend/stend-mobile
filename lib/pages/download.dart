@@ -29,11 +29,12 @@ import 'package:dio/dio.dart';
 late Dio dio;
 
 class DownloadDialog extends StatefulWidget {
+  final bool useCupertino;
   final String content;
   final String? fileType;
   final double? value;
 
-  const DownloadDialog({Key? key, required this.content, this.value, this.fileType}) : super(key: key);
+  const DownloadDialog({Key? key, required this.useCupertino, required this.content, this.value, this.fileType}) : super(key: key);
 
   @override
   DownloadDialogState createState() => DownloadDialogState();
@@ -48,12 +49,12 @@ class DownloadDialogState extends State<DownloadDialog> {
         mainAxisSize: MainAxisSize.min,
 
         children: [
-          Platform.isAndroid ? Text(widget.content, textAlign: TextAlign.center) : const SizedBox(),
+          widget.useCupertino ? const SizedBox() : Text(widget.content, textAlign: TextAlign.center),
 
           const SizedBox(height: 12.0),
           LinearProgressIndicator(value: widget.value),
           const SizedBox(height: 12.0),
-          Platform.isAndroid && widget.fileType != null ? Text("Fichier : ${widget.fileType!}") : Platform.isIOS ? Text(widget.content) : const SizedBox(),
+          !widget.useCupertino && widget.fileType != null ? Text("Fichier : ${widget.fileType!}") : widget.useCupertino ? Text(widget.content) : const SizedBox(),
         ],
       ),
     );
@@ -253,7 +254,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
             String? fileType = snapshot.data.item3;
             return PopScope(
               canPop: false,
-              child: DownloadDialog(content: content, value: value, fileType: fileType)
+              child: DownloadDialog(useCupertino: widget.useCupertino, content: content, value: value, fileType: fileType)
             );
           }
         );
@@ -1120,7 +1121,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                               builder: (BuildContext context) {
                                 return AlertDialog.adaptive(
                                   title: const Text("Supprimer cet envoi ?"),
-                                  content: Text("${Platform.isAndroid ? "Le fichier ne pourra pas être récupérer si vous n'en disposez pas une copie. " : ''}Êtes-vous sûr de vouloir supprimer ce transfert des serveurs ?"),
+                                  content: Text("${widget.useCupertino ? '' : "Le fichier ne pourra pas être récupérer si vous n'en disposez pas une copie. "}Êtes-vous sûr de vouloir supprimer ce transfert des serveurs ?"),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
