@@ -27,6 +27,13 @@ Map channels = {
     category: AndroidNotificationCategory.progress,
     visibility: NotificationVisibility.public,
     groupKey: 'transfert'
+  ),
+  'warnings': const AndroidNotificationDetails(
+    'warnings',
+    'Avertissements',
+    channelDescription: 'Notifications générales lorsqu\'un problème survient pendant l\'utilisation de l\'application',
+    groupKey: 'warnings',
+    styleInformation: BigTextStyleInformation('')
   )
 };
 
@@ -97,6 +104,24 @@ void askNotifPermission() async {
 void sendBackgroundNotif(String title, String body, String channelKey, String ?payload) async {
   // Vérifier si l'app est à l'avant-plan
   if(appIsInForeground) return;
+  if(!isInitialized) return;
+
+  // Créer et afficher la notification
+  try {
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      payload: payload,
+      NotificationDetails(android: channels[channelKey])
+    );
+  } catch (e) {
+    debugPrint('Impossible d\'envoyer une notification: $e');
+  }
+}
+
+void sendNotif(String title, String body, String channelKey, String ?payload) async {
+  // Vérifier si l'app est initialisée
   if(!isInitialized) return;
 
   // Créer et afficher la notification
