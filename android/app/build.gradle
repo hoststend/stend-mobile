@@ -49,7 +49,7 @@ android {
     defaultConfig {
         applicationId "fr.johanstick.stendmobile.dev"
         minSdkVersion 20
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
