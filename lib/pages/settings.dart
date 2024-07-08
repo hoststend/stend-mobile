@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:get_storage/get_storage.dart';
@@ -47,7 +48,25 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     _isConnected = box.read('apiInstanceUrl') != null;
     storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
     if(!checkedUpdate) checkUpdate();
+
     super.initState();
+    globals.indicatePageInitialized('settings');
+
+    globals.intereventsStreamController.stream.listen((event) {
+      if (event['type'] != 'settings') return;
+
+      if (event['action'] == 'reset') {
+        askResetSettings();
+      } else if (event['action'] == 'checkInstance') {
+        checkInstance();
+      } else if (event['action'] == 'configInstance') {
+        configureInstance(
+          initialWebUrl: event['initialWebUrl'],
+          initialApiUrl: event['initialApiUrl'],
+          initialPassword: event['initialPassword']
+        );
+      }
+    });
   }
 
   @override
@@ -169,6 +188,287 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     Haptic().light();
     box.remove('historic');
     showSnackBar(context, "L'historique a été effacé", icon: "success", useCupertino: widget.useCupertino);
+  }
+
+  void askResetSettings() {
+    Haptic().warning();
+
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages"),
+        content: Text("Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Tous les réglages seront effacés."}"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Haptic().light();
+              Navigator.of(context).pop();
+            },
+            child: const Text("Annuler"),
+          ),
+
+          TextButton(
+            onPressed: () => resetSettings(),
+            child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
+          )
+        ],
+      ),
+    );
+  }
+
+  void resetSettings() async {
+    // Supprimer les réglages
+    box.erase();
+
+    // Supprimer les fichiers caches
+    try {
+      var tempDir = await getTemporaryDirectory();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+      if (!mounted) return;
+      showSnackBar(context, "Impossible d'effacer le cache", icon: "error", useCupertino: widget.useCupertino);
+      Haptic().error();
+    }
+
+    // Informer l'utilisateur
+    if (!mounted) return;
+    Haptic().success();
+    showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées", icon: "success", useCupertino: widget.useCupertino);
+
+    // Recharger la page
+    widget.refresh();
+  }
+
+  void configureInstance({ String? initialWebUrl, String? initialApiUrl, String? initialPassword }) async {
+    Haptic().light();
+    String apiUrlFromWeb = '';
+
+    // On récupère l'URL du client web de l'instance via un dialogue
+    var webUrl = await showTextInputDialog(
+      context: context,
+      title: 'Client WEB',
+      message: "Entrer l'URL du site de votre serveur si vous en avez un, sinon, laissez vide.",
+      okLabel: 'Valider',
+      cancelLabel: 'Annuler',
+      textFields: [
+        DialogTextField(
+          hintText: "https://stend.example.com",
+          autocorrect: false,
+          initialText: initialWebUrl,
+          keyboardType: TextInputType.url
+        ),
+      ],
+    );
+
+    // Si l'URL entré est "demo", on met l'URL de démo
+    if (webUrl != null && webUrl.single.toString().toLowerCase() == 'demo') {
+      webUrl = List<String>.filled(1, 'https://stend-demo.johanstick.fr');
+    }
+
+    // Si on a entré une URL d'un client
+    if (webUrl != null && webUrl.toString().length > 2) {
+      if (!mounted) return;
+
+      var url = webUrl.single.toString();
+      if (url.toString().endsWith('//')) url = url.toString().substring(0, url.toString().length - 1);
+      if (!url.toString().endsWith('/')) url += '/';
+
+      // Vérifier que l'URL commence par http ou https
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://$url';
+      }
+
+      if (!checkURL(webUrl.single)) {
+        showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
+        Haptic().warning();
+        return;
+      }
+
+      final urlParsed = Uri.parse(url);
+
+      // Vérifier que l'URL soit valide
+      if (!urlParsed.isAbsolute) {
+        showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
+        Haptic().warning();
+        return;
+      }
+
+      // Vérifier que l'URL soit accessible
+      try {
+        final response = await http.get(urlParsed);
+        if (response.statusCode != 200) { // Si on a pas accès à l'URL, on dit que ça marche pas
+          if (!mounted) return;
+          showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
+          Haptic().error();
+          return;
+        } else { // Si on y a accès, on essaye de parser l'URL de l'API
+          try {
+            apiUrlFromWeb = response.body.split('apibaseurl="')[1].split('"')[0];
+          } catch (e) {
+            debugPrint("Aucune API trouvé dans le client web, on continue : $e");
+          }
+        }
+      } catch (e) {
+        debugPrint(e.toString());
+        if (!mounted) return;
+        showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
+        Haptic().error();
+        return;
+      }
+
+      // Enregistrer l'URL
+      box.write('webInstanceUrl', urlParsed.toString());
+    }
+
+    // On récupère l'URL de l'API
+    if (!mounted) return;
+    final apiUrl = await showTextInputDialog(
+      context: context,
+      title: "API de l'instance",
+      message: "Entrer l'URL de l'API de votre serveur, celle-ci est nécessaire. Un mot de passe pourra être demandé.",
+      okLabel: 'Valider',
+      cancelLabel: 'Annuler',
+      textFields: [
+        DialogTextField(
+          hintText: "https://stend-api.example.com",
+          autocorrect: false,
+          initialText: initialApiUrl ?? (apiUrlFromWeb != '' ? apiUrlFromWeb : null),
+          keyboardType: TextInputType.url
+        ),
+      ],
+    );
+
+    // On vérifie qu'on a entré une URL d'API
+    if (!mounted) return;
+    if (apiUrl == null || apiUrl.toString().length < 2) {
+      showSnackBar(context, "Une URL d'API est nécessaire pour continuer", icon: "warning", useCupertino: widget.useCupertino);
+      Haptic().warning();
+      return;
+    }
+
+    // On rajoute un slash et "instance" à l'URL de l'API
+    var apiUrlString = apiUrl.single.toString();
+    if (apiUrl.toString().endsWith('//')) apiUrlString = apiUrlString.substring(0, apiUrlString.length - 1);
+    if (!apiUrlString.endsWith('/')) apiUrlString += '/';
+    debugPrint(apiUrlString);
+    var apiUrlStringInstance = '${apiUrlString}instance';
+
+    // Vérifier que l'URL commence par http ou https
+    if (!apiUrlString.startsWith('http://') && !apiUrlString.startsWith('https://')) {
+      apiUrlString = 'https://$apiUrlString';
+    }
+
+    // On vérifie que l'URL de l'API soit valide
+    if (!checkURL(apiUrlStringInstance)) {
+      showSnackBar(context, "L'URL de l'API semble invalide", icon: "warning", useCupertino: widget.useCupertino);
+      Haptic().warning();
+      return;
+    }
+
+    final url = Uri.parse(apiUrlStringInstance);
+
+    // Vérifier que l'URL soit valide
+    if (!context.mounted) return;
+    if (!url.isAbsolute) {
+      showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
+      Haptic().warning();
+      return;
+    }
+
+    // Une fois la requête terminé
+    try {
+      // Vérifier que l'URL soit accessible
+      final response = await http.get(url);
+      if (response.statusCode != 200) {
+        if (!mounted) return;
+        showSnackBar(context, "La requête n'a pas abouti. Vérifier l'URL", icon: "error", useCupertino: widget.useCupertino);
+        Haptic().error();
+        return;
+      }
+
+      // Parse la réponse
+      final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
+
+      // Définir certaines données dans les préférences
+      box.write('requirePassword', jsonData['requirePassword']);
+      box.write('recommendedExpireTimes', jsonData['recommendedExpireTimes']);
+      box.write('apiInstanceUrl', apiUrlString);
+    } catch (e) {
+      if (!mounted) return;
+      showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
+      debugPrint(e.toString());
+      Haptic().error();
+      return;
+    }
+
+    // Si on a besoin de s'autentifier
+    if (box.read('requirePassword') ?? false) {
+      if (!mounted) return;
+      final password = await showTextInputDialog(
+        context: context,
+        title: "Mot de passe",
+        message: "Un mot de passe est nécessaire pour se authentifier à cette API.",
+        okLabel: 'Valider',
+        cancelLabel: 'Annuler',
+        textFields: [
+          DialogTextField(
+            hintText: "Mot de passe",
+            obscureText: initialPassword == null,
+            initialText: initialPassword,
+            keyboardType: TextInputType.visiblePassword
+          ),
+        ],
+      );
+
+      // Si on a entré un mot de passe
+      if (password != null && password.toString().length > 2) {
+        // On vérifie qu'il est valide avec une requête POST checkPassword et un header Authorization
+        final passwordString = password.single.toString();
+        final url = Uri.parse('${apiUrlString}checkPassword');
+        final response = await http.post(
+          url,
+          headers: <String, String>{
+            "Authorization": passwordString
+          }
+        );
+
+        // Parse la réponse
+        final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
+        if (!mounted) return;
+        try {
+          if (jsonData['success']) {
+            box.write('apiInstancePassword', passwordString);
+          } else {
+            box.remove('apiInstanceUrl');
+            Haptic().error();
+            showSnackBar(context, jsonData['message'], icon: "error", useCupertino: widget.useCupertino);
+          }
+        } catch (e) {
+          box.remove('apiInstanceUrl');
+          Haptic().error();
+          showSnackBar(context, jsonData['message'], icon: "error", useCupertino: widget.useCupertino);
+        }
+      } else {
+        if (!mounted) return;
+        Haptic().warning();
+        showSnackBar(context, "La configuration de l'API a été annulée", icon: "warning", useCupertino: widget.useCupertino);
+        return;
+      }
+    }
+
+    // Informer l'utilisateur (si on a réussi)
+    debugPrint('API Instance URL : ${box.read('apiInstanceUrl')}');
+    if (box.read('apiInstanceUrl') != null) {
+      if (!mounted) return;
+      Haptic().success();
+      showSnackBar(context, "Vous êtes maintenant connecté à votre instance", icon: "success", useCupertino: widget.useCupertino);
+      setState(() {
+        _isConnected = true;
+      });
+    }
   }
 
   @override
@@ -301,232 +601,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           const SizedBox(width: 12),
 
                           FilledButton(
-                            onPressed: () async {
-                              Haptic().light();
-                              String apiUrlFromWeb = '';
-
-                              // On récupère l'URL du client web de l'instance via un dialogue
-                              var webUrl = await showTextInputDialog(
-                                context: context,
-                                title: 'Client WEB',
-                                message: "Entrer l'URL du site de votre serveur si vous en avez un, sinon, laissez vide.",
-                                okLabel: 'Valider',
-                                cancelLabel: 'Annuler',
-                                textFields: const [
-                                  DialogTextField(
-                                    hintText: "https://stend.example.com",
-                                    autocorrect: false,
-                                    keyboardType: TextInputType.url
-                                  ),
-                                ],
-                              );
-
-                              // Si l'URL entré est "demo", on met l'URL de démo
-                              if (webUrl != null && webUrl.single.toString().toLowerCase() == 'demo') {
-                                webUrl = List<String>.filled(1, 'https://stend-demo.johanstick.fr');
-                              }
-
-                              // Si on a entré une URL d'un client
-                              if (webUrl != null && webUrl.toString().length > 2) {
-                                if (!context.mounted) return;
-
-                                var url = webUrl.single.toString();
-                                if (url.toString().endsWith('//')) url = url.toString().substring(0, url.toString().length - 1);
-                                if (!url.toString().endsWith('/')) url += '/';
-
-                                // Vérifier que l'URL commence par http ou https
-                                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                                  url = 'https://$url';
-                                }
-
-                                if (!checkURL(webUrl.single)) {
-                                  showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
-                                  Haptic().warning();
-                                  return;
-                                }
-
-                                final urlParsed = Uri.parse(url);
-
-                                // Vérifier que l'URL soit valide
-                                if (!urlParsed.isAbsolute) {
-                                  showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
-                                  Haptic().warning();
-                                  return;
-                                }
-
-                                // Vérifier que l'URL soit accessible
-                                try {
-                                  final response = await http.get(urlParsed);
-                                  if (response.statusCode != 200) { // Si on a pas accès à l'URL, on dit que ça marche pas
-                                    if (!context.mounted) return;
-                                    showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
-                                    Haptic().error();
-                                    return;
-                                  } else { // Si on y a accès, on essaye de parser l'URL de l'API
-                                    try {
-                                      apiUrlFromWeb = response.body.split('apibaseurl="')[1].split('"')[0];
-                                    } catch (e) {
-                                      debugPrint("Aucune API trouvé dans le client web, on continue : $e");
-                                    }
-                                  }
-                                } catch (e) {
-                                  debugPrint(e.toString());
-                                  if (!context.mounted) return;
-                                  showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
-                                  Haptic().error();
-                                  return;
-                                }
-
-                                // Enregistrer l'URL
-                                box.write('webInstanceUrl', urlParsed.toString());
-                              }
-
-                              // On récupère l'URL de l'API
-                              if (!context.mounted) return;
-                              final apiUrl = await showTextInputDialog(
-                                context: context,
-                                title: "API de l'instance",
-                                message: "Entrer l'URL de l'API de votre serveur, celle-ci est nécessaire. Un mot de passe pourra être demandé.",
-                                okLabel: 'Valider',
-                                cancelLabel: 'Annuler',
-                                textFields: [
-                                  DialogTextField(
-                                    hintText: "https://stend-api.example.com",
-                                    autocorrect: false,
-                                    initialText: apiUrlFromWeb != '' ? apiUrlFromWeb : null,
-                                    keyboardType: TextInputType.url
-                                  ),
-                                ],
-                              );
-
-                              // On vérifie qu'on a entré une URL d'API
-                              if (!context.mounted) return;
-                              if (apiUrl == null || apiUrl.toString().length < 2) {
-                                showSnackBar(context, "Une URL d'API est nécessaire pour continuer", icon: "warning", useCupertino: widget.useCupertino);
-                                Haptic().warning();
-                                return;
-                              }
-
-                              // On rajoute un slash et "instance" à l'URL de l'API
-                              var apiUrlString = apiUrl.single.toString();
-                              if (apiUrl.toString().endsWith('//')) apiUrlString = apiUrlString.substring(0, apiUrlString.length - 1);
-                              if (!apiUrlString.endsWith('/')) apiUrlString += '/';
-                              debugPrint(apiUrlString);
-                              var apiUrlStringInstance = '${apiUrlString}instance';
-
-                              // Vérifier que l'URL commence par http ou https
-                              if (!apiUrlString.startsWith('http://') && !apiUrlString.startsWith('https://')) {
-                                apiUrlString = 'https://$apiUrlString';
-                              }
-
-                              // On vérifie que l'URL de l'API soit valide
-                              if (!checkURL(apiUrlStringInstance)) {
-                                showSnackBar(context, "L'URL de l'API semble invalide", icon: "warning", useCupertino: widget.useCupertino);
-                                Haptic().warning();
-                                return;
-                              }
-
-                              final url = Uri.parse(apiUrlStringInstance);
-
-                              // Vérifier que l'URL soit valide
-                              if (!context.mounted) return;
-                              if (!url.isAbsolute) {
-                                showSnackBar(context, "L'URL entrée n'est pas valide", icon: "warning", useCupertino: widget.useCupertino);
-                                Haptic().warning();
-                                return;
-                              }
-
-                              // Une fois la requête terminé
-                              try {
-                                // Vérifier que l'URL soit accessible
-                                final response = await http.get(url);
-                                if (response.statusCode != 200) {
-                                  if (!context.mounted) return;
-                                  showSnackBar(context, "La requête n'a pas abouti. Vérifier l'URL", icon: "error", useCupertino: widget.useCupertino);
-                                  Haptic().error();
-                                  return;
-                                }
-
-                                // Parse la réponse
-                                final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
-
-                                // Définir certaines données dans les préférences
-                                box.write('requirePassword', jsonData['requirePassword']);
-                                box.write('recommendedExpireTimes', jsonData['recommendedExpireTimes']);
-                                box.write('apiInstanceUrl', apiUrlString);
-                              } catch (e) {
-                                if (!context.mounted) return;
-                                showSnackBar(context, "Nous n'avons pas pu accéder à l'URL entrée", icon: "error", useCupertino: widget.useCupertino);
-                                debugPrint(e.toString());
-                                Haptic().error();
-                                return;
-                              }
-
-                              // Si on a besoin de s'autentifier
-                              if (box.read('requirePassword') ?? false) {
-                                if (!context.mounted) return;
-                                final password = await showTextInputDialog(
-                                  context: context,
-                                  title: "Mot de passe",
-                                  message: "Un mot de passe est nécessaire pour se authentifier à cette API.",
-                                  okLabel: 'Valider',
-                                  cancelLabel: 'Annuler',
-                                  textFields: const [
-                                    DialogTextField(
-                                      hintText: "Mot de passe",
-                                      obscureText: true,
-                                      keyboardType: TextInputType.visiblePassword
-                                    ),
-                                  ],
-                                );
-
-                                // Si on a entré un mot de passe
-                                if (password != null && password.toString().length > 2) {
-                                  // On vérifie qu'il est valide avec une requête POST checkPassword et un header Authorization
-                                  final passwordString = password.single.toString();
-                                  final url = Uri.parse('${apiUrlString}checkPassword');
-                                  final response = await http.post(
-                                    url,
-                                    headers: <String, String>{
-                                      "Authorization": passwordString
-                                    }
-                                  );
-
-                                  // Parse la réponse
-                                  final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
-                                  if (!context.mounted) return;
-                                  try {
-                                    if (jsonData['success']) {
-                                      box.write('apiInstancePassword', passwordString);
-                                    } else {
-                                      box.remove('apiInstanceUrl');
-                                      Haptic().error();
-                                      showSnackBar(context, jsonData['message'], icon: "error", useCupertino: widget.useCupertino);
-                                    }
-                                  } catch (e) {
-                                    box.remove('apiInstanceUrl');
-                                    Haptic().error();
-                                    showSnackBar(context, jsonData['message'], icon: "error", useCupertino: widget.useCupertino);
-                                  }
-                                } else {
-                                  if (!context.mounted) return;
-                                  Haptic().warning();
-                                  showSnackBar(context, "La configuration de l'API a été annulée", icon: "warning", useCupertino: widget.useCupertino);
-                                  return;
-                                }
-                              }
-
-                              // Informer l'utilisateur (si on a réussi)
-                              debugPrint('API Instance URL : ${box.read('apiInstanceUrl')}');
-                              if (box.read('apiInstanceUrl') != null) {
-                                if (!context.mounted) return;
-                                Haptic().success();
-                                showSnackBar(context, "Vous êtes maintenant connecté à votre instance", icon: "success", useCupertino: widget.useCupertino);
-                                setState(() {
-                                  _isConnected = true;
-                                });
-                              }
-                            },
+                            onPressed: () => configureInstance(),
                             child: const Text("Configurer"),
                           ),
                         ],
@@ -817,7 +892,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
                           Platform.isIOS ? SwitchListTile.adaptive(
                             title: const Text("Utiliser Material You"),
-                            subtitle: const Text("L'interface changera pour utiliser des composants de design Material 3"),
+                            subtitle: const Text("L'interface changera pour utiliser des composants de design Material"),
                             value: box.read('useMaterialYou') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
@@ -966,54 +1041,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                     Center(
                       child: FilledButton(
                         style: MediaQuery.of(context).size.width > 400 ? null : FilledButton.styleFrom(minimumSize: const Size.fromHeight(40)),
-                        onPressed: () {
-                          Haptic().warning();
-                          showAdaptiveDialog(
-                            context: context,
-                            builder: (context) => AlertDialog.adaptive(
-                              title: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages"),
-                              content: Text("Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Tous les réglages seront effacés."}"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Haptic().light();
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: const Text("Annuler"),
-                                ),
-
-                                TextButton(
-                                  onPressed: () async {
-                                    // Supprimer les réglages
-                                    box.erase();
-
-                                    // Supprimer les fichiers caches
-                                    try {
-                                      var tempDir = await getTemporaryDirectory();
-                                      if (tempDir.existsSync()) {
-                                        tempDir.deleteSync(recursive: true);
-                                      }
-                                    } catch (e) {
-                                      debugPrint(e.toString());
-                                      if (!context.mounted) return;
-                                      showSnackBar(context, "Impossible d'effacer le cache", icon: "error", useCupertino: widget.useCupertino);
-                                      Haptic().error();
-                                    }
-
-                                    // Informer l'utilisateur
-                                    if (!context.mounted) return;
-                                    Haptic().success();
-                                    showSnackBar(context, _isConnected ? "Vous êtes maintenant déconnecté" : "Les réglages ont été effacées", icon: "success", useCupertino: widget.useCupertino);
-
-                                    // Recharger la page
-                                    widget.refresh();
-                                  },
-                                  child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
-                                )
-                              ],
-                            ),
-                          );
-                        },
+                        onPressed: () => askResetSettings(),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 30.0),
                           child: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages")

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,11 +8,13 @@ import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/pages/download.dart';
 import 'package:stendmobile/pages/send.dart';
 import 'package:stendmobile/pages/settings.dart';
 import 'package:stendmobile/pages/debug.dart';
+import 'package:protocol_handler/protocol_handler.dart';
 
 // Fonction pour convertir une chaîne de caractères HEX en couleur
 Color hexToColor(String code) {
@@ -21,6 +24,7 @@ Color hexToColor(String code) {
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await protocolHandler.register('stend');
 
   await GetStorage.init();
 
@@ -34,7 +38,7 @@ class MainApp extends StatefulWidget {
   State<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
+class _MainAppState extends State<MainApp> with ProtocolListener {
   late GetStorage box;
 
   bool firstBuildPassed = false;
@@ -82,6 +86,10 @@ class _MainAppState extends State<MainApp> {
     } else {
       useCupertino = true;
     }
+
+    // Reset certaines globales
+    globals.initializedPages = {};
+    globals.intereventsStreamController = StreamController.broadcast();
 
     setState(() {
       _currentIndex = defaultPageIndex;
@@ -156,12 +164,106 @@ class _MainAppState extends State<MainApp> {
 
     notifInitialize();
     super.initState();
+
+    // Protocol Handler (après que l'app soit initialisée)
+    protocolHandler.addListener(this); // pour les URLs ouvertes pendant que l'app est ouverte
+    protocolHandler.getInitialUrl().then((initialUrl) => { // pour les URLs ouvertes avant que l'app soit ouverte
+      debugPrint('initialUrl: $initialUrl'),
+      if (initialUrl != null) onProtocolUrlReceived(initialUrl)
+    });
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    protocolHandler.removeListener(this);
     super.dispose();
+  }
+
+  @override
+  void onProtocolUrlReceived(String url) async {
+    var urlSplit = url.split('://');
+    var urlPath = urlSplit.sublist(1).join('://');
+    var unformattedParams = urlPath.split('?');
+    urlPath = unformattedParams[0];
+    Map<String, String> urlParams = {};
+    unformattedParams = unformattedParams.sublist(1).join('?').split('&');
+    for (var param in unformattedParams) {
+      var paramSplit = param.split('=');
+      urlParams[paramSplit[0]] = paramSplit.length > 1 ? paramSplit[1] : paramSplit[0];
+    }
+    debugPrint('urlParams: $urlParams');
+    if(urlPath.endsWith('/')) urlPath = urlPath.substring(0, urlPath.length - 1);
+    debugPrint('urlPath: $urlPath');
+
+    if (urlPath == 'send') {
+      destinationSelected(0);
+    } else if (urlPath == 'download') {
+      destinationSelected(1);
+    }
+    else if (urlPath == 'settings') {
+      destinationSelected(2); 
+    }
+    else if (urlPath == 'debug') {
+      _pageController.jumpToPage(3);
+      setState(() {
+        _currentIndex = 2;
+      });
+    } else if(urlPath == 'download/qrcode'){
+      destinationSelected(1);
+
+      while (globals.initializedPages['download'] != true) { // permet d'attendre que la page soit initialisée, et donc qu'elle soit prête à recevoir des événements
+        debugPrint('page not initialized yet');
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      debugPrint('page initialized');
+
+      globals.intereventsStreamController.add({'type': 'open-qrcode-scanner'});
+    } else if(urlPath == 'download/start'){
+      var urlDownload = urlParams['url'];
+      if(urlDownload == null){
+        debugPrint("Stend a été ouvert via une URL personnalisée qui n'a pas été reconnue");
+        askNotifPermission();
+        sendNotif("Échec de l'ouverture", "Stend a été ouvert via une URL personnalisée, mais le paramètre \"url\" qui était nécessaire n'a pas été trouvé. URL : \"$url\"", 'warnings', null);
+        return;
+      }
+
+      destinationSelected(1);
+
+      while (globals.initializedPages['download'] != true) { // permet d'attendre que la page soit initialisée, et donc qu'elle soit prête à recevoir des événements
+        debugPrint('page not initialized yet');
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      debugPrint('page initialized');
+
+      globals.intereventsStreamController.add({'type': 'download', 'url': urlDownload});
+    } else if(urlPath == 'send/files' || urlPath == 'send/images' || urlPath == 'send/videos' || urlPath == 'send/camera'){
+      destinationSelected(0);
+
+      while (globals.initializedPages['send'] != true) {
+        debugPrint('page not initialized yet');
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      debugPrint('page initialized');
+
+      var action = urlPath.split('/')[1];
+      globals.intereventsStreamController.add({'type': 'open-send-picker', 'picker': action});
+    } else if(urlPath == 'settings/reset' || urlPath == 'settings/checkInstance' || urlPath == 'settings/configInstance'){
+      destinationSelected(2);
+
+      while (globals.initializedPages['settings'] != true) {
+        debugPrint('page not initialized yet');
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      debugPrint('page initialized');
+
+      var action = urlPath.split('/')[1];
+      globals.intereventsStreamController.add({'type': 'settings', 'action': action, 'initialWebUrl': urlParams['webUrl'], 'initialApiUrl': urlParams['apiUrl'], 'initialPassword': urlParams['password']});
+    } else {
+      debugPrint("Stend a été ouvert via une URL personnalisée qui n'a pas été reconnue");
+      askNotifPermission();
+      sendNotif("Échec de l'ouverture", "Stend a été ouvert via une URL personnalisée, mais celle-ci n'a pas été reconnue. URL : \"$url\"", 'warnings', null);
+    }
   }
 
   @override

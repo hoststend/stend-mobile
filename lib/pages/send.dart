@@ -10,6 +10,7 @@ import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/limit_string_size.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -87,6 +88,13 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
     }
 
     super.initState();
+    globals.indicatePageInitialized('send');
+
+    globals.intereventsStreamController.stream.listen((event) {
+      if (event['type'] == 'open-send-picker') {
+        openPicker(event['picker']);
+      }
+    });
   }
 
   @override
@@ -96,6 +104,57 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
   @override
   bool get wantKeepAlive => true;
+
+  void openPicker(String picker) async {
+    Haptic().light();
+
+    if (picker == 'files') {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+      if (result != null) {
+        setState(() {
+          for (var file in result.files) {
+            selectedFiles.add(File(file.path!));
+          }
+        });
+      }
+    } else if (picker == 'images') {
+      try {
+        List<XFile> files = await ImagePicker().pickMultiImage();
+        setState(() {
+          for (var xfile in files) {
+            File file = File(xfile.path);
+            selectedFiles.add(file);
+          }
+        });
+      } catch (e) {
+        debugPrint(e.toString());
+        if (!mounted) return;
+        Haptic().error();
+        showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifier les permissions de l'app", icon: "error", useCupertino: widget.useCupertino);
+      }
+    } else if (picker == 'videos') {
+      try {
+        XFile? video = await ImagePicker().pickVideo(source: ImageSource.gallery);
+        if (video == null) return;
+        File file = File(video.path);
+        setState(() {
+          selectedFiles.add(file);
+        });
+      } catch (e) {
+        debugPrint(e.toString());
+        if (!mounted) return;
+        Haptic().error();
+        showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifier les permissions de l'app", icon: "error", useCupertino: widget.useCupertino);
+      }
+    } else if (picker == 'camera') {
+      XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
+      if (image == null) return;
+      File file = File(image.path);
+      setState(() {
+        selectedFiles.add(file);
+      });
+    }
+  }
 
 	@override
 	Widget build(BuildContext context) {
@@ -136,19 +195,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     Padding(
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
-                        onPressed: () async {
-                          Haptic().light();
-
-                          FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
-
-                          if (result != null) {
-                            setState(() {
-                              for (var file in result.files) {
-                                selectedFiles.add(File(file.path!));
-                              }
-                            });
-                          }
-                        },
+                        onPressed: () => openPicker('files'),
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.file : iconLib == 'Lucide (alt)' ? LucideIcons.file : Icons.insert_drive_file),
                         label: const Text("Fichiers")
                       ),
@@ -158,24 +205,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     Padding(
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
-                        onPressed: () async {
-                          Haptic().light();
-
-                          try {
-                            List<XFile> files = await ImagePicker().pickMultiImage();
-                            setState(() {
-                              for (var xfile in files) {
-                                File file = File(xfile.path);
-                                selectedFiles.add(file);
-                              }
-                            });
-                          } catch (e) {
-                            debugPrint(e.toString());
-                            if (!context.mounted) return;
-                            Haptic().error();
-                            showSnackBar(context, "Impossible d'ouvrir la galerie d'images. Vérifier les permissions de l'app", icon: "error", useCupertino: widget.useCupertino);
-                          }
-                        },
+                        onPressed: () => openPicker('images'),
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileImage : iconLib == 'Lucide (alt)' ? LucideIcons.image : Icons.image),
                         label: const Text("Images")
                       ),
@@ -185,23 +215,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     Padding(
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
-                        onPressed: () async {
-                          Haptic().light();
-
-                          try {
-                            XFile? video = await ImagePicker().pickVideo(source: ImageSource.gallery);
-                            if (video == null) return;
-                            File file = File(video.path);
-                            setState(() {
-                              selectedFiles.add(file);
-                            });
-                          } catch (e) {
-                            debugPrint(e.toString());
-                            if (!context.mounted) return;
-                            Haptic().error();
-                            showSnackBar(context, "Impossible d'ouvrir la galerie de vidéos. Vérifier les permissions de l'app", icon: "error", useCupertino: widget.useCupertino);
-                          }
-                        },
+                        onPressed: () => openPicker('videos'),
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileVideo : iconLib == 'Lucide (alt)' ? LucideIcons.film : Icons.movie),
                         label: const Text("Vidéos")
                       ),
@@ -211,16 +225,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     Padding(
                       padding: const EdgeInsets.only(right: 10.0),
                       child: OutlinedButton.icon(
-                        onPressed: () async {
-                          Haptic().light();
-
-                          XFile? image = await ImagePicker().pickImage(source: ImageSource.camera);
-                          if (image == null) return;
-                          File file = File(image.path);
-                          setState(() {
-                            selectedFiles.add(file);
-                          });
-                        },
+                        onPressed: () => openPicker('camera'),
                         icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileVideo2 : iconLib == 'Lucide (alt)' ? LucideIcons.camera : Icons.video_camera_back),
                         label: const Text("Caméra")
                       ),

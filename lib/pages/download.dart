@@ -16,6 +16,7 @@ import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/smash_account.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -134,6 +135,16 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     }
 
     super.initState();
+    globals.indicatePageInitialized('download');
+
+    globals.intereventsStreamController.stream.listen((event) {
+      if (event['type'] == 'download') {
+        urlController.text = event['url'];
+        startDownload();
+      } else if (event['type'] == 'open-qrcode-scanner') {
+        showQrScanner();
+      }
+    });
   }
 
   @override
@@ -143,6 +154,40 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     historicBoxListener?.call();
 
     super.dispose();
+  }
+
+  void showQrScanner() {
+    Haptic().light();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext bc) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Ajouté pour prendre le moins d'espace possible
+
+            children: [
+              Expanded(
+                flex: 5,
+                child: QRView(
+                  key: GlobalKey(debugLabel: 'QR'),
+                  formatsAllowed: const [BarcodeFormat.qrcode],
+                  overlay: QrScannerOverlayShape(
+                    borderRadius: 10,
+                    borderColor: Colors.white,
+                    borderLength: 30,
+                    borderWidth: 10,
+                    cutOutSize: 300,
+                  ),
+                  cameraFacing: box.read('cameraFacing') == 'Avant' ? CameraFacing.front : CameraFacing.back,
+                  onQRViewCreated: _onQRViewCreated,
+                )
+              )
+            ]
+          )
+        );
+      }
+    );
   }
 
   void startDownload() async {
@@ -939,7 +984,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                   hintText: "stend.example.com/d?123456",
                   suffixIcon: IconButton(
                     icon: Icon(Platform.isIOS ? Icons.arrow_forward_ios : Icons.arrow_forward),
-                    onPressed: () { startDownload(); }
+                    onPressed: () => startDownload()
                   ),
                 ),
                 onSubmitted: (String value) { startDownload(); },
@@ -981,40 +1026,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
 
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () async {
-                        Haptic().light();
-
-                        // Ouvrir une bottom sheet pour scanner un QR Code
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (BuildContext bc) {
-                            return Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min, // Ajouté pour prendre le moins d'espace possible
-
-                                children: [
-                                  Expanded(
-                                    flex: 5,
-                                    child: QRView(
-                                      key: GlobalKey(debugLabel: 'QR'),
-                                      formatsAllowed: const [BarcodeFormat.qrcode],
-                                      overlay: QrScannerOverlayShape(
-                                        borderRadius: 10,
-                                        borderColor: Colors.white,
-                                        borderLength: 30,
-                                        borderWidth: 10,
-                                        cutOutSize: 300,
-                                      ),
-                                      cameraFacing: box.read('cameraFacing') == 'Avant' ? CameraFacing.front : CameraFacing.back,
-                                      onQRViewCreated: _onQRViewCreated,
-                                    )
-                                  )
-                                ]
-                              )
-                            );
-                          }
-                        );
-                      },
+                      onPressed: () => showQrScanner(),
                       child: const Text("QR Code"),
                     )
                   )
