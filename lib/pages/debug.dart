@@ -10,6 +10,7 @@ import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
@@ -313,6 +314,58 @@ class _DebugPageState extends State<DebugPage> {
                               showSnackBar(context, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vestibulum venenatis...", icon: 'error', useCupertino: widget.useCupertino);
                             },
                             child: const Text("Ex. erreur"),
+                          )
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Exposition des transferts
+                    Text(
+                      "Exposition des transferts",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              var locationPermission = await checkLocationPermission();
+                              if(!context.mounted) return;
+                              if (locationPermission != true) {
+                                showSnackBar(context, locationPermission, useCupertino: widget.useCupertino);
+                              } else {
+                                showSnackBar(context, "Tout est prêt !", icon: "success", useCupertino: widget.useCupertino);
+                              }
+                            },
+                            child: const Text("Perm. pos."),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              try {
+                                var position = await getCurrentPosition();
+                                if(!context.mounted) return;
+                                debugPrint(position.toString());
+                                showSnackBar(context, "Position actuelle : ${position.latitude}, ${position.longitude}", icon: "success", useCupertino: widget.useCupertino);
+                              } catch (e) {
+                                debugPrint(e.toString());
+                                showSnackBar(context, e.toString(), icon: "error", useCupertino: widget.useCupertino);
+                              }
+                            },
+                            child: const Text("Position"),
                           )
                         )
                       ],

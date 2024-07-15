@@ -75,5 +75,7 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Stend doit avoir accès à votre position pour permettre l'exposition de transferts aux utilisateurs proches</string>
 	</dict>
 </plist>
