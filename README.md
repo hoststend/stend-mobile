@@ -7,7 +7,7 @@ Ce repo GitHub contient le code source et les installateurs du client Mobile de 
 | ![Envoyer](https://stend-docs.johanstick.fr/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmobile_send.659f6f30.png&w=1080&q=75) | ![Télécharger](https://stend-docs.johanstick.fr/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmobile_download.ccc901b9.png&w=1080&q=75) | ![Réglages](https://stend-docs.johanstick.fr/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmobile_settings.89e0e3ed.png&w=1080&q=75) |
 | --- | --- | --- |
 
-Pour plus d'informations sur ce client, vous pouvez lire [la page de la documentation dédiée](https://stend-docs.johanstick.fr/mobile-docs/intro).
+Pour plus d'informations sur ce client, vous pouvez lire [la page de la documentation dédiée](https://stend.johanstick.fr/mobile-docs/intro).
 
 ## Installation
 
@@ -15,7 +15,7 @@ Pour plus d'informations sur ce client, vous pouvez lire [la page de la document
 
 Vous pouvez télécharger l'application depuis le [Play Store](https://play.google.com/store/apps/details?id=fr.johanstick.stendmobile.dev) si votre appareil le supporte.
 
-Cependant, il peut être préférable de télécharger les fichiers d'installation au format .apk [sur GitHub](https://github.com/johan-perso/stend-mobile/releases/latest) pour différentes raisons :
+Cependant, il peut être préférable de télécharger les fichiers d'installation au format .apk [sur GitHub](https://github.com/hoststend/stend-mobile/releases/latest) pour différentes raisons :
 * Le téléchargement de fichiers via certains services tiers comme YouTube ou SoundCloud n'est pas bloqué
 * Les mises à jour arrivent en premier sur GitHub (vous serez prévenu dans l'app si une MÀJ est disponible)
 * Certains appareils ne possèdent tout simplement pas le Play Store
