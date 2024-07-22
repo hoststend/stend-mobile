@@ -95,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     // Obtenir la version la plus récente depuis GitHub si on l'a pas déjà
     if (latestVersion.isEmpty) {
       debugPrint('Fetching GitHub to check update');
-      http.Response response = await http.get(Uri.parse('https://api.github.com/repos/johan-perso/stend-mobile/releases/latest'));
+      http.Response response = await http.get(Uri.parse('https://api.github.com/repos/hoststend/stend-mobile/releases/latest'));
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
         latestVersion = jsonData['tag_name'];
@@ -532,7 +532,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           FilledButton(
                             onPressed: () async {
                               Haptic().light();
-                              final url = Uri.parse('https://github.com/johan-perso/stend-mobile/releases/latest');
+                              final url = Uri.parse('https://github.com/hoststend/stend-mobile/releases/latest');
                               launchUrl(url, mode: Platform.isIOS ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
                             },
                             child: const Text("Lire le changelog"),
@@ -1092,7 +1092,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           IconButton(
                             onPressed: () {
                               Haptic().light();
-                              launchUrl(Uri.parse('https://github.com/johan-perso/stend-mobile'), mode: LaunchMode.externalApplication);
+                              launchUrl(Uri.parse('https://github.com/hoststend/stend-mobile'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.github),
                             color: Theme.of(context).colorScheme.secondary
