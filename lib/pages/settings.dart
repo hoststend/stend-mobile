@@ -586,7 +586,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                         Haptic().light();
                                         Navigator.of(context).pop();
 
-                                        final Uri url = Uri.parse('https://stend-docs.johanstick.fr');
+                                        final Uri url = Uri.parse('https://stend.johanstick.fr');
                                         launchUrl(url);
                                       },
                                       child: const Text("Documentation"),
@@ -1067,7 +1067,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           GestureDetector(
                             onTap: () {
                               Haptic().light();
-                              launchUrl(Uri.parse('https://stend-docs.johanstick.fr/mobile-docs/release-type#release-${storeRelease ? 'store' : 'libre'}'), mode: LaunchMode.inAppBrowserView);
+                              launchUrl(Uri.parse('https://stend.johanstick.fr/mobile-docs/release-type#release-${storeRelease ? 'store' : 'libre'}'), mode: LaunchMode.inAppBrowserView);
                             },
                             child: Text("(${storeRelease ? 'Release Store' : 'Release Libre'})", textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black))
                           )
@@ -1084,7 +1084,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           IconButton(
                             onPressed: () {
                               Haptic().light();
-                              launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
+                              launchUrl(Uri.parse('https://stend.johanstick.fr'), mode: LaunchMode.externalApplication);
                             },
                             icon: const Icon(LucideIcons.globe),
                             color: Theme.of(context).colorScheme.secondary

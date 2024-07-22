@@ -220,7 +220,7 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              launchUrl(Uri.parse('https://stend-docs.johanstick.fr'), mode: LaunchMode.externalApplication);
+                              launchUrl(Uri.parse('https://stend.johanstick.fr'), mode: LaunchMode.externalApplication);
                             },
                             child: const Text("Ouvrir un lien"),
                           )
