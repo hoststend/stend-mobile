@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
@@ -359,6 +360,7 @@ class _DebugPageState extends State<DebugPage> {
                                 var position = await getCurrentPosition();
                                 if(!context.mounted) return;
                                 debugPrint(position.toString());
+                                Clipboard.setData(ClipboardData(text: "${position.latitude},${position.longitude}"));
                                 showSnackBar(context, "Position actuelle : ${position.latitude}, ${position.longitude}", icon: "success", useCupertino: widget.useCupertino);
                               } catch (e) {
                                 debugPrint(e.toString());
