@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/device_nickname.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file_manager/open_file_manager.dart';
@@ -381,8 +383,7 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              box.remove('exposeMethods_account');
-                              box.remove('exposeAccountToken');
+                              globalserver.logout(refreshSettings: false);
                               globalserver.openAuthGoogle();
                             },
                             child: const Text("Connex. auto."),
@@ -394,9 +395,7 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
-                              box.remove('exposeMethods_account');
-                              box.remove('exposeAccountToken');
-
+                              globalserver.logout(refreshSettings: false);
                               globalserver.openAuthGoogle(responseType: 'html');
 
                               var code = await showTextInputDialog(
@@ -425,6 +424,34 @@ class _DebugPageState extends State<DebugPage> {
                               }
                             },
                             child: const Text("Connex. via code"),
+                          )
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              var nickname = await getDeviceNickname();
+                              debugPrint('getDeviceNickname returned: $nickname');
+                              if(!context.mounted) return;
+                              showSnackBar(context, "Nom de l'appareil : $nickname");
+                            },
+                            child: const Text("Surnom device"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                            },
+                            child: const Text("WIP"),
                           )
                         )
                       ],
