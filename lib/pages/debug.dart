@@ -12,6 +12,7 @@ import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
@@ -368,6 +369,62 @@ class _DebugPageState extends State<DebugPage> {
                               }
                             },
                             child: const Text("Position"),
+                          )
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              box.remove('exposeMethods_account');
+                              box.remove('exposeAccountToken');
+                              globalserver.openAuthGoogle();
+                            },
+                            child: const Text("Connex. auto."),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              box.remove('exposeMethods_account');
+                              box.remove('exposeAccountToken');
+
+                              globalserver.openAuthGoogle(responseType: 'html');
+
+                              var code = await showTextInputDialog(
+                                context: context,
+                                title: 'Connexion manuelle',
+                                message: "Rendez-vous sur « johanstick.fr/stend-authgoogle » et suivez les étapes, puis saisissez le code de connexion à 8 caractères qui s'affichera",
+                                okLabel: 'Valider',
+                                cancelLabel: 'Annuler',
+                                textFields: const [
+                                  DialogTextField(
+                                    autocorrect: false,
+                                    keyboardType: TextInputType.text,
+                                    maxLength: 8,
+                                    hintText: '1234abcd'
+                                  ),
+                                ],
+                              );
+                              if (code == null) return;
+
+                              var result = await globalserver.checkcodeAuth(code.single);
+                              if(!context.mounted) return;
+                              if (result != true) {
+                                showSnackBar(context, result.toString(), icon: 'error', useCupertino: widget.useCupertino);
+                              } else {
+                                showSnackBar(context, "Connexion réussie !", icon: 'success', useCupertino: widget.useCupertino);
+                              }
+                            },
+                            child: const Text("Connex. via code"),
                           )
                         )
                       ],
