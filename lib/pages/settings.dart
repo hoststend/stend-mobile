@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:adaptive_dialog/adaptive_dialog.dart';
@@ -65,6 +66,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
           initialApiUrl: event['initialApiUrl'],
           initialPassword: event['initialPassword']
         );
+      } else if (event['action'] == 'enableExposeAccountToggle') {
+        setState(() {
+          box.write('exposeMethods_account', true);
+        });
       }
     });
   }
@@ -722,6 +727,20 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
+                          SwitchListTile.adaptive(
+                            title: const Text("Exposer un transfert par défaut"),
+                            subtitle: const Text("L'option pour exposer les transferts envoyés sera coché au lancement"),
+                            value: box.read('exposeByDefault') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                box.write('exposeByDefault', value!);
+                                widget.showRefreshButton(true);
+                              });
+                            },
+                          ),
+
                           ListTile(
                             title: const Text("Durée avant expiration"),
                             subtitle: const Text("Définissez la durée avant expiration par défaut d'un fichier"),
@@ -903,6 +922,77 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               });
                             },
                           ) : const SizedBox.shrink(),
+                        ]
+                      )
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Méthodes d'exposition
+                    Text(
+                      "Méthodes d'exposition",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ),
+                    const SizedBox(height: 6),
+
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: Column(
+                        children: [
+                          SwitchListTile.adaptive(
+                            title: const Text("Votre réseau sur cette instance"),
+                            subtitle: const Text("Les utilisateurs de votre instance sur la même adresse IP que vous pouerront voir vos transfert exposés"),
+                            value: box.read('exposeMethods_ipinstance') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                box.write('exposeMethods_ipinstance', value!);
+                                widget.showRefreshButton(true);
+                              });
+                            },
+                          ),
+
+                          SwitchListTile.adaptive(
+                            title: const Text("À proximité de vous"),
+                            subtitle: const Text("Les utilisateurs ayant activé cette option verront vos transferts exposés s'ils sont proches de là où vous l'avez créé"),
+                            value: box.read('exposeMethods_nearby') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                box.write('exposeMethods_nearby', value!);
+                                // TODO: demander la permission de se localiser, et la vérifier
+                                widget.showRefreshButton(true);
+                              });
+                            },
+                          ),
+
+                          SwitchListTile.adaptive(
+                            title: const Text("S'authentifier avec Google"),
+                            subtitle: const Text("Vous retrouverez vos transferts exposés sur tous vos appareils connectés à ce compte"),
+                            value: box.read('exposeMethods_account') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                if(value!) { // Si on active l'option, on demande la connexion
+                                  globalserver.openAuthGoogle();
+                                } else { // Si on désactive l'option, on supprime les données
+                                  box.remove('exposeMethods_account');
+                                  box.remove('exposeAccountToken');
+                                }
+                              });
+                            },
+                          ),
                         ]
                       )
                     ),

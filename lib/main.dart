@@ -9,6 +9,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/globals.dart' as globals;
+import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/pages/download.dart';
 import 'package:stendmobile/pages/send.dart';
@@ -263,8 +264,34 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
 
       var action = urlPath.split('/')[1];
       globals.intereventsStreamController.add({'type': 'settings', 'action': action, 'initialWebUrl': urlParams['webUrl'], 'initialApiUrl': urlParams['apiUrl'], 'initialPassword': urlParams['password']});
+    } else if(urlPath == 'globalserver/auth'){
+      var code = urlParams['code'];
+      if(code == null){
+        debugPrint("Stend a été ouvert via une URL personnalisée qui n'a pas été reconnue");
+        askNotifPermission();
+        sendNotif("Échec de l'ouverture", "Stend a été ouvert via une URL personnalisée, mais le paramètre \"code\" qui était nécessaire n'a pas été trouvé. URL : \"$url\"", 'warnings', null);
+        return;
+      }
+
+      // ouvrir les réglages
+      if(_currentIndex != 2){
+        destinationSelected(2);
+        while (globals.initializedPages['settings'] != true) {
+          debugPrint('page not initialized yet');
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+        debugPrint('page initialized');
+      } else {
+        debugPrint('skipping settings page initialization');
+      }
+
+      // échanger le code contre un token
+      var codeExchange = await globalserver.checkcodeAuth(code);
+      if(codeExchange != true){
+        sendNotif("Échec de la connexion", "La connexion au compte Stend a échoué. $codeExchange.", 'warnings', null);
+      }
     } else {
-      debugPrint("Stend a été ouvert via une URL personnalisée qui n'a pas été reconnue");
+      debugPrint("Stend a été ouvert via une URL personnalisée qui n'a pas été reconnue du tout");
       askNotifPermission();
       sendNotif("Échec de l'ouverture", "Stend a été ouvert via une URL personnalisée, mais celle-ci n'a pas été reconnue. URL : \"$url\"", 'warnings', null);
     }
