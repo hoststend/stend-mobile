@@ -42,11 +42,13 @@ bool isUpdateAvailable = false;
 
 class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClientMixin {
   bool _isConnected = true;
+  bool _isGlobalAccountConnected = false;
   late bool storeRelease;
 
   @override
   void initState() {
     _isConnected = box.read('apiInstanceUrl') != null;
+    _isGlobalAccountConnected = box.read('exposeMethods_account') != null;
     storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
     if(!checkedUpdate) checkUpdate();
 
@@ -66,9 +68,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
           initialApiUrl: event['initialApiUrl'],
           initialPassword: event['initialPassword']
         );
-      } else if (event['action'] == 'enableExposeAccountToggle') {
+      } else if (event['action'] == 'refreshSettings') {
         setState(() {
-          box.write('exposeMethods_account', true);
+          _isConnected = box.read('apiInstanceUrl') != null;
+          _isGlobalAccountConnected = box.read('exposeMethods_account') != null;
         });
       }
     });
@@ -196,27 +199,35 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
   }
 
   void askResetSettings() {
-    Haptic().warning();
+    confirmDialog(
+      title: _isConnected ? "Se déconnecter" : "Effacer les réglages",
+      content: "Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Tous les réglages seront effacés."}",
+      actions: [
+        TextButton(
+          onPressed: () {
+            Haptic().light();
+            Navigator.of(context).pop();
+          },
+          child: const Text("Annuler"),
+        ),
+
+        TextButton(
+          onPressed: () => resetSettings(),
+          child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
+        )
+      ]
+    );
+  }
+
+  void confirmDialog({ String title = 'Confirmation', String content = 'Pas de texte', String haptic = 'warning', List<Widget> actions = const [] }) {
+    if(haptic == 'warning') Haptic().warning();
 
     showAdaptiveDialog(
       context: context,
       builder: (context) => AlertDialog.adaptive(
-        title: Text(_isConnected ? "Se déconnecter" : "Effacer les réglages"),
-        content: Text("Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Tous les réglages seront effacés."}"),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Haptic().light();
-              Navigator.of(context).pop();
-            },
-            child: const Text("Annuler"),
-          ),
-
-          TextButton(
-            onPressed: () => resetSettings(),
-            child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
-          )
-        ],
+        title: Text(title),
+        content: Text(content),
+        actions: actions,
       ),
     );
   }
@@ -984,11 +995,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
-                                if(value!) { // Si on active l'option, on demande la connexion
+                                if(value!) {
                                   globalserver.openAuthGoogle();
-                                } else { // Si on désactive l'option, on supprime les données
-                                  box.remove('exposeMethods_account');
-                                  box.remove('exposeAccountToken');
+                                } else {
+                                  globalserver.logout();
                                 }
                               });
                             },
@@ -997,6 +1007,94 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       )
                     ),
                     const SizedBox(height: 25),
+
+                    // Votre compte Stend
+                    _isGlobalAccountConnected ? Text(
+                      "Votre compte Stend",
+
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer
+                      )
+                    ) : const SizedBox.shrink(),
+                    SizedBox(height: _isGlobalAccountConnected ? 6 : 0),
+
+                    _isGlobalAccountConnected ? Theme(
+                      data: Theme.of(context).copyWith(
+                        splashFactory: NoSplash.splashFactory,
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            title: const Text("Identifiant de votre compte"),
+                            subtitle: Text("L'identifiant unique de votre compte est : ${box.read('exposeAccountId') ?? '<introuvable>'}"),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+
+                          ListTile(
+                            title: const Text("Effacer les sessions"),
+                            subtitle: const Text("Déconnecte tous les appareils connectés à ce compte"),
+                            trailing: IconButton(
+                              onPressed: () async {
+                                confirmDialog(
+                                  title: 'Effacer les sessions ?',
+                                  content: 'Vous serez déconnecté de ce compte sur tous vos appareils connectés, y compris celui-ci.',
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Haptic().light();
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text("Annuler"),
+                                    ),
+
+                                    TextButton(
+                                      onPressed: () => globalserver.resetToken(),
+                                      child: const Text("Confirmer"),
+                                    )
+                                  ],
+                                );
+                              },
+                              icon: const Icon(Icons.delete_forever),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          ),
+
+                          ListTile(
+                            title: const Text("Supprimer ce compte"),
+                            subtitle: const Text("Supprime définitivement ce compte et toutes les données associées à celui-ci"),
+                            trailing: IconButton(
+                              onPressed: () async {
+                                confirmDialog(
+                                  title: 'Supprimer ce compte ?',
+                                  content: "Vous serez déconnecté sur tous vos appareils connectés et vos transferts exposés seront supprimés dans moins d'une heure. Vous pourrez vous réinscrire.",
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Haptic().light();
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text("Annuler"),
+                                    ),
+
+                                    TextButton(
+                                      onPressed: () => globalserver.deleteAccount(),
+                                      child: const Text("Confirmer"),
+                                    )
+                                  ],
+                                );
+                              },
+                              icon: const Icon(Icons.delete_forever),
+                            ),
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                          )
+                        ]
+                      )
+                    ) : const SizedBox.shrink(),
+                    SizedBox(height: _isGlobalAccountConnected ? 25 : 0),
 
                     // Options supplémentaires
                     Text(
