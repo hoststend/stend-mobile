@@ -1159,7 +1159,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               Haptic().light();
                               launchUrl(Uri.parse('https://stend.johanstick.fr/mobile-docs/release-type#release-${storeRelease ? 'store' : 'libre'}'), mode: LaunchMode.inAppBrowserView);
                             },
-                            child: Text("(${storeRelease ? 'Release Store' : 'Release Libre'})", textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black))
+                            child: Text(" (${storeRelease ? 'Release Store' : 'Release Libre'})", textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black))
                           )
                         ],
                       ),
