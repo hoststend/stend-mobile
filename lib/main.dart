@@ -52,6 +52,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
 
   late PageController _pageController;
   late int defaultPageIndex;
+  bool _debugSettingsOpened = false;
 
   Key _refreshKey = UniqueKey();
   void refresh() {
@@ -105,6 +106,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
       if(_sameIndexClickedTimes == 2 && index == 2){
         _sameIndexClickedTimes = 0;
         Haptic().light();
+        _debugSettingsOpened = true;
         _pageController.jumpToPage(3);
         return;
       } else {
@@ -118,6 +120,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
 
     setState(() {
       _currentIndex = index;
+      _debugSettingsOpened = false;
     });
 
     _pageController.jumpToPage(index);
@@ -207,6 +210,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     else if (urlPath == 'debug') {
       _pageController.jumpToPage(3);
       setState(() {
+        _debugSettingsOpened = true;
         _currentIndex = 2;
       });
     } else if(urlPath == 'download/qrcode'){
@@ -345,59 +349,77 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
               child: Icon(iconLib == 'Lucide' ? LucideIcons.rotateCw : iconLib == 'Lucide (alt)' ? LucideIcons.rotateCw : iconLib == 'iOS' ? CupertinoIcons.refresh : Icons.refresh),
             ) : null,
             floatingActionButtonLocation: MediaQuery.of(context).size.width > 600 ? FloatingActionButtonLocation.startFloat : FloatingActionButtonLocation.endFloat,
-            body: SafeArea(
-              bottom: true,
+            body: PopScope(
+              canPop: false, // permet d'appeler notre fonction
+              onPopInvoked: (didPop) {
+                debugPrint('_currentIndex: $_currentIndex');
+                // Si la page ouverte est les réglages de débogage, ouvrir les réglages normaux
+                if (_debugSettingsOpened) {
+                  _pageController.jumpToPage(2);
+                  setState(() {
+                    _debugSettingsOpened = false;
+                    _currentIndex = 2;
+                  });
+                  return;
+                }
 
-              child: Row(
-                children: [
-                  MediaQuery.of(context).size.width > 600 ? NavigationRail(
-                    selectedIndex: _currentIndex,
-                    extended: MediaQuery.of(context).size.width > 900,
-                    onDestinationSelected: destinationSelected,
-                    indicatorColor: useCupertino ? Colors.transparent : null,
-                    selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
-                    selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
-                    unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey[400]) : null,
-                    unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[400]) : null,
-                    leading: MediaQuery.of(context).size.width > 900 ? SizedBox(
-                      width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
-                      child: const Padding(
-                        padding: EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
-                        child: Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
-                      )
-                    ) : null,
-                    destinations: [
-                      NavigationRailDestination(
-                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
-                        label: const Text('Envoyer'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
-                        label: const Text('Télécharger'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.cog : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
-                        label: const Text('Réglages'),
-                      )
-                    ],
-                  ) : const SizedBox(),
-                  Expanded(
-                    flex: 1,
-                    child: Padding(
-                      padding: MediaQuery.of(context).size.width > 500 ? const EdgeInsets.symmetric(horizontal: 50.0) : EdgeInsets.zero,
-                      child: PageView(
-                        physics: const NeverScrollableScrollPhysics(),
-                        controller: _pageController,
-                        children: [
-                          SendPage(useCupertino: useCupertino),
-                          DownloadPage(useCupertino: useCupertino),
-                          SettingsPage(refresh: refresh, showRefreshButton: (bool value) { setState(() { showRefreshButton = value; }); }, updateState: () { setState(() {}); }, useCupertino: useCupertino),
-                          DebugPage(refresh: refresh, useCupertino: useCupertino),
-                        ]
+                // Sinon, on retourne réellement en arrière
+                SystemNavigator.pop();
+              },
+              child: SafeArea(
+                bottom: true,
+
+                child: Row(
+                  children: [
+                    MediaQuery.of(context).size.width > 600 ? NavigationRail(
+                      selectedIndex: _currentIndex,
+                      extended: MediaQuery.of(context).size.width > 900,
+                      onDestinationSelected: destinationSelected,
+                      indicatorColor: useCupertino ? Colors.transparent : null,
+                      selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
+                      selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
+                      unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey[400]) : null,
+                      unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[400]) : null,
+                      leading: MediaQuery.of(context).size.width > 900 ? SizedBox(
+                        width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
+                          child: Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
+                        )
+                      ) : null,
+                      destinations: [
+                        NavigationRailDestination(
+                          icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
+                          label: const Text('Envoyer'),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
+                          label: const Text('Télécharger'),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.cog : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
+                          label: const Text('Réglages'),
+                        )
+                      ],
+                    ) : const SizedBox(),
+                    Expanded(
+                      flex: 1,
+                      child: Padding(
+                        padding: MediaQuery.of(context).size.width > 500 ? const EdgeInsets.symmetric(horizontal: 50.0) : EdgeInsets.zero,
+                        child: PageView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          controller: _pageController,
+                          children: [
+                            SendPage(useCupertino: useCupertino),
+                            DownloadPage(useCupertino: useCupertino),
+                            SettingsPage(refresh: refresh, showRefreshButton: (bool value) { setState(() { showRefreshButton = value; }); }, updateState: () { setState(() {}); }, useCupertino: useCupertino),
+                            DebugPage(refresh: refresh, useCupertino: useCupertino),
+                          ]
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             bottomNavigationBar: MediaQuery.of(context).size.width > 600 ? null : useCupertino
