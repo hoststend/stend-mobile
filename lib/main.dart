@@ -124,6 +124,11 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
       _debugSettingsOpened = false;
     });
 
+    while (_pageController.hasClients == false) { // permet d'attendre que le contrôleur de page soit prêt
+      debugPrint('page controller not ready');
+      Future.delayed(const Duration(milliseconds: 200));
+    }
+
     _pageController.jumpToPage(index);
   }
 

@@ -33,7 +33,9 @@ Map channels = {
     'Avertissements',
     channelDescription: 'Notifications générales lorsqu\'un problème survient pendant l\'utilisation de l\'application',
     groupKey: 'warnings',
-    styleInformation: BigTextStyleInformation('')
+    styleInformation: BigTextStyleInformation(''),
+    importance: Importance.max,
+    visibility: NotificationVisibility.public
   )
 };
 
