@@ -11,11 +11,11 @@ void openAuthGoogle({String responseType = 'redirect'}) {
   launchUrl(Uri.parse('https://globalstend.johanstick.fr/auth/google/login?responseType=$responseType'), mode: LaunchMode.inAppBrowserView);
 }
 
-void logout() {
+void logout({ bool refreshSettings = true }) {
   box.remove('exposeMethods_account');
   box.remove('exposeAccountToken');
   box.remove('exposeAccountId');
-  globals.intereventsStreamController.add({'type': 'settings', 'action': 'refreshSettings' });
+  if(refreshSettings) globals.intereventsStreamController.add({'type': 'settings', 'action': 'refreshSettings' });
 }
 
 Future checkcodeAuth(String code) async {
