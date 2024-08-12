@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/geolocator.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:url_launcher/url_launcher.dart';
@@ -977,13 +978,30 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Les utilisateurs ayant activé cette option verront vos transferts exposés s'ils sont proches de là où vous l'avez créé"),
                             value: box.read('exposeMethods_nearby') ?? false,
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
-                            onChanged: (bool? value) {
+                            onChanged: (bool? value) async {
                               Haptic().light();
-                              setState(() {
-                                box.write('exposeMethods_nearby', value!);
-                                // TODO: demander la permission de se localiser, et la vérifier
+
+                              if(value!) { // si on active l'option
+                                var locationPermission = await checkLocationPermission();
+                                if(!context.mounted) return;
+
+                                if (locationPermission != true) {
+                                  Haptic().warning();
+                                  showSnackBar(context, locationPermission, useCupertino: widget.useCupertino);
+                                } else {
+                                  Haptic().light();
+                                  setState(() {
+                                    box.write('exposeMethods_nearby', true);
+                                  });
+                                  widget.showRefreshButton(true);
+                                }
+
+                              } else { // si on l'a désactive
+                                setState(() {
+                                  box.write('exposeMethods_nearby', false);
+                                });
                                 widget.showRefreshButton(true);
-                              });
+                              }
                             },
                           ),
 
