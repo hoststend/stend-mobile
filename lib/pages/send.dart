@@ -18,6 +18,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:tuple/tuple.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class UploadDialog extends StatefulWidget {
   final bool useCupertino;
@@ -464,6 +465,9 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   // Demander la permission d'envoyer des notifications
                   askNotifPermission();
 
+                  // Empêcher l'écran de s'éteindre
+                  WakelockPlus.enable();
+
                   // On passe sur chaque fichiers
                   String finalAccess = '';
                   List uploadedFiles = [];
@@ -485,6 +489,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       showSnackBar(context, "Impossible de créer un transfert${transfertInfo.data['message'] != null && transfertInfo.data['message'].isNotEmpty ? ": ${transfertInfo.data['message']}" : ""}", icon: "error", useCupertino: widget.useCupertino);
                       Navigator.pop(context);
                       Haptic().error();
+                      WakelockPlus.disable();
                       return;
                     }
 
@@ -538,6 +543,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                         showSnackBar(context, "Impossible de gérer le transfert : $e", icon: "error", useCupertino: widget.useCupertino);
                         Navigator.pop(context);
                         Haptic().error();
+                        WakelockPlus.disable();
                         return;
                       }
 
@@ -547,6 +553,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                         showSnackBar(context, "Impossible de gérer le transfert${chunkResponse.data['message'] != null && chunkResponse.data['message'].isNotEmpty ? ": ${chunkResponse.data['message']}" : ""}", icon: "error", useCupertino: widget.useCupertino);
                         Navigator.pop(context); 
                         Haptic().error();
+                        WakelockPlus.disable();
                         return;
                       }
 
@@ -626,6 +633,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       showSnackBar(context, "Impossible de créer un groupe de liens${mergeResponse.data['message'] != null && mergeResponse.data['message'].isNotEmpty ? ": ${mergeResponse.data['message']}" : ""}", icon: "error", useCupertino: widget.useCupertino);
                       Navigator.pop(context);
                       Haptic().error();
+                      WakelockPlus.disable();
                       return;
                     }
 
@@ -661,6 +669,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   // Envoyer une notification si l'app est en arrière plan
                   Haptic().success();
                   sendBackgroundNotif("Transfert terminé", "${selectedFiles.length} ${selectedFiles.length > 1 ? "fichiers ont été envoyés" : "fichier a été envoyé"} vers Stend", "upload", null);
+                  WakelockPlus.disable();
 
                   // On affiche un nouveau dialogue avec les infos d'accès (on propose d'ouvrir ou de partager)
                   showAdaptiveDialog(

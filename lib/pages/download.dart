@@ -26,6 +26,7 @@ import 'package:tuple/tuple.dart';
 import 'package:path/path.dart' as path;
 import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 late Dio dio;
 
@@ -800,6 +801,9 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     // Demander la permission d'envoyer des notifications
     askNotifPermission();
 
+    // Empêcher l'écran de s'éteindre
+    WakelockPlus.enable();
+
     // On télécharge chaque transfert
     bool savedInGallery = false;
     for (var transfert in transfertsDownloads) {
@@ -810,6 +814,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         Haptic().error();
         showSnackBar(context, "Un des transferts est mal formé (problème avec l'API ?)", icon: "error", useCupertino: widget.useCupertino);
         Navigator.pop(context);
+        WakelockPlus.disable();
         return;
       }
 
@@ -847,6 +852,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         Haptic().error();
         showSnackBar(context, "Impossible de télécharger le fichier $fileName", icon: "error", useCupertino: widget.useCupertino);
         Navigator.pop(context);
+        WakelockPlus.disable();
         return;
       }
 
@@ -923,6 +929,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
               Haptic().error();
               if (!mounted) return;
               showSnackBar(context, "Impossible d'enregistrer le fichier dans la galerie", icon: "error", useCupertino: widget.useCupertino);
+              WakelockPlus.disable();
             }
           }
         }
@@ -938,6 +945,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     Haptic().success();
     showSnackBar(context, "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "Le fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}", icon: "success", useCupertino: widget.useCupertino);
     sendBackgroundNotif("Téléchargement terminé", "${transfertsDownloads.length > 1 ? "${transfertsDownloads.length} fichiers ont été placés" : "1 fichier a été placé"}${savedInGallery ? " dans la galerie" : " dans vos téléchargements"}", "download", "open-downloads");
+    WakelockPlus.disable();
   }
 
   @override

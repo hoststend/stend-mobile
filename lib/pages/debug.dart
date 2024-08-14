@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +19,7 @@ import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
 import 'package:flutter_highlight/themes/gruvbox-light.dart';
 import 'package:flutter_highlight/themes/gruvbox-dark.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class DebugPage extends StatefulWidget {
   final Function refresh;
@@ -231,6 +231,32 @@ class _DebugPageState extends State<DebugPage> {
                         )
                       ],
                     ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              WakelockPlus.enable();
+                            },
+                            child: const Text("Awake (on)"),
+                          )
+                        ),
+
+                        const SizedBox(width: 12.0),
+
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () async {
+                              WakelockPlus.disable();
+                            },
+                            child: const Text("Awake (off)"),
+                          )
+                        )
+                      ],
+                    ),
                     const SizedBox(height: 32),
 
                     // Snackbars
@@ -396,7 +422,6 @@ class _DebugPageState extends State<DebugPage> {
                           child: OutlinedButton(
                             onPressed: () async {
                               globalserver.logout(refreshSettings: false);
-                              globalserver.openAuthGoogle(responseType: 'html');
 
                               var code = await showTextInputDialog(
                                 context: context,
