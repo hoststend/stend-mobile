@@ -1059,7 +1059,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               onPressed: () async {
                                 confirmDialog(
                                   title: 'Effacer les sessions ?',
-                                  content: 'Vous serez déconnecté de ce compte sur tous vos appareils connectés, y compris celui-ci.',
+                                  content: 'Vous serez déconnecté de ce compte sur tous vos appareils connectés, à l\'exception de celui-ci.',
                                   actions: [
                                     TextButton(
                                       onPressed: () {
@@ -1070,7 +1070,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                     ),
 
                                     TextButton(
-                                      onPressed: () => globalserver.resetToken(),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        globalserver.resetToken(hapticFeedback: true).then((res) => showSnackBar(context, res['value'], icon: res['icon'], useCupertino: widget.useCupertino));
+                                      },
                                       child: const Text("Confirmer"),
                                     )
                                   ],
@@ -1099,7 +1102,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                     ),
 
                                     TextButton(
-                                      onPressed: () => globalserver.deleteAccount(),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        globalserver.deleteAccount(hapticFeedback: true).then((res) => showSnackBar(context, res['value'], icon: res['icon'], useCupertino: widget.useCupertino));
+                                      },
                                       child: const Text("Confirmer"),
                                     )
                                   ],
