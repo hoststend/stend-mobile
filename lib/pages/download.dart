@@ -15,6 +15,7 @@ import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/smash_account.dart';
+import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -203,6 +204,15 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     if (downloadKey.isEmpty) {
       Haptic().warning();
       showSnackBar(context, "Veuillez entrer un lien ou une clé de partage", icon: "warning", useCupertino: widget.useCupertino);
+      return;
+    }
+
+    // Vérifier l'accès à internet
+    bool connectivity = await checkConnectivity();
+    if (!mounted) return;
+    if (!connectivity) {
+      Haptic().warning();
+      showSnackBar(context, "Vous n'êtes pas connecté à internet, vérifiez votre connexion et réessayez", icon: "warning", useCupertino: widget.useCupertino);
       return;
     }
 

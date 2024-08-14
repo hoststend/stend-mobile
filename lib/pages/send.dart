@@ -9,6 +9,7 @@ import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/user_agent.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/limit_string_size.dart';
+import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
@@ -332,6 +333,15 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
               // Bouton pour confirmer l'envoi
               FilledButton.icon(
                 onPressed: selectedFiles.isEmpty ? null : () async {
+                  // Vérifier l'accès à internet
+                  bool connectivity = await checkConnectivity();
+                  if (!context.mounted) return;
+                  if (!connectivity) {
+                    Haptic().warning();
+                    showSnackBar(context, "Vous n'êtes pas connecté à internet, vérifiez votre connexion et réessayez", icon: "warning", useCupertino: widget.useCupertino);
+                    return;
+                  }
+
                   // Obtenir des variables depuis les réglages
                   bool disableHistory = box.read('disableHistory') ?? false;
                   bool copyUrlAfterSend = box.read('copyUrlAfterSend') ?? false;
