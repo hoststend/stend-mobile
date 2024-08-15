@@ -6,6 +6,7 @@ import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:url_launcher/url_launcher.dart';
@@ -123,72 +124,184 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
   }
 
   void checkInstance() async {
+    // Vérifier l'accès à internet
+    bool connectivity = await checkConnectivity();
+    if (!mounted) return;
+    if (!connectivity) {
+      Haptic().warning();
+      showSnackBar(context, "Vous n'êtes pas connecté à internet, vérifiez votre connexion et réessayez", icon: "warning", useCupertino: widget.useCupertino);
+      return;
+    }
+
     // Obtenir certaines variables depuis les préférences
     final webInstanceUrl = box.read('webInstanceUrl');
     final apiInstanceUrl = box.read('apiInstanceUrl');
+    final globalserverInstanceUrl = box.read('globalserverInstanceUrl') ?? 'https://globalstend.johanstick.fr/';
 
     // Afficher une snackbar pour informer l'utilisateur
     Haptic().light();
     if(apiInstanceUrl != null || webInstanceUrl != null){
       if (!mounted) return;
-      showSnackBar(context, "Début de la vérification de l'instance...", icon: "info", useCupertino: widget.useCupertino);
+      showSnackBar(context, "Début de la vérification des services...", icon: "info", useCupertino: widget.useCupertino);
     }
 
-    // Vérifier si l'API retourne HTTP 200
-    var apiResponseCode = 0;
+    // Objet qui contient les statuts
+    bool atLeastOneIssue = true; // Si on a au moins un problème avec les éléments self-hosté
+    Map status = {
+      'api': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
+      'web': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
+      'globalserver': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
+    };
+
+    // Vérifier l'API
     if (apiInstanceUrl != null) {
       http.Response response;
       try {
         final url = Uri.parse('${apiInstanceUrl}instance');
-        // Faire un timeout de 5sec
-        response = await http.get(url).timeout(const Duration(seconds: 4));
-        apiResponseCode = response.statusCode;
+        status['api']['startCheck'] = DateTime.now().millisecondsSinceEpoch;
+        response = await http.get(url).timeout(const Duration(seconds: 10));
+        status['api']['ping'] = DateTime.now().millisecondsSinceEpoch - status['api']['startCheck'];
+        status['api']['httpCode'] = response.statusCode;
+        status['api']['statusFriendly'] = response.statusCode == 200 ? 'accessible' : 'accessible avec erreur';
+        status['api']['statusBool'] = response.statusCode == 200 ? true : false;
+
+        if(response.statusCode == 200) {
+          atLeastOneIssue = false;
+
+          try {
+            final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
+            box.write('requirePassword', jsonData['requirePassword']);
+            box.write('recommendedExpireTimes', jsonData['recommendedExpireTimes']);
+            status['api']['version'] = jsonData['apiVersion'];
+          } catch (e) {
+            debugPrint("Impossible d'extraire les informations de l'instance (API) : $e");
+          }
+        }
       } catch (e) {
+        debugPrint('API instance check failed');
         debugPrint(e.toString());
         if (!context.mounted) return;
-        apiResponseCode = 0;
+        status['api']['statusFriendly'] = 'non disponible';
       }
     }
 
-    // Vérifier le client WEB si on l'a
-    var webResponseCode = 0;
+    // Vérifier le client WEB
     if (webInstanceUrl != null) {
-      http.Response webResponse;
+      http.Response response;
       try {
-        final webUrl = Uri.parse(webInstanceUrl);
-        webResponse = await http.get(webUrl).timeout(const Duration(seconds: 4));
-        webResponseCode = webResponse.statusCode;
+        final url = Uri.parse('$webInstanceUrl/version');
+        status['web']['startCheck'] = DateTime.now().millisecondsSinceEpoch;
+        response = await http.get(url).timeout(const Duration(seconds: 10));
+        status['web']['ping'] = DateTime.now().millisecondsSinceEpoch - status['web']['startCheck'];
+        status['web']['httpCode'] = response.statusCode;
+        status['web']['statusFriendly'] = response.statusCode == 200 ? 'accessible' : 'accessible avec erreur';
+        status['web']['statusBool'] = response.statusCode == 200 ? true : false;
+
+        if(response.statusCode == 200) {
+          atLeastOneIssue = false;
+
+          try {
+            final String version = utf8.decode(response.bodyBytes);
+            if (version.isNotEmpty && version.length > 100) {
+              status['web']['version'] = '${version.substring(0, 100)}...';
+            } else if(version.isNotEmpty) {
+              status['web']['version'] = version;
+            }
+          } catch (e) {
+            debugPrint("Impossible d'extraire les informations de l'instance (WEB) : $e");
+          }
+        }
       } catch (e) {
+        debugPrint('web instance check failed');
         debugPrint(e.toString());
         if (!context.mounted) return;
-        webResponseCode = 0;
+        status['web']['statusFriendly'] = 'non disponible';
       }
+    }
+
+    // Vérifier le serveur global
+    if (globalserverInstanceUrl != null) {
+      http.Response response;
+      try {
+        final url = Uri.parse('${globalserverInstanceUrl}instance');
+        status['globalserver']['startCheck'] = DateTime.now().millisecondsSinceEpoch;
+        response = await http.get(url).timeout(const Duration(seconds: 10));
+        status['globalserver']['ping'] = DateTime.now().millisecondsSinceEpoch - status['globalserver']['startCheck'];
+        status['globalserver']['httpCode'] = response.statusCode;
+        status['globalserver']['statusFriendly'] = response.statusCode == 200 ? 'accessible' : 'accessible avec erreur';
+        status['globalserver']['statusBool'] = response.statusCode == 200 ? true : false;
+
+        if(response.statusCode == 200) {
+          try {
+            final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
+            status['globalserver']['version'] = jsonData['apiVersion'];
+          } catch (e) {
+            debugPrint("Impossible d'extraire les informations du serveur global : $e");
+          }
+        }
+      } catch (e) {
+        debugPrint('global server instance check failed');
+        debugPrint(e.toString());
+        if (!context.mounted) return;
+        status['globalserver']['statusFriendly'] = 'non disponible';
+      }
+    }
+
+    // Générer un message friendly qui décrit l'état de tous les services
+    String summary = "${apiInstanceUrl == null && webInstanceUrl == null ? "Vous n'êtes pas encore connecté à une instance Stend, appuyez sur \"Configurer\" et entrez \"demo\" pour tester les capacités de l'app." : "L'infrastructure auto-hébergée que vous utilisez semble être ${status['api']['statusBool'] || status['web']['statusBool'] ? "opérationnelle${atLeastOneIssue ? ', sauf pour ${status['api']['statusBool'] == false ? "l'API" : "le client WEB"}' : ''}" : 'complètement indisponible'}."}${atLeastOneIssue ? " Vous pouvez essayer de vous déconnecter et de vous reconnecter, sinon, contactez l'administrateur de l'instance avec une capture d'écran des informations ci-dessous." : ''} Le serveur global est ${status['globalserver']['statusBool'] ? '${atLeastOneIssue == false ? 'également ' : ''}opérationnel.' : 'indisponible, vous pouvez vous rendre sur johanstick.fr/contact pour signaler ce problème ou réessayer plus tard.'}";
+
+    // Haptic en fonction des résultats
+    if(atLeastOneIssue || status['globalserver']['statusBool'] == false) {
+      Haptic().warning();
+    } else {
+      Haptic().success();
     }
 
     // Afficher les résultats
     if (!mounted) return;
-    await showAdaptiveDialog(
+    await showModalBottomSheet(
+      showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
       context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: const Text("État de l'instance"), 
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: widget.useCupertino ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      builder: (context) => SafeArea(
+        bottom: true,
+        top: true,
 
-          children: [
-            Text("Client WEB :${widget.useCupertino ? ' ' : '\n'}${webInstanceUrl != null ? "${webResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${webResponseCode == 0 ? 'impossible à déterminer' : webResponseCode})" : "Non configuré"}"),
-            Text("\nAPI :${widget.useCupertino ? ' ' : '\n'}${apiInstanceUrl != null ? "${apiResponseCode == 200 ? 'Accessible' : 'Non disponible'} (HTTP ${apiResponseCode == 0 ? 'impossible à déterminer' : apiResponseCode})" : "Non configuré"}"),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Haptic().light();
-              Navigator.of(context).pop();
-            },
-            child: Text(widget.useCupertino ? "OK" : "Fermer"),
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(), // sinon on peut pas swipe pour fermer la sheet
+          scrollDirection: Axis.vertical,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 2.0),
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: widget.useCupertino ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
+                  child: Text(summary),
+                ),
+
+                if (webInstanceUrl != null) ListTile(
+                  title: Text("Client WEB : ${status['web']['statusFriendly']}"),
+                  subtitle: Text("Temps de réponse : ${status['web']['ping']} ms\nRéponse : HTTP ${status['web']['httpCode']}\nVersion : ${status['web']['version']}"),
+                ),
+
+                if (apiInstanceUrl != null) ListTile(
+                  title: Text("API : ${status['api']['statusFriendly']}"),
+                  subtitle: Text("Temps de réponse : ${status['api']['ping']} ms\nRéponse : HTTP ${status['api']['httpCode']}\nVersion : ${status['api']['version']}"),
+                ),
+
+                ListTile(
+                  title: Text("Serveur global : ${status['globalserver']['statusFriendly']}"),
+                  subtitle: Text("Temps de réponse : ${status['globalserver']['ping']} ms\nRéponse : HTTP ${status['globalserver']['httpCode']}\nVersion : ${status['globalserver']['version']}"),
+                ),
+              ]
+            )
           )
-        ],
+        )
       )
     );
   }
@@ -1223,7 +1336,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       children: [
                         OutlinedButton(
                           onPressed: () { checkInstance(); },
-                          child: const Text("Vérifier l'instance"),
+                          child: const Text("État des services"),
                         ),
                         OutlinedButton(
                           onPressed: () { clearHistory(); },
@@ -1236,7 +1349,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           OutlinedButton(
                             style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(40)),
                             onPressed: () { checkInstance(); },
-                            child: const Text("Vérifier l'instance"),
+                            child: const Text("État des services"),
                           ),
                           const SizedBox(height: 6),
                           OutlinedButton(
