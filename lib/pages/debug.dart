@@ -625,9 +625,9 @@ class _DebugPageState extends State<DebugPage> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Type de release
+                    // Divers
                     Text(
-                      "Type de release",
+                      "Divers",
 
                       style: TextStyle(
                         fontSize: 14,
@@ -654,6 +654,19 @@ class _DebugPageState extends State<DebugPage> {
                               Haptic().light();
                               setState(() {
                                 box.write('forceStore', value!);
+                              });
+                            },
+                          ),
+
+                          SwitchListTile.adaptive(
+                            title: const Text("Spoof l'accès à Internet"),
+                            subtitle: const Text("L'application pensera qu'elle est connectée à Internet, même si c'est faux"),
+                            value: box.read('spoofInternetAccess') ?? false,
+                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                box.write('spoofInternetAccess', value!);
                               });
                             },
                           ),
