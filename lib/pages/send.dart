@@ -95,6 +95,12 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
     globals.intereventsStreamController.stream.listen((event) {
       if (event['type'] == 'open-send-picker') {
         openPicker(event['picker']);
+      } else if (event['type'] == 'add-files-to-selection') {
+        setState(() {
+          for (var file in event['files']) {
+            selectedFiles.add(file);
+          }
+        });
       }
     });
   }

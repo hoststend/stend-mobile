@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -180,6 +182,17 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
       debugPrint('initialUrl: $initialUrl'),
       if (initialUrl != null) onProtocolUrlReceived(initialUrl)
     });
+
+    // Fichiers partagés vers l'app avec un intent
+    ReceiveSharingIntent.instance.getMediaStream().listen((value) { // pendant que l'app est ouverte
+      debugPrint(value.toString());
+      onMediaIntentReceived(value);
+    }, onError: (err) { debugPrint("SharingIntent getMediaStream() error: $err"); });
+    ReceiveSharingIntent.instance.getInitialMedia().then((value) { // avant que l'app soit ouverte
+      debugPrint(value.toString());
+      onMediaIntentReceived(value);
+      ReceiveSharingIntent.instance.reset();
+    });
   }
 
   @override
@@ -300,6 +313,37 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
       askNotifPermission();
       sendNotif("Échec de l'ouverture", "Stend a été ouvert via une URL personnalisée, mais celle-ci n'a pas été reconnue. URL : \"$url\"", 'warnings', null);
     }
+  }
+
+  void onMediaIntentReceived(List<SharedMediaFile> value) async {
+    if(value.isEmpty) return;
+    List files = [];
+
+    for (var file in value) {
+      if (file.type == SharedMediaType.url || file.type == SharedMediaType.text){
+        debugPrint('Media intent isn\'t url/text type');
+        continue;
+      }
+
+      File fileToShare = File(file.path);
+      if (fileToShare.existsSync()) {
+        files.add(fileToShare);
+      } else {
+        debugPrint('File does not exist: ${file.path}');
+        debugPrint(file.toString());
+      }
+    }
+
+    if (files.isEmpty) return;
+    destinationSelected(0);
+
+    while (globals.initializedPages['send'] != true) {
+      debugPrint('page not initialized yet');
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+    debugPrint('page initialized');
+
+    globals.intereventsStreamController.add({'type': 'add-files-to-selection', 'files': files});
   }
 
   @override
