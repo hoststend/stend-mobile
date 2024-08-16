@@ -702,16 +702,22 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                             }
                           );
 
-                          // On vérifie la réponse
-                          if (shortenResponse.statusCode == 200) {
+                          // Si le lien a été raccourci avec succès, on définit l'URL finale
+                          if (shortenResponse.statusCode == 200 && shortenResponse.data['domain'] != null && shortenResponse.data['shorturl'] != null) {
                             finalAccess = "https://${shortenResponse.data['domain']}/${shortenResponse.data['shorturl']}";
                           } else {
-                            uploadedFiles.add(chunkResponse.data['shareKey']);
+                            finalAccess = webInstanceUrl != 'null' ? '${webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?' : ''}${chunkResponse.data['shareKey']}' : chunkResponse.data['shareKey'];
                           }
                         } else {
                           finalAccess = webInstanceUrl != 'null' ? '${webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?' : ''}${chunkResponse.data['shareKey']}' : chunkResponse.data['shareKey'];
-                          uploadedFiles.add(chunkResponse.data['shareKey']);
                         }
+
+                        // Ajouter le fichier à la liste des fichiers uploadé
+                        uploadedFiles.add({
+                          'sharekey': chunkResponse.data['shareKey'],
+                          'webUrl': webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?${chunkResponse.data['shareKey']}' : '',
+                          'filename': file.path.split('/').last,
+                        });
                       }
 
                       // On supprime le fichier temporaire
@@ -729,7 +735,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       '$apiInstanceUrl/files/merge',
                       data: {
                         'sharekey': shareKeyController.text.isNotEmpty ? shareKeyController.text : '',
-                        'sharekeys': uploadedFiles.join(','),
+                        'sharekeys': uploadedFiles.map((file) => file['sharekey']).toList().join(','),
                       }
                     );
 
@@ -755,7 +761,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       );
 
                       // On vérifie la réponse
-                      if (shortenResponse.statusCode == 200) {
+                      if (shortenResponse.statusCode == 200 && shortenResponse.data['domain'] != null && shortenResponse.data['shorturl'] != null) {
                         finalAccess = "https://${shortenResponse.data['domain']}/${shortenResponse.data['shorturl']}";
                       } else {
                         finalAccess = webInstanceUrl != 'null' ? '${webInstanceUrl.isNotEmpty ? '$webInstanceUrl/d.html?' : ''}${mergeResponse.data['shareKey']}' : mergeResponse.data['shareKey'];
