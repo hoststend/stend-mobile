@@ -50,6 +50,38 @@ Future checkcodeAuth(String code) async {
   return true;
 }
 
+Future getAccount() async {
+  String token = box.read('exposeAccountToken') ?? '';
+  if (token.isEmpty) {
+    return { 'success': false, 'value': "Vous n'êtes pas connecté" };
+  }
+
+  http.Response checkaccount = await http.get(Uri.parse("${baseUrl}account/details"), headers: {'Authorization': token});
+  final Map<String, dynamic> checkaccountJson = json.decode(utf8.decode(checkaccount.bodyBytes));
+
+  if (checkaccountJson['success'] != true) {
+    return { 'success': false, 'value': checkaccountJson['message'] ?? checkaccount };
+  }
+
+  return checkaccountJson;
+}
+
+Future getTransferts() async {
+  String token = box.read('exposeAccountToken') ?? '';
+  if (token.isEmpty) {
+    return { 'success': false, 'value': "Vous n'êtes pas connecté" };
+  }
+
+  http.Response checktransferts = await http.get(Uri.parse("${baseUrl}account/transferts"), headers: {'Authorization': token});
+  final Map<String, dynamic> checktransfertsJson = json.decode(utf8.decode(checktransferts.bodyBytes));
+
+  if (checktransfertsJson['success'] != true) {
+    return { 'success': false, 'value': checktransfertsJson['message'] ?? checktransferts };
+  }
+
+  return checktransfertsJson;
+}
+
 Future resetToken({ bool hapticFeedback = false }) async {
   if (hapticFeedback) Haptic().light();
 
@@ -71,15 +103,15 @@ Future resetToken({ bool hapticFeedback = false }) async {
   box.write('exposeMethods_account', true);
   box.write('exposeAccountToken', token);
 
-  http.Response checktransferts = await http.get(Uri.parse("${baseUrl}account/transferts"), headers: {'Authorization': token});
-  final Map<String, dynamic> checktransfertsJson = json.decode(utf8.decode(checktransferts.bodyBytes));
+  http.Response checkaccount = await http.get(Uri.parse("${baseUrl}account/details"), headers: {'Authorization': token});
+  final Map<String, dynamic> checkaccountJson = json.decode(utf8.decode(checkaccount.bodyBytes));
 
-  if (checktransfertsJson['success'] != true) {
+  if (checkaccountJson['success'] != true) {
     if (hapticFeedback) Haptic().error();
-    return { 'icon': 'error', 'value': checktransfertsJson['message'] ?? checktransferts };
+    return { 'icon': 'error', 'value': checkaccountJson['message'] ?? checkaccount };
   }
 
-  box.write('exposeAccountId', checktransfertsJson['userId']);
+  box.write('exposeAccountId', checkaccountJson['userId']);
   globals.intereventsStreamController.add({'type': 'settings', 'action': 'refreshSettings' });
 
   if (hapticFeedback) Haptic().success();
