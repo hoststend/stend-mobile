@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -436,6 +435,12 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
                     _debugSettingsOpened = false;
                     _currentIndex = 2;
                   });
+                  return;
+                }
+
+                // Sinon, si on est pas sur la page d'origine, on retourne celle-ci
+                if (_currentIndex != defaultPageIndex) {
+                  destinationSelected(defaultPageIndex);
                   return;
                 }
 
