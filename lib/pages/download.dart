@@ -1188,7 +1188,8 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                                         if (response.statusCode != 200) {
                                           Haptic().error();
                                           try {
-                                            showSnackBar(context, response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert", icon: "error", useCupertino: widget.useCupertino);
+                                            String errorMsg = response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert";
+                                            showSnackBar(context, errorMsg == 'La clé de partage est invalide' ? 'Le transfert a déjà été supprimé' : errorMsg, icon: "error", useCupertino: widget.useCupertino);
                                           } catch (e) {
                                             showSnackBar(context, "Impossible de supprimer le transfert", icon: "error", useCupertino: widget.useCupertino);
                                           }
