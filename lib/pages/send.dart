@@ -774,13 +774,31 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                   // Copier le lien d'accès dans le presse-papier si on l'a défini
                   if (finalAccess.isNotEmpty && copyUrlAfterSend) Clipboard.setData(ClipboardData(text: finalAccess));
 
+                  // Créer un transfert exposé pour chaque fichier
+                  if (exposeTransfert) {
+                    uploadAlertTupple = const Tuple3("Exposition des transferts", 1.0, "Finalisation...");
+                    uploadAlertStreamController.add(uploadAlertTupple);
+
+                    for (var file in uploadedFiles) {
+                      debugPrint('Exposing file $file');
+                      var exposeResponse = await globalserver.createTransfert(fileName: file['filename'], webUrl: file['webUrl'], apiInstanceUrl: apiInstanceUrl, latitude: posLatitude, longitude: posLongitude, exposeMethods: exposeMethods);
+                      debugPrint('Exposing response: $exposeResponse');
+
+                      if (!exposeResponse['success']) {
+                        uploadAlertTupple = Tuple3(limitStringSize(file['filename'], 64), 1.0, exposeResponse['value']);
+                        uploadAlertStreamController.add(uploadAlertTupple);
+                        await Future.delayed(const Duration(seconds: 3)); // laisse le temps à l'user de voir le message
+                      }
+                    }
+                  }
+
                   // On ferme le dialogue de chargement
                   if (!context.mounted) return;
                   Navigator.pop(context);
 
                   // Envoyer une notification si l'app est en arrière plan
                   Haptic().success();
-                  sendBackgroundNotif("Transfert terminé", "${selectedFiles.length} ${selectedFiles.length > 1 ? "fichiers ont été envoyés" : "fichier a été envoyé"} vers Stend", "upload", null);
+                  sendBackgroundNotif("Transfert terminé", "${uploadedFiles.length} ${uploadedFiles.length > 1 ? "fichiers ont été envoyés" : "fichier a été envoyé"} vers Stend", "upload", null);
                   WakelockPlus.disable();
 
                   // On affiche un nouveau dialogue avec les infos d'accès (on propose d'ouvrir ou de partager)

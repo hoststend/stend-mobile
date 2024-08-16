@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/device_nickname.dart';
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,7 @@ import 'package:http/http.dart' as http;
 
 final box = GetStorage();
 String baseUrl = box.read('globalserverInstanceUrl') ?? 'https://globalstend.johanstick.fr/';
+String deviceNickname = '';
 
 void openAuthGoogle({String responseType = 'redirect'}) {
   launchUrl(Uri.parse('${baseUrl}auth/google/login?responseType=$responseType'), mode: LaunchMode.inAppBrowserView);
@@ -80,6 +82,32 @@ Future getTransferts() async {
   }
 
   return checktransfertsJson;
+}
+
+Future createTransfert({ String fileName = 'Sans nom', String webUrl = '', String apiInstanceUrl = '', String latitude = '', String longitude = '', Map exposeMethods = const {} }) async {
+  // Ignorer l'URL de l'API si on a désactivé cette méthode d'exposition
+  if (exposeMethods['exposeMethods_ipinstance'] != true) apiInstanceUrl = '';
+
+  // Récupérer le surnom de l'appareil si on ne l'a pas déjà
+  if (deviceNickname.isEmpty) deviceNickname = await getDeviceNickname();
+
+  // Créer le transfert exposé
+  http.Response createTransfert = await http.post(Uri.parse("${baseUrl}transferts/create"), headers: {'Authorization': exposeMethods['exposeAccountToken']}, body: {
+    'fileName': fileName,
+    'webUrl': webUrl,
+    'nickname': deviceNickname,
+    'latitude': latitude,
+    'longitude': longitude,
+    'apiUrl': apiInstanceUrl
+  });
+
+  final Map<String, dynamic> createTransfertJson = json.decode(utf8.decode(createTransfert.bodyBytes));
+
+  if (createTransfertJson['success'] != true) {
+    return { 'success': false, 'value': createTransfertJson['message'] ?? createTransfert };
+  } else {
+    return createTransfertJson;
+  }
 }
 
 Future resetToken({ bool hapticFeedback = false }) async {
