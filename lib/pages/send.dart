@@ -11,6 +11,8 @@ import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/limit_string_size.dart';
 import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
@@ -388,6 +390,8 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
                   // Méthodes d'exposition
                   Map exposeMethods = {};
+                  String posLongitude = '';
+                  String posLatitude = '';
                   if (exposeTransfert) {
                     // Obtenir les méthodes activées
                     exposeMethods = {
@@ -402,6 +406,57 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                       showSnackBar(context, "Vous devez activer au moins une méthode d'exposition depuis les réglages", icon: "warning", useCupertino: widget.useCupertino);
                       Haptic().warning();
                       return;
+                    }
+
+                    // Si la méthode d'exposition par compte est activée, on vérifie que le token est valide
+                    if (exposeMethods['exposeMethods_account'] && exposeMethods['exposeAccountToken'].isEmpty) {
+                      globalserver.logout();
+                      showSnackBar(context, "Vous n'êtes pas correctement connecté, ouvrez les réglages pour vous reconnecter", icon: "warning", useCupertino: widget.useCupertino);
+                      Haptic().warning();
+                      return;
+                    } else if (exposeMethods['exposeMethods_account']) {
+                      var checkaccount = await globalserver.getAccount();
+                      debugPrint('getAccount response from global server: $checkaccount');
+                      if (!checkaccount['success']) {
+                        globalserver.logout();
+                        if (!context.mounted) return;
+                        showSnackBar(context, "Vous avez été déconnecté, ouvrez les réglages pour vous reconnecter", icon: "warning", useCupertino: widget.useCupertino);
+                        Haptic().warning();
+                        return;
+                      }
+                    }
+
+                    // Si la méthode d'exposition par proximité est activée, on récupère la position de l'utilisateur
+                    if (exposeMethods['exposeMethods_nearby']) {
+                      // Demander la permission
+                      var locationPermission = await checkLocationPermission();
+                      if (!context.mounted) return;
+                      if (locationPermission != true) {
+                        showSnackBar(context, locationPermission, icon: "warning", useCupertino: widget.useCupertino);
+                        Haptic().warning();
+                        return;
+                      }
+
+                      // Obtenir la position de l'utilisateur
+                      try {
+                        var position = await getCurrentPosition();
+                        if(!context.mounted) return;
+                        debugPrint(position.toString());
+                        posLongitude = position.longitude.toString();
+                        posLatitude = position.latitude.toString();
+                      } catch (e) {
+                        debugPrint(e.toString());
+                        showSnackBar(context, e.toString(), icon: "error", useCupertino: widget.useCupertino);
+                        Haptic().error();
+                        return;
+                      }
+
+                      // Si la position n'a pas pu être obtenue, on arrête
+                      if (posLongitude.isEmpty || posLatitude.isEmpty){
+                        showSnackBar(context, "Impossible d'obtenir votre position, vérifiez les permissions de l'app", icon: "warning", useCupertino: widget.useCupertino);
+                        Haptic().warning();
+                        return;
+                      }
                     }
                   }
 
