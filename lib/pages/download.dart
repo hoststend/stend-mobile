@@ -549,7 +549,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         transfertInfo = await http.get(Uri.parse("https://www.swisstransfer.com/api/links/$downloadKey"), headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" });
       } else if (service == 'cobalt') { // Support manquant : quelques tests à faire ; certains services sont manquants ; picker (plusieurs médias)
         // On utilise dio au lieu d'http puisqu'il n'ajoute pas un header que l'API ne supporte pas
-        Response dioTransfertInfo = await dio.post("https://co.wuk.sh/api/json",
+        Response dioTransfertInfo = await dio.post("https://api.cobalt.tools/api/json",
           data: {
             "url": downloadKey,
             "vQuality": "max",

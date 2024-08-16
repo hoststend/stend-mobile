@@ -151,6 +151,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
       'api': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
       'web': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
       'globalserver': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
+      'cobalt': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
     };
 
     // Vérifier l'API
@@ -247,6 +248,35 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
       }
     }
 
+    // Vérifier l'instance Cobalt
+    String cobaltApiUrl = 'https://api.cobalt.tools/';
+    if (true) { // pr éviter que la variable response puisse sortir du scope
+      http.Response response;
+      try {
+        final url = Uri.parse('${cobaltApiUrl}api/serverInfo');
+        status['cobalt']['startCheck'] = DateTime.now().millisecondsSinceEpoch;
+        response = await http.get(url).timeout(const Duration(seconds: 10));
+        status['cobalt']['ping'] = DateTime.now().millisecondsSinceEpoch - status['cobalt']['startCheck'];
+        status['cobalt']['httpCode'] = response.statusCode;
+        status['cobalt']['statusFriendly'] = response.statusCode == 200 ? 'accessible' : 'accessible avec erreur';
+        status['cobalt']['statusBool'] = response.statusCode == 200 ? true : false;
+
+        if(response.statusCode == 200) {
+          try {
+            final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
+            status['cobalt']['version'] = jsonData['version'];
+          } catch (e) {
+            debugPrint("Impossible d'extraire les informations de cobalt : $e");
+          }
+        }
+      } catch (e) {
+        debugPrint('cobalt instance check failed');
+        debugPrint(e.toString());
+        if (!context.mounted) return;
+        status['cobalt']['statusFriendly'] = 'non disponible';
+      }
+    }
+
     // Générer un message friendly qui décrit l'état de tous les services
     String summary = "${apiInstanceUrl == null && webInstanceUrl == null ? "Vous n'êtes pas encore connecté à une instance Stend, appuyez sur \"Configurer\" et entrez \"demo\" pour tester les capacités de l'app." : "L'infrastructure auto-hébergée que vous utilisez semble être ${status['api']['statusBool'] || status['web']['statusBool'] ? "opérationnelle${atLeastOneIssue ? ', sauf pour ${status['api']['statusBool'] == false ? "l'API" : "le client WEB"}' : ''}" : 'complètement indisponible'}."}${atLeastOneIssue ? " Vous pouvez essayer de vous déconnecter et de vous reconnecter, sinon, contactez l'administrateur de l'instance avec une capture d'écran des informations ci-dessous." : ''} Le serveur global est ${status['globalserver']['statusBool'] ? '${atLeastOneIssue == false ? 'également ' : ''}opérationnel.' : 'indisponible, vous pouvez vous rendre sur johanstick.fr/contact pour signaler ce problème ou réessayer plus tard.'}";
 
@@ -297,6 +327,11 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                 ListTile(
                   title: Text("Serveur global : ${status['globalserver']['statusFriendly']}"),
                   subtitle: Text("Temps de réponse : ${status['globalserver']['ping']} ms\nRéponse : HTTP ${status['globalserver']['httpCode']}\nVersion : ${status['globalserver']['version']}"),
+                ),
+
+                ListTile(
+                  title: Text("Cobalt/Kityune : ${status['cobalt']['statusFriendly']}"),
+                  subtitle: Text("Temps de réponse : ${status['cobalt']['ping']} ms\nRéponse : HTTP ${status['cobalt']['httpCode']}\nVersion : ${status['cobalt']['version']}"),
                 ),
               ]
             )
