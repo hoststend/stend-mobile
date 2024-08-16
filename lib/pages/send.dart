@@ -68,6 +68,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
   final TextEditingController shareKeyController = TextEditingController();
   bool shortUrl = false;
+  bool exposeTransfert = false;
   late String iconLib;
 
   int selectedExpireTime = 0;
@@ -79,6 +80,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
   @override
   void initState() {
     if (box.read('shortenUrl') == true) shortUrl = true;
+    if (box.read('exposeByDefault') == true) exposeTransfert = true;
     iconLib = box.read('iconLib') ?? (Platform.isIOS ? 'Lucide' : 'Material');
 
     if(box.read('recommendedExpireTimes') != null && box.read('recommendedExpireTimes').isNotEmpty) {
@@ -302,7 +304,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
               const SizedBox(height: 12.0),
 
-              // Checkbox pour raccourcir l'URL finale
+              // Checkboxs
               Align(
                 alignment: Alignment.centerLeft,
                 child: SwitchListTile.adaptive(
@@ -313,6 +315,20 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     Haptic().light();
                     setState(() {
                       shortUrl = value;
+                    });
+                  },
+                )
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: SwitchListTile.adaptive(
+                  title: const Text("Exposer ce transfert"),
+                  value: exposeTransfert, // valeur par défaut
+                  contentPadding: const EdgeInsets.all(0.0),
+                  onChanged: (bool value) {
+                    Haptic().light();
+                    setState(() {
+                      exposeTransfert = value;
                     });
                   },
                 )
@@ -368,6 +384,25 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
                     showSnackBar(context, "Vous devez vous connecter à une instance depuis les réglages", icon: "warning", useCupertino: widget.useCupertino);
                     Haptic().warning();
                     return;
+                  }
+
+                  // Méthodes d'exposition
+                  Map exposeMethods = {};
+                  if (exposeTransfert) {
+                    // Obtenir les méthodes activées
+                    exposeMethods = {
+                      'exposeMethods_ipinstance': box.read('exposeMethods_ipinstance') ?? false,
+                      'exposeMethods_nearby': box.read('exposeMethods_nearby') ?? false,
+                      'exposeMethods_account': box.read('exposeMethods_account') ?? false,
+                      'exposeAccountToken': box.read('exposeAccountToken') ?? '',
+                    };
+
+                    // Si aucune méthode n'est activée, on affiche un message d'erreur
+                    if (!exposeMethods.containsValue(true)) {
+                      showSnackBar(context, "Vous devez activer au moins une méthode d'exposition depuis les réglages", icon: "warning", useCupertino: widget.useCupertino);
+                      Haptic().warning();
+                      return;
+                    }
                   }
 
                   // Si les URLs se termine par un slash, les retirer
