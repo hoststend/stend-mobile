@@ -4,7 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 
 Future getDeviceNickname() async {
   var deviceInfo = DeviceInfoPlugin();
-  String nickname;
+  String nickname = 'Appareil anonyme';
 
   if(Platform.isAndroid) {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
