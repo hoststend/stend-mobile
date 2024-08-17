@@ -475,8 +475,9 @@ class _DebugPageState extends State<DebugPage> {
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () async {
+                              box.remove('alreadyWarnedExpositionFeature');
                             },
-                            child: const Text("WIP"),
+                            child: const Text("Reset warn. feature"),
                           )
                         )
                       ],

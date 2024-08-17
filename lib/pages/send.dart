@@ -168,6 +168,35 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
     }
   }
 
+  void confirmUseExpose() {
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: const Text("Exposition des transferts"),
+        content: const Text("L'exposition de transfert permet de partager vos fichiers avec d'autres utilisateurs de Stend plus facilement. Cette fonctionnalité est désactivée par défaut afin d'améliorer votre confidentialité, n'oubliez pas qu'en exposant vos fichiers, ils pourront peut-être être consultés par des personnes que vous ne connaissez pas. Assurez-vous de bien comprendre les risques avant d'activer cette fonctionnalité."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Haptic().light();
+              Navigator.of(context).pop();
+            },
+            child: const Text("Annuler"),
+          ),
+
+          TextButton(
+            onPressed: () {
+              Haptic().light();
+              box.write('alreadyWarnedExpositionFeature', true);
+              Navigator.of(context).pop();
+              sendFile();
+            },
+            child: Text(widget.useCupertino ? "Continuer" : "Ne plus afficher"),
+          )
+        ],
+      ),
+    );
+  }
+
   void sendFile() async {
     // Vérifier l'accès à internet
     bool connectivity = await checkConnectivity();
@@ -205,6 +234,10 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
     String posLongitude = '';
     String posLatitude = '';
     if (exposeTransfert) {
+      // Afficher un avertissement si c'est la première utilisation de l'exposition
+      bool alreadyWarned = box.read('alreadyWarnedExpositionFeature') ?? false;
+      if (!alreadyWarned) return confirmUseExpose();
+
       // Obtenir les méthodes activées
       exposeMethods = {
         'exposeMethods_ipinstance': box.read('exposeMethods_ipinstance') ?? false,
@@ -844,9 +877,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
 
               // Bouton pour confirmer l'envoi
               FilledButton.icon(
-                onPressed: selectedFiles.isEmpty ? null : () async {
-                  
-                },
+                onPressed: selectedFiles.isEmpty ? null : sendFile,
 
                 icon: const Icon(Icons.navigate_next_sharp),
                 label: Text("Envoyer ${selectedFiles.length} fichier")
