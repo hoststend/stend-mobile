@@ -183,15 +183,17 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     });
 
     // Fichiers partagés vers l'app avec un intent
-    ReceiveSharingIntent.instance.getMediaStream().listen((value) { // pendant que l'app est ouverte
-      debugPrint(value.toString());
-      onMediaIntentReceived(value);
-    }, onError: (err) { debugPrint("SharingIntent getMediaStream() error: $err"); });
-    ReceiveSharingIntent.instance.getInitialMedia().then((value) { // avant que l'app soit ouverte
-      debugPrint(value.toString());
-      onMediaIntentReceived(value);
-      ReceiveSharingIntent.instance.reset();
-    });
+    if(Platform.isAndroid){
+      ReceiveSharingIntent.instance.getMediaStream().listen((value) { // pendant que l'app est ouverte
+        debugPrint(value.toString());
+        onMediaIntentReceived(value);
+      }, onError: (err) { debugPrint("SharingIntent getMediaStream() error: $err"); });
+      ReceiveSharingIntent.instance.getInitialMedia().then((value) { // avant que l'app soit ouverte
+        debugPrint(value.toString());
+        onMediaIntentReceived(value);
+        ReceiveSharingIntent.instance.reset();
+      });
+    }
   }
 
   @override
