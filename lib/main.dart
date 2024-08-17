@@ -320,7 +320,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
 
     for (var file in value) {
       if (file.type == SharedMediaType.url || file.type == SharedMediaType.text){
-        debugPrint('Media intent isn\'t url/text type');
+        debugPrint('One of media in intent received is of type "url" / "text", ignoring it');
         continue;
       }
 
