@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:stendmobile/widgets/custom_switch_tile.dart';
 import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/haptic.dart';
@@ -140,10 +141,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
 
     // Afficher une snackbar pour informer l'utilisateur
     Haptic().light();
-    if(apiInstanceUrl != null || webInstanceUrl != null){
-      if (!mounted) return;
-      showSnackBar(context, "Début de la vérification des services...", icon: "info", useCupertino: widget.useCupertino);
-    }
+    showSnackBar(context, "Début de la vérification des services...", icon: "info", useCupertino: widget.useCupertino);
 
     // Objet qui contient les statuts
     bool atLeastOneIssue = true; // Si on a au moins un problème avec les éléments self-hosté
@@ -662,7 +660,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
             children: [
               // Titre de la section
               Padding(
-                padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
+                padding: EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0, top: Platform.isMacOS ? 12.0 : 0.0),
 
                 child: Text(
                   "Réglages généraux",
@@ -810,11 +808,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile.adaptive(
-                            title: const Text("Enregistrer dans la galerie"),
-                            subtitle: const Text("Les médias téléchargés seront enregistrés dans la galerie"),
+                          CustomSwitchTile(
+                            title: "Enregistrer dans la galerie",
+                            subtitle: "Les médias téléchargés seront enregistrés dans la galerie",
                             value: box.read('saveMediasInGallery') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -823,11 +820,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
-                          SwitchListTile.adaptive(
-                            title: const Text("Copier l'URL après un envoi"),
-                            subtitle: const Text("Copie dans le presser-papier le lien d'un transfert lorsqu'il se termine"),
+                          CustomSwitchTile(
+                            title: "Copier l'URL après un envoi",
+                            subtitle: "Copie dans le presser-papier le lien d'un transfert lorsqu'il se termine",
                             value: box.read('copyUrlAfterSend') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -836,11 +832,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
-                          Platform.isAndroid ? SwitchListTile.adaptive(
-                            title: const Text("Télécharger dans un dossier"),
-                            subtitle: const Text("Les fichiers seront téléchargés dans un sous-dossier nommé \"Stend\""),
+                          Platform.isAndroid ? CustomSwitchTile(
+                            title: "Télécharger dans un dossier",
+                            subtitle: "Les fichiers seront téléchargés dans un sous-dossier nommé \"Stend\"",
                             value: box.read('downloadInSubFolder') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -873,11 +868,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile.adaptive(
-                            title: const Text("Raccourcir l'URL par défaut"),
-                            subtitle: const Text("L'option pour raccourcir le lien d'un transfert sera coché au lancement"),
+                          CustomSwitchTile(
+                            title: "Raccourcir l'URL par défaut",
+                            subtitle: "L'option pour raccourcir le lien d'un transfert sera coché au lancement",
                             value: box.read('shortenUrl') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -887,11 +881,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
-                          SwitchListTile.adaptive(
-                            title: const Text("Exposer un transfert par défaut"),
-                            subtitle: const Text("L'option pour exposer les transferts envoyés sera coché au lancement"),
+                          CustomSwitchTile(
+                            title: "Exposer un transfert par défaut",
+                            subtitle: "L'option pour exposer les transferts envoyés sera coché au lancement",
                             value: box.read('exposeByDefault') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -906,6 +899,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Définissez la durée avant expiration par défaut d'un fichier"),
                             trailing: DropdownButton<String>(
                               borderRadius: BorderRadius.circular(10.0),
+                              focusColor: Theme.of(context).colorScheme.onSecondary,
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('defaultExpirationTime') ?? '+ court',
                               onTap: () { Haptic().light(); },
@@ -932,6 +926,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Définissez la page qui s'ouvrira au démarrage de l'appli"),
                             trailing: DropdownButton<String>(
                               borderRadius: BorderRadius.circular(10.0),
+                              focusColor: Theme.of(context).colorScheme.onSecondary,
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('defaultPage') ?? 'Envoyer',
                               onTap: () { Haptic().light(); },
@@ -981,6 +976,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Choisissez le thème de l'appli"),
                             trailing: DropdownButton<String>(
                               borderRadius: BorderRadius.circular(10.0),
+                              focusColor: Theme.of(context).colorScheme.onSecondary,
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('theme') ?? 'Système',
                               onTap: () { Haptic().light(); },
@@ -1007,6 +1003,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Choisissez le style d'icône utilisé"),
                             trailing: DropdownButton<String>(
                               borderRadius: BorderRadius.circular(10.0),
+                              focusColor: Theme.of(context).colorScheme.onSecondary,
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('iconLib') ?? 'Material',
                               onTap: () { Haptic().light(); },
@@ -1069,11 +1066,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ) : const SizedBox.shrink(),
 
-                          Platform.isIOS ? SwitchListTile.adaptive(
-                            title: const Text("Utiliser Material You"),
-                            subtitle: const Text("L'interface changera pour utiliser des composants de design Material"),
+                          Platform.isIOS ? CustomSwitchTile(
+                            title: "Utiliser Material You",
+                            subtitle: "L'interface changera pour utiliser des composants de design Material",
                             value: box.read('useMaterialYou') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -1107,11 +1103,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile.adaptive(
-                            title: const Text("Votre réseau sur cette instance"),
-                            subtitle: const Text("Les utilisateurs de votre instance sur la même adresse IP que vous pouerront voir vos transfert exposés"),
+                          CustomSwitchTile(
+                            title: "Votre réseau sur cette instance",
+                            subtitle: "Les utilisateurs de votre instance sur la même adresse IP que vous pouerront voir vos transfert exposés",
                             value: box.read('exposeMethods_ipinstance') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -1121,11 +1116,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
-                          SwitchListTile.adaptive(
-                            title: const Text("À proximité de vous"),
-                            subtitle: const Text("Les utilisateurs ayant activé cette option verront vos transferts exposés s'ils sont proches de là où vous l'avez créé"),
+                          CustomSwitchTile(
+                            title: "À proximité de vous",
+                            subtitle: "Les utilisateurs ayant activé cette option verront vos transferts exposés s'ils sont proches de là où vous l'avez créé",
                             value: box.read('exposeMethods_nearby') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) async {
                               Haptic().light();
 
@@ -1153,11 +1147,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             },
                           ),
 
-                          SwitchListTile.adaptive(
-                            title: const Text("S'authentifier avec Google"),
-                            subtitle: const Text("Vous retrouverez vos transferts exposés sur tous vos appareils connectés à ce compte"),
+                          CustomSwitchTile(
+                            title: "S'authentifier avec Google",
+                            subtitle: "Vous retrouverez vos transferts exposés sur tous vos appareils connectés à ce compte",
                             value: box.read('exposeMethods_account') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -1288,11 +1281,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile.adaptive(
-                            title: const Text("Désactiver l'historique"),
-                            subtitle: const Text("Empêche Stend d'ajouter de nouveaux liens à l'historique de transferts"),
+                          CustomSwitchTile(
+                            title: "Désactiver l'historique",
+                            subtitle: "Empêche Stend d'ajouter de nouveaux liens à l'historique de transferts",
                             value: box.read('disableHistory') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -1307,6 +1299,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Définissez le service utilisé pour racourcir les URLs"),
                             trailing: DropdownButton<String>(
                               borderRadius: BorderRadius.circular(10.0),
+                              focusColor: Theme.of(context).colorScheme.onSecondary,
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('shortenService') ?? 'mdrr.fr',
                               onTap: () { Haptic().light(); },
@@ -1332,6 +1325,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Définissez la caméra qui sera utilisée pour scanner les QR Codes"),
                             trailing: DropdownButton<String>(
                               borderRadius: BorderRadius.circular(10.0),
+                              focusColor: Theme.of(context).colorScheme.onSecondary,
                               dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                               value: box.read('cameraFacing') ?? 'Arrière',
                               onTap: () { Haptic().light(); },

@@ -7,6 +7,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_code_editor/flutter_code_editor.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:stendmobile/widgets/custom_switch_tile.dart';
 import 'package:stendmobile/utils/send_notification.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/user_agent.dart';
@@ -646,11 +647,10 @@ class _DebugPageState extends State<DebugPage> {
                       ),
                       child: Column(
                         children: [
-                          SwitchListTile.adaptive(
-                            title: const Text("Forcer la version libre"),
-                            subtitle: const Text("Réactive les fonctionnalités désactivées dans la version publiée sur les stores"),
+                          CustomSwitchTile(
+                            title: "Forcer la version libre",
+                            subtitle: "Réactive les fonctionnalités désactivées dans la version publiée sur les stores",
                             value: box.read('forceStore') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {
@@ -659,11 +659,22 @@ class _DebugPageState extends State<DebugPage> {
                             },
                           ),
 
-                          SwitchListTile.adaptive(
-                            title: const Text("Spoof l'accès à Internet"),
-                            subtitle: const Text("L'application pensera qu'elle est connectée à Internet, même si c'est faux"),
+                          CustomSwitchTile(
+                            title: "Forcer l'apparence Cupertino",
+                            subtitle: "Affiche le design prévu pour iOS, à la place de Material",
+                            value: box.read('forceCupertinoDesign') ?? false,
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                box.write('forceCupertinoDesign', value!);
+                              });
+                            },
+                          ),
+
+                          CustomSwitchTile(
+                            title: "Spoof l'accès à Internet",
+                            subtitle: "L'application pensera qu'elle est connectée à Internet, même si c'est faux",
                             value: box.read('spoofInternetAccess') ?? false,
-                            contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                             onChanged: (bool? value) {
                               Haptic().light();
                               setState(() {

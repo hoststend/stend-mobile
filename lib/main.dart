@@ -51,6 +51,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
 
   late String iconLib;
   bool useCupertino = false;
+  bool isDesktop = Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
   late PageController _pageController;
   late int defaultPageIndex;
@@ -80,7 +81,9 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     }
 
     // Déterminer si on utilise Cupertino ou Material
-    if (box.read('useMaterialYou') == null && Platform.isIOS) {
+    if (box.read('forceCupertinoDesign') == true) {
+      useCupertino = true;
+    } else if (box.read('useMaterialYou') == null && Platform.isIOS) {
       useCupertino = true;
     } else if (box.read('useMaterialYou') == null && !Platform.isIOS) {
       useCupertino = false;
@@ -162,7 +165,9 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     }
 
     // Déterminer si on utilise Cupertino ou Material
-    if (box.read('useMaterialYou') == null && Platform.isIOS) {
+    if (box.read('forceCupertinoDesign') == true) {
+      useCupertino = true;
+    } else if (box.read('useMaterialYou') == null && Platform.isIOS) {
       useCupertino = true;
     } else if (box.read('useMaterialYou') == null && !Platform.isIOS) {
       useCupertino = false;
@@ -389,9 +394,10 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
             primaryColor: Colors.black,
             brightness: Brightness.light,
             useMaterial3: true,
-            splashFactory: Platform.isIOS ? NoSplash.splashFactory : null,
-            splashColor: Platform.isIOS ? Colors.transparent : null,
-            highlightColor: Platform.isIOS ? Colors.transparent : null,
+            splashFactory: Platform.isIOS || isDesktop ? NoSplash.splashFactory : null,
+            splashColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+            highlightColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+            hoverColor: isDesktop ? Colors.transparent : null,
             platform: !useCupertino ? TargetPlatform.android : null,
           ),
           darkTheme: ThemeData(
@@ -399,9 +405,10 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
             primaryColor: Colors.white,
             brightness: Brightness.dark,
             useMaterial3: true,
-            splashFactory: Platform.isIOS ? NoSplash.splashFactory : null,
-            splashColor: Platform.isIOS ? Colors.transparent : null,
-            highlightColor: Platform.isIOS ? Colors.transparent : null,
+            splashFactory: Platform.isIOS || isDesktop ? NoSplash.splashFactory : null,
+            splashColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+            highlightColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+            hoverColor: isDesktop ? Colors.transparent : null,
             cupertinoOverrideTheme: const CupertinoThemeData(
               textTheme: CupertinoTextThemeData(),
             ),

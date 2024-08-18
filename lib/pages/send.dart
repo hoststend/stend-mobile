@@ -788,6 +788,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
               // Sélection de la durée de partage
               DropdownButtonFormField<int>(
                 borderRadius: BorderRadius.circular(10.0),
+                focusColor: Theme.of(context).colorScheme.onSecondary,
                 dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
