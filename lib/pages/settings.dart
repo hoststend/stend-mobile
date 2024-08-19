@@ -16,6 +16,7 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:in_app_update/in_app_update.dart' as android_updater;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -41,6 +42,7 @@ bool checkedUpdate = false;
 
 final box = GetStorage();
 String? appVersion;
+String installSource = '';
 String latestVersion = '';
 bool isUpdateAvailable = false;
 
@@ -91,6 +93,9 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     debugPrint(packageInfo.toString());
     appVersion = packageInfo.version;
+
+    // Définir la source d'installation
+    if(packageInfo.installerStore == 'com.android.vending') installSource = 'playStore';
 
     // Variables locales
     int latestVersionExpire;
@@ -684,10 +689,38 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           FilledButton(
                             onPressed: () async {
                               Haptic().light();
-                              final url = Uri.parse('https://github.com/hoststend/stend-mobile/releases/latest');
-                              launchUrl(url, mode: Platform.isIOS ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
+
+                              if(installSource.isEmpty){
+                                final url = Uri.parse('https://github.com/hoststend/stend-mobile/releases/latest');
+                                launchUrl(url, mode: Platform.isIOS ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication);
+                              } else if(installSource == 'playStore') {
+                                debugPrint('Vérif. màj disponible auprès du play store');
+                                android_updater.AppUpdateInfo updateAvailable;
+                                try {
+                                  updateAvailable = await android_updater.InAppUpdate.checkForUpdate();
+                                  debugPrint('Vérif. màj : ${updateAvailable.toString()}');
+                                } catch (e) {
+                                  debugPrint('Impossible de vérifier la mise à jour : $e');
+                                  Haptic().error();
+                                  if(!context.mounted) return;
+                                  showSnackBar(context, e.toString(), icon: "error", useCupertino: widget.useCupertino);
+                                  return;
+                                }
+
+                                if(updateAvailable.immediateUpdateAllowed) {
+                                  await android_updater.InAppUpdate.performImmediateUpdate();
+                                } else if(updateAvailable.flexibleUpdateAllowed) {
+                                  await android_updater.InAppUpdate.startFlexibleUpdate();
+                                  await android_updater.InAppUpdate.completeFlexibleUpdate();
+                                } else {
+                                  debugPrint('Impossible de mettre à jour l\'application');
+                                  Haptic().error();
+                                  if(!context.mounted) return;
+                                  showSnackBar(context, "Impossible de mettre à jour l'application", icon: "error", useCupertino: widget.useCupertino);
+                                }
+                              }
                             },
-                            child: const Text("Lire le changelog"),
+                            child: Text(installSource.isEmpty ? "Lire le changelog" : 'Mettre à jour'),
                           ),
                         ],
                       )

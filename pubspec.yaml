@@ -57,6 +57,7 @@ dependencies:
   wakelock_plus: ^1.2.1
   connectivity_plus: ^6.0.5
   receive_sharing_intent: ^1.8.0
+  in_app_update: ^4.2.3
 
 dependency_overrides:
   geolocator: 11.0.0
