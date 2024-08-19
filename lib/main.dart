@@ -7,6 +7,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/globals.dart' as globals;
@@ -199,6 +200,11 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
         ReceiveSharingIntent.instance.reset();
       });
     }
+
+    // Déterminer quand l'app est en avant/arrière plan
+    FGBGEvents.stream.listen((event) {
+      globals.appIsInForeground = event == FGBGType.foreground;
+    });
   }
 
   @override

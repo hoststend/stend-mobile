@@ -1,15 +1,14 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:stendmobile/utils/globals.dart' as globals;
 
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 bool isInitialized = false;
-bool appIsInForeground = true;
 
 Map channels = {
   'upload': const AndroidNotificationDetails(
@@ -74,10 +73,6 @@ void notifInitialize() async {
     var initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
     flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
   }
-
-  FGBGEvents.stream.listen((event) {
-    appIsInForeground = event == FGBGType.foreground;
-  });
 }
 
 void askNotifPermission() async {
@@ -105,7 +100,7 @@ void askNotifPermission() async {
 
 void sendBackgroundNotif(String title, String body, String channelKey, String ?payload) async {
   // Vérifier si l'app est à l'avant-plan
-  if(appIsInForeground) return;
+  if(globals.appIsInForeground) return;
   if(!isInitialized) return;
 
   // Créer et afficher la notification
