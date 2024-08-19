@@ -12,6 +12,7 @@ import 'package:stendmobile/utils/limit_string_size.dart';
 import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/actions_dialog.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
@@ -168,35 +169,6 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
     }
   }
 
-  void confirmUseExpose() {
-    showAdaptiveDialog(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: const Text("Exposition des transferts"),
-        content: const Text("L'exposition de transfert permet de partager vos fichiers avec d'autres utilisateurs de Stend plus facilement. Cette fonctionnalité est désactivée par défaut afin d'améliorer votre confidentialité, n'oubliez pas qu'en exposant vos fichiers, ils pourront peut-être être consultés par des personnes que vous ne connaissez pas. Assurez-vous de bien comprendre les risques avant d'activer cette fonctionnalité."),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Haptic().light();
-              Navigator.of(context).pop();
-            },
-            child: const Text("Annuler"),
-          ),
-
-          TextButton(
-            onPressed: () {
-              Haptic().light();
-              box.write('alreadyWarnedExpositionFeature', true);
-              Navigator.of(context).pop();
-              sendFile();
-            },
-            child: Text(widget.useCupertino ? "Continuer" : "Ne plus afficher"),
-          )
-        ],
-      ),
-    );
-  }
-
   void sendFile() async {
     // Vérifier l'accès à internet
     bool connectivity = await checkConnectivity();
@@ -236,7 +208,32 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
     if (exposeTransfert) {
       // Afficher un avertissement si c'est la première utilisation de l'exposition
       bool alreadyWarned = box.read('alreadyWarnedExpositionFeature') ?? false;
-      if (!alreadyWarned) return confirmUseExpose();
+      if (!alreadyWarned){
+        return actionsDialog(
+          context,
+          title: "Exposition des transferts",
+          content: "L'exposition de transfert permet de partager vos fichiers avec d'autres utilisateurs de Stend plus facilement. Cette fonctionnalité est désactivée par défaut afin d'améliorer votre confidentialité, n'oubliez pas qu'en exposant vos fichiers, ils pourront peut-être être consultés par des personnes que vous ne connaissez pas. Assurez-vous de bien comprendre les risques avant d'activer cette fonctionnalité.",
+          actions: [
+            TextButton(
+              onPressed: () {
+                Haptic().light();
+                Navigator.of(context).pop();
+              },
+              child: const Text("Annuler"),
+            ),
+
+            TextButton(
+              onPressed: () {
+                Haptic().light();
+                box.write('alreadyWarnedExpositionFeature', true);
+                Navigator.of(context).pop();
+                sendFile();
+              },
+              child: Text(widget.useCupertino ? "Continuer" : "Ne plus afficher"),
+            )
+          ]
+        );
+      }
 
       // Obtenir les méthodes activées
       exposeMethods = {

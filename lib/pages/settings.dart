@@ -7,6 +7,7 @@ import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/actions_dialog.dart';
 import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
@@ -346,7 +347,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
   }
 
   void askResetSettings() {
-    confirmDialog(
+    actionsDialog(
+      context,
       title: _isConnected ? "Se déconnecter" : "Effacer les réglages",
       content: "Êtes-vous sûr de vouloir vous déconnecter ? ${(box.read('apiInstancePassword') != null && box.read('apiInstancePassword').isNotEmpty) ? "Assurez-vous de connaître le mot de passe de cette instance pour vous reconnecter." : "Tous les réglages seront effacés."}",
       actions: [
@@ -363,19 +365,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
           child: Text(_isConnected ? "Se déconnecter" : "Confirmer"),
         )
       ]
-    );
-  }
-
-  void confirmDialog({ String title = 'Confirmation', String content = 'Pas de texte', String haptic = 'warning', List<Widget> actions = const [] }) {
-    if(haptic == 'warning') Haptic().warning();
-
-    showAdaptiveDialog(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(title),
-        content: Text(content),
-        actions: actions,
-      ),
     );
   }
 
@@ -730,32 +719,30 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                         children: [
                           OutlinedButton(
                             onPressed: () {
-                              Haptic().light();
-                              showAdaptiveDialog(
-                                context: context,
-                                builder: (context) => AlertDialog.adaptive(
-                                  title: const Text("Configuration de Stend"),
-                                  content: Text("Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\n${widget.useCupertino ? '' : 'Pour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation. '}Une instance de démonstration est disponible ${widget.useCupertino ? 'sur la documentation' : 'sur celle-ci'}."),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Haptic().light();
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text(widget.useCupertino ? "OK" : "Fermer"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Haptic().light();
-                                        Navigator.of(context).pop();
+                              actionsDialog(
+                                context,
+                                title: "Configuration de Stend",
+                                content: "Stend est un service vous permettant de télécharger et envoyer des fichiers via votre propre serveur.\n\n${widget.useCupertino ? '' : 'Pour pouvoir utiliser cette application, vous aurez besoin de configurer votre propre instance via les explications fournis dans la documentation. '}Une instance de démonstration est disponible ${widget.useCupertino ? 'sur la documentation' : 'sur celle-ci'}.",
+                                haptic: 'light',
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Haptic().light();
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text(widget.useCupertino ? "OK" : "Fermer"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Haptic().light();
+                                      Navigator.of(context).pop();
 
-                                        final Uri url = Uri.parse('https://stend.johanstick.fr');
-                                        launchUrl(url);
-                                      },
-                                      child: const Text("Documentation"),
-                                    )
-                                  ],
-                                ),
+                                      final Uri url = Uri.parse('https://stend.johanstick.fr');
+                                      launchUrl(url);
+                                    },
+                                    child: const Text("Documentation"),
+                                  )
+                                ],
                               );
                             },
                             child: const Text("En savoir plus"),
@@ -1198,7 +1185,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Déconnecte tous les appareils connectés à ce compte"),
                             trailing: IconButton(
                               onPressed: () async {
-                                confirmDialog(
+                                actionsDialog(
+                                  context,
                                   title: 'Effacer les sessions ?',
                                   content: 'Vous serez déconnecté de ce compte sur tous vos appareils connectés, à l\'exception de celui-ci.',
                                   actions: [
@@ -1230,7 +1218,8 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                             subtitle: const Text("Supprime définitivement ce compte et toutes les données associées à celui-ci"),
                             trailing: IconButton(
                               onPressed: () async {
-                                confirmDialog(
+                                actionsDialog(
+                                  context,
                                   title: 'Supprimer ce compte ?',
                                   content: "Vous serez déconnecté sur tous vos appareils connectés et vos transferts exposés seront supprimés dans moins d'une heure. Vous pourrez vous réinscrire.",
                                   actions: [

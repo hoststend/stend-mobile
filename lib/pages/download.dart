@@ -18,6 +18,7 @@ import 'package:stendmobile/utils/smash_account.dart';
 import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/actions_dialog.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -351,23 +352,19 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       var alreadyWarned = box.read('warnedAboutThirdPartyService') ?? false;
       if (!alreadyWarned) {
         box.write('warnedAboutThirdPartyService', true);
-        await showAdaptiveDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog.adaptive(
-              title: const Text("Service tiers"),
-              content: const Text("Vous êtes sur le point de télécharger un fichier depuis un service tiers. Certaines fonctionnalités peuvent ne pas être implémentées ou ne pas fonctionner correctement."),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Haptic().light();
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Continuer"),
-                ),
-              ],
-            );
-          }
+        await asyncActionsDialog(
+          context,
+          title: "Service tiers",
+          content: "Vous êtes sur le point de télécharger un fichier depuis un service tiers. Certaines fonctionnalités peuvent ne pas être implémentées ou ne pas fonctionner correctement.",
+          actions: [
+            TextButton(
+              onPressed: () {
+                Haptic().light();
+                Navigator.pop(context);
+              },
+              child: const Text("Continuer"),
+            )
+          ]
         );
       }
     }
@@ -1222,65 +1219,59 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                         trailing: IconButton(
                           icon: Icon(iconLib == 'Lucide' ? LucideIcons.trash2 : iconLib == 'Lucide (alt)' ? LucideIcons.trash : Icons.delete),
                           onPressed: () {
-                            Haptic().light();
+                            actionsDialog( // demander confirmation
+                              context,
+                              title: "Supprimer cet envoi ?",
+                              content: "${widget.useCupertino ? '' : "Le fichier ne pourra pas être récupérer si vous n'en disposez pas une copie. "}Êtes-vous sûr de vouloir supprimer ce transfert des serveurs ?",
+                              haptic: 'light',
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Haptic().light();
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text("Annuler"),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    Haptic().light();
 
-                            // Afficher un dialogue pour demander une confirmation
-                            showAdaptiveDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog.adaptive(
-                                  title: const Text("Supprimer cet envoi ?"),
-                                  content: Text("${widget.useCupertino ? '' : "Le fichier ne pourra pas être récupérer si vous n'en disposez pas une copie. "}Êtes-vous sûr de vouloir supprimer ce transfert des serveurs ?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Haptic().light();
-                                        Navigator.pop(context);
+                                    // Faire une requête pour supprimer le fichier
+                                    var response = await dio.delete(
+                                      "${historic[index]["apiurl"]}/files/delete",
+                                      options: Options(
+                                        headers: { 'Content-Type': 'application/json' },
+                                      ),
+                                      queryParameters: {
+                                        "sharekey": historic[index]["sharekey"] ?? "",
+                                        "deletekey": historic[index]["deletekey"] ?? ""
                                       },
-                                      child: const Text("Annuler"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Haptic().light();
+                                    );
 
-                                        // Faire une requête pour supprimer le fichier
-                                        var response = await dio.delete(
-                                          "${historic[index]["apiurl"]}/files/delete",
-                                          options: Options(
-                                            headers: { 'Content-Type': 'application/json' },
-                                          ),
-                                          queryParameters: {
-                                            "sharekey": historic[index]["sharekey"] ?? "",
-                                            "deletekey": historic[index]["deletekey"] ?? ""
-                                          },
-                                        );
+                                    // On supprime l'élément de la liste (même si la requête a échoué, ptet la clé a expiré et donc ça va forcément fail mais on veut le masquer)
+                                    setState(() {
+                                      historic.removeAt(index);
+                                      box.write('historic', historic);
+                                    });
 
-                                        // On supprime l'élément de la liste (même si la requête a échoué, ptet la clé a expiré et donc ça va forcément fail mais on veut le masquer)
-                                        setState(() {
-                                          historic.removeAt(index);
-                                          box.write('historic', historic);
-                                        });
+                                    // On parse le JSON et affiche l'erreur si le status code n'est pas 200
+                                    if (!context.mounted) return;
+                                    if (response.statusCode != 200) {
+                                      Haptic().error();
+                                      try {
+                                        String errorMsg = response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert";
+                                        showSnackBar(context, errorMsg == 'La clé de partage est invalide' ? 'Le transfert a déjà été supprimé' : errorMsg, icon: "error", useCupertino: widget.useCupertino);
+                                      } catch (e) {
+                                        showSnackBar(context, "Impossible de supprimer le transfert", icon: "error", useCupertino: widget.useCupertino);
+                                      }
+                                    }
 
-                                        // On parse le JSON et affiche l'erreur si le status code n'est pas 200
-                                        if (!context.mounted) return;
-                                        if (response.statusCode != 200) {
-                                          Haptic().error();
-                                          try {
-                                            String errorMsg = response.data["message"] ?? response.data["error"] ?? "Impossible de supprimer le transfert";
-                                            showSnackBar(context, errorMsg == 'La clé de partage est invalide' ? 'Le transfert a déjà été supprimé' : errorMsg, icon: "error", useCupertino: widget.useCupertino);
-                                          } catch (e) {
-                                            showSnackBar(context, "Impossible de supprimer le transfert", icon: "error", useCupertino: widget.useCupertino);
-                                          }
-                                        }
-
-                                        // Fermer le dialogue
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text("Supprimer"),
-                                    ),
-                                  ],
-                                );
-                              }
+                                    // Fermer le dialogue
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text("Supprimer"),
+                                ),
+                              ],
                             );
                           },
                         ),
