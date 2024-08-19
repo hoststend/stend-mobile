@@ -68,17 +68,38 @@ Future getAccount() async {
   return checkaccountJson;
 }
 
-Future getTransferts() async {
-  String token = box.read('exposeAccountToken') ?? '';
-  if (token.isEmpty) {
-    return { 'success': false, 'value': "Vous n'êtes pas connecté" };
-  }
+// Future getAccountTransferts() async {
+//   String token = box.read('exposeAccountToken') ?? '';
+//   if (token.isEmpty) {
+//     return { 'success': false, 'value': "Vous n'êtes pas connecté" };
+//   }
 
-  http.Response checktransferts = await http.get(Uri.parse("${baseUrl}account/transferts"), headers: {'Authorization': token});
+//   http.Response checktransferts = await http.get(Uri.parse("${baseUrl}account/transferts"), headers: {'Authorization': token});
+//   final Map<String, dynamic> checktransfertsJson = json.decode(utf8.decode(checktransferts.bodyBytes));
+
+//   if (checktransfertsJson['success'] != true) {
+//     return { 'success': false, 'value': checktransfertsJson['message'] ?? checktransferts };
+//   }
+
+//   return checktransfertsJson;
+// }
+
+Future getTransferts({ String exposeAccountToken = '', String apiInstanceUrl = '', String latitude = '', String longitude = '' }) async {
+  if (exposeAccountToken.isEmpty) exposeAccountToken = box.read('exposeAccountToken') ?? '';
+
+  http.Response checktransferts = await http.post(Uri.parse("${baseUrl}transferts/list"), headers: {'Authorization': exposeAccountToken}, body: {
+    'latitude': latitude,
+    'longitude': longitude,
+    'apiUrl': apiInstanceUrl
+  });
   final Map<String, dynamic> checktransfertsJson = json.decode(utf8.decode(checktransferts.bodyBytes));
 
   if (checktransfertsJson['success'] != true) {
-    return { 'success': false, 'value': checktransfertsJson['message'] ?? checktransferts };
+    if(checktransfertsJson['action'] == 'DELETE_TOKEN') {
+      logout();
+    }
+
+    return { 'success': false, 'value': checktransfertsJson['message'] ?? checktransferts, 'action': checktransfertsJson['action'] ?? '' };
   }
 
   return checktransfertsJson;
@@ -158,7 +179,7 @@ Future deleteAccount({ bool hapticFeedback = false }) async {
     return { 'icon': 'error', 'value': deleteAccountJson['message'] ?? deleteAccount };
   }
 
-  logout(refreshSettings: true);
+  logout();
   if (hapticFeedback) Haptic().success();
   return { 'icon': 'success', 'value': "Votre compte a été supprimé, les données associées seront supprimées dans l'heure" };
 }
