@@ -186,6 +186,12 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
   }
 
   void updateExposedTransfers() async {
+    // Si l'app est à l'arrière plan
+    if (!globals.appIsInForeground) {
+      debugPrint('cancelling updateExposedTransfers() because app is in the background');
+      return;
+    }
+
     // Si toutes les méthodes d'exposition sont désactivées
     if (exposeMethods['exposeMethods_ipinstance'] == false && exposeMethods['exposeMethods_nearby'] == false && exposeMethods['exposeAccountToken'].isEmpty) {
       debugPrint('cancelling updateExposedTransfers() because all expose methods are disabled');
