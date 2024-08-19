@@ -17,6 +17,11 @@ Future getDeviceNickname() async {
   } else if(Platform.isIOS) {
     IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
     nickname = iosInfo.name.length > 2 ? iosInfo.name : iosInfo.utsname.machine;
+
+    if (nickname.startsWith('iPad ')) {
+      String unpreciseModel = nickname.split(' (')[0]; // retirer les infos complète (ex: iPad Pro (12.9-inch) (3rd generation))
+      if (unpreciseModel.length > 5) nickname = unpreciseModel;
+    }
   } else if(Platform.isMacOS) {
     MacOsDeviceInfo macInfo = await deviceInfo.macOsInfo;
     nickname = macInfo.computerName.length > 2 ? macInfo.computerName : macInfo.model;
