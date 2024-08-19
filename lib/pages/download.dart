@@ -18,6 +18,7 @@ import 'package:stendmobile/utils/smash_account.dart';
 import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/system_share.dart';
 import 'package:stendmobile/utils/actions_dialog.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
@@ -28,7 +29,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:html/parser.dart';
 import 'package:tuple/tuple.dart';
 import 'package:path/path.dart' as path;
-import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -1145,8 +1145,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
               tips.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
 
               // Cartes avec les astuces
-              // TODO: ne mm pas crééé de listview si l'array est vide
-              ListView.builder(
+              tips.isNotEmpty ? ListView.builder(
                 shrinkWrap: true,
                 // physics: const NeverScrollableScrollPhysics(),
                 primary: false,
@@ -1168,7 +1167,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                     ),
                   );
                 } 
-              ),
+              ) : const SizedBox.shrink(),
 
               tips.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
 
@@ -1202,14 +1201,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                         subtitle: Text("${formatDate(historic[index]["date"])} ― ${formatBytes(historic[index]["filesize"] ?? '0')}${historic[index]["filetype"] != null && historic[index]["filetype"].isNotEmpty ? " ― ${historic[index]["filetype"]}" : ""}"),
                         onLongPress: () {
                           Haptic().light();
-
-                          final screenSize = MediaQuery.of(context).size;
-                          final rect = Rect.fromCenter(
-                            center: Offset(screenSize.width / 2, screenSize.height / 2),
-                            width: 100,
-                            height: 100,
-                          );
-                          Share.share(historic[index]["access"], sharePositionOrigin: rect);
+                          systemShare(context, historic[index]["access"]);
                         },
                         onTap: () {
                           Haptic().light();
@@ -1326,14 +1318,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                         subtitle: Text("${formatUnixRelativeDate(exposedTransfers[index]["creationDate"])} ― par ${exposedTransfers[index]["nickname"]} ― ${exposedTransfers[index]['methodUsed'] == 'position' ? 'à proximité' : exposedTransfers[index]['methodUsed'] == 'account' ? 'sur ce compte' : exposedTransfers[index]['methodUsed'] == 'instanceAndIp' ? 'sur cette instance' : 'huh??'}"),
                         onLongPress: () {
                           Haptic().light();
-
-                          final screenSize = MediaQuery.of(context).size;
-                          final rect = Rect.fromCenter(
-                            center: Offset(screenSize.width / 2, screenSize.height / 2),
-                            width: 100,
-                            height: 100,
-                          );
-                          Share.share(exposedTransfers[index]["webUrl"], sharePositionOrigin: rect); // TODO: créé un util pour regrouper toutes les fois où on a ce code
+                          systemShare(context, exposedTransfers[index]["webUrl"]);
                         },
                         onTap: () {
                           urlController.text = exposedTransfers[index]["webUrl"];

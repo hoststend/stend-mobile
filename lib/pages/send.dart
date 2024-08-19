@@ -13,6 +13,7 @@ import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
 import 'package:stendmobile/utils/actions_dialog.dart';
+import 'package:stendmobile/utils/system_share.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:get_storage/get_storage.dart';
@@ -20,7 +21,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:tuple/tuple.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
@@ -669,14 +669,7 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
               onPressed: () async {
                 Haptic().light();
                 Navigator.pop(context);
-
-                final screenSize = MediaQuery.of(context).size;
-                final rect = Rect.fromCenter(
-                  center: Offset(screenSize.width / 2, screenSize.height / 2),
-                  width: 100,
-                  height: 100,
-                );
-                Share.share(finalAccess, sharePositionOrigin: rect);
+                systemShare(context, finalAccess);
               },
               child: const Text("Partager")
             ),
