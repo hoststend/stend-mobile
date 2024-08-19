@@ -684,7 +684,7 @@ class _DebugPageState extends State<DebugPage> {
                           ),
 
                           CustomSwitchTile(
-                            title: "Ne pas afficher les transferts exposée",
+                            title: "Ignorer recherche transferts exposés",
                             subtitle: "Les transferts exposés ne seront plus recherchés en ouvrant la page Télécharger, vous pourrez tout de même en créer",
                             value: box.read('disableExposedSearch') ?? false,
                             onChanged: (bool? value) {
