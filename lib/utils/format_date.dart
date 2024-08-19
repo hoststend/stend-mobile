@@ -1,3 +1,4 @@
+import 'package:highlight/languages/diff.dart';
 import 'package:intl/intl.dart';
 
 String formatMonth(String month) {
@@ -48,5 +49,24 @@ String formatDate(String dateToParse) {
     }
   } else {
     return '${formatterDay.format(date)} ${formatMonth(formatterMonth.format(date))} ${formatterYear.format(date)}';
+  }
+}
+
+String formatUnixRelativeDate(String unixEpoch) {
+  var date = DateTime.parse(DateTime.fromMillisecondsSinceEpoch(int.parse(unixEpoch)).toString());
+
+  var now = DateTime.now();
+  var difference = now.difference(date);
+
+  if (difference.inDays > 0) {
+    return 'il y a ${difference.inDays} jour${difference.inDays > 1 ? 's' : ''}';
+  } else if (difference.inHours > 0) {
+    return 'il y a ${difference.inHours} heure${difference.inHours > 1 ? 's' : ''}';
+  } else if (difference.inMinutes > 0) {
+    return 'il y a ${difference.inMinutes} min${difference.inMinutes > 1 ? 's' : ''}';
+  } else if (difference.inSeconds > 3) {
+    return 'il y a ${difference.inSeconds} sec';
+  } else {
+    return 'à l\'instant';
   }
 }
