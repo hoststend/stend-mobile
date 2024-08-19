@@ -41,17 +41,20 @@ class UploadDialogState extends State<UploadDialog> {
   Widget build(BuildContext context) {
     return AlertDialog.adaptive(
       title: const Text("Envoi en cours"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
 
-        children: [
-          !widget.useCupertino ? Text(widget.content, textAlign: TextAlign.center) : widget.useCupertino && widget.details != null ? Text(widget.details!, textAlign: TextAlign.center) : const SizedBox(),
+          children: [
+            !widget.useCupertino ? Text(widget.content, textAlign: TextAlign.center) : widget.useCupertino && widget.details != null ? Text(widget.details!, textAlign: TextAlign.center) : const SizedBox(),
 
-          const SizedBox(height: 12.0),
-          LinearProgressIndicator(value: widget.value),
-          const SizedBox(height: 12.0),
-          widget.useCupertino ? Text(widget.content) : !widget.useCupertino && widget.details != null ? Text(widget.details!) : const SizedBox(),
-        ],
+            const SizedBox(height: 12.0),
+            LinearProgressIndicator(value: widget.value),
+            const SizedBox(height: 12.0),
+            widget.useCupertino ? Text(widget.content) : !widget.useCupertino && widget.details != null ? Text(widget.details!) : const SizedBox(),
+          ],
+        ),
       ),
     );
   }
@@ -649,13 +652,16 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
       builder: (BuildContext context) {
         return AlertDialog.adaptive(
           title: const Text("Transfert terminé"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text("Le transfert est terminé, vous pouvez accéder à vos fichiers à l'adresse suivante :"),
-              const SizedBox(height: 12.0),
-              Text(finalAccess, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ],
+          content: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("Le transfert est terminé, vous pouvez accéder à vos fichiers à l'adresse suivante :"),
+                const SizedBox(height: 12.0),
+                Text(finalAccess, style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
           ),
           actions: [
             TextButton(

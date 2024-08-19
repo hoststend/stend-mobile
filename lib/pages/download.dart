@@ -51,17 +51,20 @@ class DownloadDialogState extends State<DownloadDialog> {
   Widget build(BuildContext context) {
     return AlertDialog.adaptive(
       title: const Text("Téléchargement"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
 
-        children: [
-          widget.useCupertino ? const SizedBox() : Text(widget.content, textAlign: TextAlign.center),
+          children: [
+            widget.useCupertino ? const SizedBox() : Text(widget.content, textAlign: TextAlign.center),
 
-          const SizedBox(height: 12.0),
-          LinearProgressIndicator(value: widget.value),
-          const SizedBox(height: 12.0),
-          !widget.useCupertino && widget.fileType != null ? Text("Fichier : ${widget.fileType!}") : widget.useCupertino ? Text(widget.content) : const SizedBox(),
-        ],
+            const SizedBox(height: 12.0),
+            LinearProgressIndicator(value: widget.value),
+            const SizedBox(height: 12.0),
+            !widget.useCupertino && widget.fileType != null ? Text("Fichier : ${widget.fileType!}") : widget.useCupertino ? Text(widget.content) : const SizedBox(),
+          ],
+        ),
       ),
     );
   }

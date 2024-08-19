@@ -11,9 +11,12 @@ void actionsDialog(BuildContext context, { String title = 'Confirmation', String
     context: context,
     builder: (context) => AlertDialog.adaptive(
       title: Text(title),
-      content: Text(content),
-      actions: actions,
-    ),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Text(content)
+      ),
+      actions: actions
+    )
   );
 }
 
@@ -27,8 +30,11 @@ Future asyncActionsDialog(BuildContext context, { String title = 'Confirmation',
     context: context,
     builder: (context) => AlertDialog.adaptive(
       title: Text(title),
-      content: Text(content),
-      actions: actions,
-    ),
+      content: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: Text(content)
+      ),
+      actions: actions
+    )
   );
 }
