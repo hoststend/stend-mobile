@@ -1336,10 +1336,38 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                           Share.share(exposedTransfers[index]["webUrl"], sharePositionOrigin: rect); // TODO: créé un util pour regrouper toutes les fois où on a ce code
                         },
                         onTap: () {
-                          Haptic().light();
                           urlController.text = exposedTransfers[index]["webUrl"];
-                          // TODO: afficher un avertissement au premier téléchargement (le fichier peut avoir été envoyé par un inconnu, ça peut être une fausse instance, il aura accès à ton ip etc)
-                          startDownload();
+
+                          bool alreadyWarned = box.read('alreadyWarnedDownloadExposedFile') ?? false;
+                          if (!alreadyWarned){
+                            return actionsDialog(
+                              context,
+                              title: "Transferts exposés",
+                              content: "Vous vous apprêtez à télécharger un fichier exposé par un inconnu. L'envoyeur peut ne pas être de confiance et peut avoir envoyé un fichier malveillant. En acceptant, vous téléchargerez un fichier depuis une instance inconnue, qui n'aura accès qu'à votre adresse IP. Assurez-vous de bien comprendre les risques avant de continuer.",
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Haptic().light();
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text("Annuler"),
+                                ),
+
+                                TextButton(
+                                  onPressed: () {
+                                    Haptic().light();
+                                    box.write('alreadyWarnedDownloadExposedFile', true);
+                                    Navigator.of(context).pop();
+                                    startDownload();
+                                  },
+                                  child: Text(widget.useCupertino ? "Continuer" : "Ne plus afficher"),
+                                )
+                              ]
+                            );
+                          } else {
+                            Haptic().light();
+                            startDownload();
+                          }
                         },
                       ),
                     );
