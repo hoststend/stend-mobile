@@ -17,6 +17,8 @@ import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/smash_account.dart';
 import 'package:stendmobile/utils/check_connectivity.dart';
 import 'package:stendmobile/utils/haptic.dart';
+import 'package:stendmobile/utils/geolocator.dart';
+import 'package:stendmobile/utils/global_server.dart' as globalserver;
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:http/http.dart' as http;
@@ -88,6 +90,13 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
   List historic = [];
   List tips = [];
 
+  Map exposeMethods = {};
+  Timer? exposedSearchTimer;
+  int coordinatesCacheExpire = 0;
+  String coordinatesLat = '';
+  String coordinatesLong = '';
+  List exposedTransfers = [];
+
   late bool storeRelease;
   late String iconLib;
   late bool disableHistory;
@@ -98,6 +107,12 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     storeRelease = box.read('forceStore') != true && const String.fromEnvironment("storeRelease").isNotEmpty;
     iconLib = box.read('iconLib') ?? (Platform.isIOS ? 'Lucide' : 'Material');
     disableHistory = box.read('disableHistory') ?? false;
+
+    exposeMethods = {
+      'exposeMethods_ipinstance': box.read('exposeMethods_ipinstance') ?? false,
+      'exposeMethods_nearby': box.read('exposeMethods_nearby') ?? false,
+      'exposeAccountToken': box.read('exposeAccountToken') ?? '',
+    };
 
     deviceUserAgent().then((value) {
       dio = Dio(BaseOptions(
@@ -148,6 +163,12 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         showQrScanner();
       }
     });
+
+    if (box.read('disableExposedSearch') != true) {
+      if (exposedSearchTimer != null) exposedSearchTimer!.cancel();
+      updateExposedTransfers();
+      exposedSearchTimer = Timer.periodic(const Duration(minutes: 1), (timer) => updateExposedTransfers());
+    }
   }
 
   @override
@@ -155,8 +176,64 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
     urlController.dispose();
     downloadAlertStreamController.close();
     historicBoxListener?.call();
+    exposedSearchTimer?.cancel();
 
     super.dispose();
+  }
+
+  void updateExposedTransfers() async {
+    // Si toutes les méthodes d'exposition sont désactivées
+    if (exposeMethods['exposeMethods_ipinstance'] == false && exposeMethods['exposeMethods_nearby'] == false && exposeMethods['exposeAccountToken'].isEmpty) {
+      debugPrint('cancelling updateExposedTransfers() because all expose methods are disabled');
+      return;
+    }
+
+    // Vérifier la localisation si le cache a expiré
+    if (exposeMethods['exposeMethods_nearby'] == true && DateTime.now().millisecondsSinceEpoch > coordinatesCacheExpire) {
+      debugPrint('updateExposedTransfers() is trying to update position in cache');
+      try {
+        var position = await getCurrentPosition();
+        coordinatesLat = position.latitude.toString();
+        coordinatesLong = position.longitude.toString();
+        coordinatesCacheExpire = DateTime.now().add(const Duration(minutes: 2)).millisecondsSinceEpoch;
+      } catch (e) {
+        debugPrint('unable to get position in updateExposedTransfers(): $e');
+      }
+    }
+
+    // Récupérer les transferts exposés
+    debugPrint('requesting the api to get updated exposed transfers list');
+    Map response = await globalserver.getTransferts(
+      exposeAccountToken: exposeMethods['exposeAccountToken'],
+      apiInstanceUrl: exposeMethods['exposeMethods_ipinstance'] == true ? (box.read('apiInstanceUrl') ?? '') : '',
+      latitude: coordinatesLat,
+      longitude: coordinatesLong
+    );
+    debugPrint('getTransferts() returned: $response');
+
+    if (response['success'] == true) {
+      response['transferts'] = response['transferts'] ?? []; // pr éviter que ça soit null
+
+      if (response['transferts'].toString() != exposedTransfers.toString()) {
+        debugPrint('response isn\'t the same as current saved list, updating...');
+        setState(() {
+          exposedTransfers = response['transferts'] ?? [];
+        });
+      } else {
+        debugPrint('response is the same as current saved list, not updating');
+      }
+    } else {
+      if (response['value'] == 'Vous devez fournir au moins une méthode d\'exposition') return; // une des récupérations a raté, on ignore
+
+      debugPrint('getTransferts() returned an error that need to display a snackbar');
+      if(!mounted) return;
+      showSnackBar(context, response['value'] ?? "Impossible de récupérer les transferts exposés", icon: "error", useCupertino: widget.useCupertino);
+
+      if (response['action'] == 'DELETE_TOKEN') {
+        debugPrint('getTransferts() returned DELETE_TOKEN, should already be logged out, deleting token from cache');
+        exposeMethods['exposeAccountToken'] = '';
+      }
+    }
   }
 
   void showQrScanner() {
@@ -1071,6 +1148,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
               tips.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
 
               // Cartes avec les astuces
+              // TODO: ne mm pas crééé de listview si l'array est vide
               ListView.builder(
                 shrinkWrap: true,
                 // physics: const NeverScrollableScrollPhysics(),
@@ -1210,7 +1288,6 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                     );
                   }
                 ) :
-                // carte avec un icône tout en haut:
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 18.0, bottom: 18.0, left: 12.0, right: 12.0),
@@ -1224,7 +1301,59 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                       ]
                     )
                   )
+                ),
+
+              exposedTransfers.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
+
+              // Titre de la section
+              exposedTransfers.isNotEmpty ? Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Transferts exposés",
+
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.white : Colors.black,
+                  )
                 )
+              ) : const SizedBox.shrink(),
+
+              exposedTransfers.isNotEmpty ? const SizedBox(height: 18.0) : const SizedBox.shrink(),
+
+              // Cartes avec les transferts exposés
+              exposedTransfers.isNotEmpty ?
+                ListView.builder(
+                  shrinkWrap: true,
+                  // physics: const NeverScrollableScrollPhysics(),
+                  primary: false,
+                  itemCount: exposedTransfers.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(exposedTransfers[index]["fileName"], overflow: TextOverflow.ellipsis, maxLines: 1),
+                        subtitle: Text("${formatUnixRelativeDate(exposedTransfers[index]["creationDate"])} ― par ${exposedTransfers[index]["nickname"]} ― ${exposedTransfers[index]['methodUsed'] == 'position' ? 'à proximité' : exposedTransfers[index]['methodUsed'] == 'account' ? 'sur ce compte' : exposedTransfers[index]['methodUsed'] == 'instanceAndIp' ? 'sur cette instance' : 'huh??'}"),
+                        onLongPress: () {
+                          Haptic().light();
+
+                          final screenSize = MediaQuery.of(context).size;
+                          final rect = Rect.fromCenter(
+                            center: Offset(screenSize.width / 2, screenSize.height / 2),
+                            width: 100,
+                            height: 100,
+                          );
+                          Share.share(exposedTransfers[index]["webUrl"], sharePositionOrigin: rect); // TODO: créé un util pour regrouper toutes les fois où on a ce code
+                        },
+                        onTap: () {
+                          Haptic().light();
+                          urlController.text = exposedTransfers[index]["webUrl"];
+                          // TODO: afficher un avertissement au premier téléchargement (le fichier peut avoir été envoyé par un inconnu, ça peut être une fausse instance, il aura accès à ton ip etc)
+                          startDownload();
+                        },
+                      ),
+                    );
+                  }
+                ) : const SizedBox.shrink(),
             ],
           ),
         ),
