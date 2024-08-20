@@ -546,6 +546,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
                     padding: const EdgeInsets.only(top: 6.0),
                     child: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
                   ),
+                  tooltip: '',
                   label: 'Envoyer',
                 ),
                 BottomNavigationBarItem(
@@ -553,6 +554,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
                     padding: const EdgeInsets.only(top: 6.0),
                     child: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
                   ),
+                  tooltip: '',
                   label: 'Télécharger',
                 ),
                 BottomNavigationBarItem(
@@ -560,6 +562,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
                     padding: const EdgeInsets.only(top: 6.0),
                     child: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.cog : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
                   ),
+                  tooltip: '',
                   label: 'Réglages',
                 ),
               ],
