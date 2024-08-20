@@ -471,7 +471,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
                       selectedIndex: _currentIndex,
                       onDestinationSelected: destinationSelected,
                       extended: MediaQuery.of(context).size.width > 900,
-                      backgroundColor: brightness == Brightness.dark ? Theme.of(context).focusColor : Theme.of(context).colorScheme.onInverseSurface,
+                      backgroundColor: isDesktop ? (brightness == Brightness.dark ? Theme.of(context).focusColor : Theme.of(context).colorScheme.onInverseSurface) : null,
                       indicatorColor: useCupertino ? Colors.transparent : null,
                       selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
                       selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
