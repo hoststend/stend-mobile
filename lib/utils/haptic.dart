@@ -1,24 +1,28 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
 
+bool supported = Platform.isIOS || Platform.isAndroid;
+
 class Haptic {
   void light() {
-    HapticFeedback.lightImpact();
+    if(supported) HapticFeedback.lightImpact();
   }
 
   void heavy() {
-    Haptics.vibrate(HapticsType.heavy);
+    if(supported) Haptics.vibrate(HapticsType.heavy);
   }
 
   void success() {
-    Haptics.vibrate(HapticsType.success);
+    if(supported) Haptics.vibrate(HapticsType.success);
   }
 
   void warning() {
-    Haptics.vibrate(HapticsType.warning);
+    if(supported) Haptics.vibrate(HapticsType.warning);
   }
 
   void error() {
-    Haptics.vibrate(HapticsType.error);
+    if(supported) Haptics.vibrate(HapticsType.error);
   }
 }
