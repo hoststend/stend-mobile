@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stendmobile/widgets/custom_switch_tile.dart';
+import 'package:stendmobile/widgets/settings_dropdown_button.dart';
 import 'package:stendmobile/utils/check_url.dart';
 import 'package:stendmobile/utils/show_snackbar.dart';
 import 'package:stendmobile/utils/haptic.dart';
@@ -654,7 +655,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
             children: [
               // Titre de la section
               Padding(
-                padding: EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0, top: Platform.isMacOS ? 12.0 : 0.0),
+                padding: EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0, top: globals.isDesktop ? 12.0 : 0.0),
 
                 child: Text(
                   "Réglages généraux",
@@ -917,12 +918,11 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ListTile(
                             title: const Text("Durée avant expiration"),
                             subtitle: const Text("Définissez la durée avant expiration par défaut d'un fichier"),
-                            trailing: DropdownButton<String>(
-                              borderRadius: BorderRadius.circular(10.0),
-                              focusColor: Theme.of(context).colorScheme.onSecondary,
-                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+                            trailing: SettingsDropdownButton(
                               value: box.read('defaultExpirationTime') ?? '+ court',
-                              onTap: () { Haptic().light(); },
+                              hapticOnOpen: true,
+                              useCupertino: widget.useCupertino,
+                              items: const ['+ court', '+ long'],
                               onChanged: (String? newValue) {
                                 Haptic().light();
                                 setState(() {
@@ -930,13 +930,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   widget.showRefreshButton(true);
                                 });
                               },
-                              items: <String>['+ court', '+ long']
-                              .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
                             ),
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ),
@@ -944,25 +937,17 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ListTile(
                             title: const Text("Page à l'ouverture"),
                             subtitle: const Text("Définissez la page qui s'ouvrira au démarrage de l'appli"),
-                            trailing: DropdownButton<String>(
-                              borderRadius: BorderRadius.circular(10.0),
-                              focusColor: Theme.of(context).colorScheme.onSecondary,
-                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+                            trailing: SettingsDropdownButton(
                               value: box.read('defaultPage') ?? 'Envoyer',
-                              onTap: () { Haptic().light(); },
+                              hapticOnOpen: true,
+                              useCupertino: widget.useCupertino,
+                              items: const ['Envoyer', 'Télécharger', 'Réglages'],
                               onChanged: (String? newValue) {
                                 Haptic().light();
                                 setState(() {
                                   box.write('defaultPage', newValue!);
                                 });
                               },
-                              items: <String>['Envoyer', 'Télécharger', 'Réglages']
-                              .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
                             ),
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ),
@@ -994,12 +979,11 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ListTile(
                             title: const Text("Thème"),
                             subtitle: const Text("Choisissez le thème de l'appli"),
-                            trailing: DropdownButton<String>(
-                              borderRadius: BorderRadius.circular(10.0),
-                              focusColor: Theme.of(context).colorScheme.onSecondary,
-                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+                            trailing: SettingsDropdownButton(
                               value: box.read('theme') ?? 'Système',
-                              onTap: () { Haptic().light(); },
+                              hapticOnOpen: true,
+                              useCupertino: widget.useCupertino,
+                              items: const ['Système', 'Clair', 'Sombre'],
                               onChanged: (String? newValue) {
                                 Haptic().light();
                                 setState(() {
@@ -1007,13 +991,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   widget.updateState();
                                 });
                               },
-                              items: <String>['Système', 'Clair', 'Sombre']
-                              .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
                             ),
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ),
@@ -1021,12 +998,11 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ListTile(
                             title: const Text("Icônes"),
                             subtitle: const Text("Choisissez le style d'icône utilisé"),
-                            trailing: DropdownButton<String>(
-                              borderRadius: BorderRadius.circular(10.0),
-                              focusColor: Theme.of(context).colorScheme.onSecondary,
-                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+                            trailing: SettingsDropdownButton(
                               value: box.read('iconLib') ?? 'Material',
-                              onTap: () { Haptic().light(); },
+                              hapticOnOpen: true,
+                              useCupertino: widget.useCupertino,
+                              items: const ['Material', 'iOS', 'Lucide', 'Lucide (alt)'],
                               onChanged: (String? newValue) {
                                 Haptic().light();
                                 setState(() {
@@ -1034,13 +1010,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                   widget.showRefreshButton(true);
                                 });
                               },
-                              items: <String>['Material', 'iOS', 'Lucide', 'Lucide (alt)']
-                              .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
                             ),
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ),
@@ -1319,25 +1288,17 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ListTile(
                             title: const Text("Service d'URLs courts"),
                             subtitle: const Text("Définissez le service utilisé pour racourcir les URLs"),
-                            trailing: DropdownButton<String>(
-                              borderRadius: BorderRadius.circular(10.0),
-                              focusColor: Theme.of(context).colorScheme.onSecondary,
-                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+                            trailing: SettingsDropdownButton(
                               value: box.read('shortenService') ?? 'mdrr.fr',
-                              onTap: () { Haptic().light(); },
+                              hapticOnOpen: true,
+                              useCupertino: widget.useCupertino,
+                              items: const ['mdrr.fr', 'ptdrr.com', 's.3vm.cl', 's.erc.hr'],
                               onChanged: (String? newValue) {
                                 Haptic().light();
                                 setState(() {
                                   box.write('shortenService', newValue!);
                                 });
                               },
-                              items: <String>['mdrr.fr', 'ptdrr.com', 's.3vm.cl', 's.erc.hr']
-                              .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
                             ),
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ),
@@ -1345,25 +1306,17 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                           ListTile(
                             title: const Text("Caméra pour les QR Codes"),
                             subtitle: const Text("Définissez la caméra qui sera utilisée pour scanner les QR Codes"),
-                            trailing: DropdownButton<String>(
-                              borderRadius: BorderRadius.circular(10.0),
-                              focusColor: Theme.of(context).colorScheme.onSecondary,
-                              dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+                            trailing: SettingsDropdownButton(
                               value: box.read('cameraFacing') ?? 'Arrière',
-                              onTap: () { Haptic().light(); },
+                              hapticOnOpen: true,
+                              useCupertino: widget.useCupertino,
+                              items: const ['Arrière', 'Avant'],
                               onChanged: (String? newValue) {
                                 Haptic().light();
                                 setState(() {
                                   box.write('cameraFacing', newValue!);
                                 });
                               },
-                              items: <String>['Arrière', 'Avant']
-                              .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
                             ),
                             contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
                           ),
