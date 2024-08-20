@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:stendmobile/utils/globals.dart' as globals;
 
 final box = GetStorage();
 String iconLib = box.read('iconLib') ?? 'Material';
@@ -32,6 +33,7 @@ void showSnackBar(BuildContext context, String message, { String icon = 'info', 
       ],
     ),
     behavior: SnackBarBehavior.floating,
+    dismissDirection: globals.isDesktop ? DismissDirection.none : DismissDirection.down,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(15)),
     ),
