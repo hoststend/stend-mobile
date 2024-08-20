@@ -469,20 +469,35 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
                   children: [
                     MediaQuery.of(context).size.width > 600 ? NavigationRail(
                       selectedIndex: _currentIndex,
-                      extended: MediaQuery.of(context).size.width > 900,
                       onDestinationSelected: destinationSelected,
+                      extended: MediaQuery.of(context).size.width > 900,
+                      backgroundColor: brightness == Brightness.dark ? Theme.of(context).focusColor : Theme.of(context).colorScheme.onInverseSurface,
                       indicatorColor: useCupertino ? Colors.transparent : null,
                       selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
                       selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
                       unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey[400]) : null,
                       unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[400]) : null,
-                      leading: MediaQuery.of(context).size.width > 900 ? SizedBox(
-                        width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
-                        child: const Padding(
-                          padding: EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
-                          child: Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
+                      leading: MediaQuery.of(context).size.width > 900 ? (
+                        useCupertino ? SizedBox(
+                          width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
+                          child: const Padding(
+                            padding: EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
+                            child: Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
+                          )
                         )
-                      ) : null,
+                        : const Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Stend',
+                                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700)
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                          ],
+                        )) : null,
                       destinations: [
                         NavigationRailDestination(
                           icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
