@@ -1,4 +1,3 @@
-import 'package:highlight/languages/diff.dart';
 import 'package:intl/intl.dart';
 
 String formatMonth(String month) {

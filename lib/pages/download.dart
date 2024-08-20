@@ -1324,7 +1324,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                     return Card(
                       child: ListTile(
                         title: Text(exposedTransfers[index]["fileName"], overflow: TextOverflow.ellipsis, maxLines: 1),
-                        subtitle: Text("${formatUnixRelativeDate(exposedTransfers[index]["creationDate"])} ― par ${exposedTransfers[index]["nickname"]} ― ${exposedTransfers[index]['methodUsed'] == 'position' ? 'à proximité' : exposedTransfers[index]['methodUsed'] == 'account' ? 'sur ce compte' : exposedTransfers[index]['methodUsed'] == 'instanceAndIp' ? 'sur cette instance' : 'huh??'}"),
+                        subtitle: Text("${formatUnixRelativeDate(exposedTransfers[index]["creationDate"])} ― par ${exposedTransfers[index]["nickname"]} ― ${exposedTransfers[index]['methodUsed'] == 'position' ? 'à proximité' : exposedTransfers[index]['methodUsed'] == 'account' ? 'sur ce compte' : exposedTransfers[index]['methodUsed'] == 'instanceAndIp' ? 'sur votre instance' : 'huh??'}"),
                         onLongPress: () {
                           Haptic().light();
                           systemShare(context, exposedTransfers[index]["webUrl"]);

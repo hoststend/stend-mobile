@@ -15,6 +15,7 @@ import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/geolocator.dart';
 import 'package:stendmobile/utils/device_nickname.dart';
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
+import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file_manager/open_file_manager.dart';
 import 'package:highlight/languages/json.dart';
@@ -116,7 +117,7 @@ class _DebugPageState extends State<DebugPage> {
             children: [
               // Titre de la section
               Padding(
-                padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0),
+                padding: EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0, top: globals.isDesktop ? 12.0 : 0.0),
 
                 child: Text(
                   "Réglages de débogage",
