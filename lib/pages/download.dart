@@ -96,6 +96,7 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
 
   Map exposeMethods = {};
   Timer? exposedSearchTimer;
+  int exposedLastCheck = 0;
   int coordinatesCacheExpire = 0;
   String coordinatesLat = '';
   String coordinatesLong = '';
@@ -165,6 +166,8 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
         startDownload();
       } else if (event['type'] == 'open-qrcode-scanner') {
         showQrScanner();
+      } else if (event['type'] == 'page-open' && event['page'] == 'download') {
+        updateExposedTransfers();
       }
     });
 
@@ -186,6 +189,9 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
   }
 
   void updateExposedTransfers() async {
+    if (DateTime.now().millisecondsSinceEpoch - exposedLastCheck < 5000) return; // si la dernière vérif. était il y a moins de 5 secondes
+    exposedLastCheck = DateTime.now().millisecondsSinceEpoch;
+
     // Si l'app est à l'arrière plan
     if (!globals.appIsInForeground) {
       debugPrint('cancelling updateExposedTransfers() because app is in the background');

@@ -135,6 +135,8 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     }
 
     _pageController.jumpToPage(index);
+    
+    if (index == 1) globals.intereventsStreamController.add({'type': 'page-open', 'page': 'download'});
   }
 
   @override
