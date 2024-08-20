@@ -8,7 +8,7 @@ class CustomSwitchTile extends StatefulWidget {
 
   const CustomSwitchTile({
     required this.title,
-    required this.subtitle,
+    this.subtitle = '',
     required this.value,
     required this.onChanged,
     Key? key,
@@ -28,7 +28,7 @@ class CustomSwitchTileState extends State<CustomSwitchTile> {
         child: ListTile(
           contentPadding: const EdgeInsets.only(left: 0.0, right: 0.0, top: 2.0, bottom: 0.0),
           title: Text(widget.title),
-          subtitle: Text(widget.subtitle),
+          subtitle: widget.subtitle.isEmpty ? null : Text(widget.subtitle),
           trailing: Switch.adaptive(
             value: widget.value,
             onChanged: widget.onChanged,

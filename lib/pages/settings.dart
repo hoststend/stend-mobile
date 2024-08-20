@@ -151,7 +151,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     showSnackBar(context, "Début de la vérification des services...", icon: "info", useCupertino: widget.useCupertino);
 
     // Objet qui contient les statuts
-    bool atLeastOneIssue = true; // Si on a au moins un problème avec les éléments self-hosté
+    bool atLeastOneIssue = false; // Si on a au moins un problème avec les éléments self-hosté
     Map status = {
       'api': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
       'web': { 'statusBool': false, 'statusFriendly': 'impossible à déterminer', 'httpCode': 0, 'ping': -1, 'startCheck': 0, 'version': 'impossible à déterminer' },
@@ -172,8 +172,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
         status['api']['statusBool'] = response.statusCode == 200 ? true : false;
 
         if(response.statusCode == 200) {
-          atLeastOneIssue = false;
-
           try {
             final Map<String, dynamic> jsonData = json.decode(utf8.decode(response.bodyBytes));
             box.write('requirePassword', jsonData['requirePassword']);
@@ -181,7 +179,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
             status['api']['version'] = jsonData['apiVersion'];
           } catch (e) {
             debugPrint("Impossible d'extraire les informations de l'instance (API) : $e");
+            atLeastOneIssue = true;
           }
+        } else {
+          atLeastOneIssue = true;
         }
       } catch (e) {
         debugPrint('API instance check failed');
@@ -204,8 +205,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
         status['web']['statusBool'] = response.statusCode == 200 ? true : false;
 
         if(response.statusCode == 200) {
-          atLeastOneIssue = false;
-
           try {
             final String version = utf8.decode(response.bodyBytes);
             if (version.isNotEmpty && version.length > 100) {
@@ -215,7 +214,10 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
             }
           } catch (e) {
             debugPrint("Impossible d'extraire les informations de l'instance (WEB) : $e");
+            atLeastOneIssue = true;
           }
+        } else {
+          atLeastOneIssue = true;
         }
       } catch (e) {
         debugPrint('web instance check failed');

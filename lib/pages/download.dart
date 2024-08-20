@@ -1090,9 +1090,12 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
                   border: const OutlineInputBorder(),
                   labelText: "Lien ou clé de partage du transfert",
                   hintText: "stend.example.com/d?123456",
-                  suffixIcon: IconButton(
-                    icon: Icon(Platform.isIOS ? Icons.arrow_forward_ios : Icons.arrow_forward),
-                    onPressed: () => startDownload()
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.only(right: 4.0),
+                    child: IconButton(
+                      icon: Icon(Platform.isIOS ? Icons.arrow_forward_ios : Icons.arrow_forward),
+                      onPressed: () => startDownload(),
+                    ),
                   ),
                 ),
                 onSubmitted: (String value) { startDownload(); },
