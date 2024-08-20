@@ -198,6 +198,13 @@ class _DownloadPageState extends State<DownloadPage> with AutomaticKeepAliveClie
       return;
     }
 
+    // Vérifier l'accès à internet
+    bool connectivity = await checkConnectivity();
+    if (!connectivity) {
+      debugPrint('cancelling updateExposedTransfers() because no internet connection');
+      return;
+    }
+
     // Si toutes les méthodes d'exposition sont désactivées
     if (exposeMethods['exposeMethods_ipinstance'] == false && exposeMethods['exposeMethods_nearby'] == false && exposeMethods['exposeAccountToken'].isEmpty) {
       debugPrint('cancelling updateExposedTransfers() because all expose methods are disabled');
