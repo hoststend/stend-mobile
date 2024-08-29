@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -9,6 +11,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:flutter_acrylic/widgets/transparent_macos_sidebar.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
@@ -51,7 +55,9 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
   int _sameIndexClickedTimes = 0;
 
   late String iconLib;
+  late Brightness brightness;
   bool useCupertino = false;
+  bool acrylicEffect = false;
   bool isDesktop = Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
   late PageController _pageController;
@@ -93,6 +99,10 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     } else {
       useCupertino = true;
     }
+
+    acrylicEffect = box.read('acrylicEffect') ?? false;
+    brightness = box.read('theme') == 'Système' ? PlatformDispatcher.instance.platformBrightness : box.read('theme') == 'Clair' ? Brightness.light : box.read('theme') == 'Sombre' ? Brightness.dark : PlatformDispatcher.instance.platformBrightness;
+    setAcrylicEffect();
 
     // Reset certaines globales
     globals.initializedPages = {};
@@ -139,6 +149,20 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     if (index == 1) globals.intereventsStreamController.add({'type': 'page-open', 'page': 'download'});
   }
 
+  void setAcrylicEffect() async {
+    if(!Platform.isWindows && !Platform.isMacOS) return; // pas encore testé sur Linux
+
+    try { await Window.initialize(); } catch (e) { debugPrint('Window.initialize() warning: $e'); }
+
+    if(Platform.isWindows) await Window.setEffect(effect: WindowEffect.contentBackground);
+    // if(Platform.isMacOs) await Window.setEffect(effect: WindowEffect.contentBackground); // déjà par défaut, et empêche le resize de la sidebar quand défini manuellement
+
+    await Window.makeTitlebarTransparent();
+    await Window.hideTitle();
+    await Window.enableFullSizeContentView();
+    await Window.overrideMacOSBrightness(dark: brightness == Brightness.dark);
+  }
+
   @override
   void initState() {
     box = GetStorage();
@@ -158,6 +182,10 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
       _currentIndex = 2;
       defaultPageIndex = 2;
     }
+
+    acrylicEffect = box.read('acrylicEffect') ?? false;
+    brightness = box.read('theme') == 'Système' ? PlatformDispatcher.instance.platformBrightness : box.read('theme') == 'Clair' ? Brightness.light : box.read('theme') == 'Sombre' ? Brightness.dark : PlatformDispatcher.instance.platformBrightness;
+    setAcrylicEffect();
 
     // Déterminer la bibliothèque d'icônes par défaut
     if (box.read('iconLib') == null) {
@@ -362,8 +390,6 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
 
   @override
   Widget build(BuildContext context) {
-    var brightness = box.read('theme') == 'Système' ? MediaQuery.of(context).platformBrightness : box.read('theme') == 'Clair' ? Brightness.light : box.read('theme') == 'Sombre' ? Brightness.dark : MediaQuery.of(context).platformBrightness;
-
     if (firstBuildPassed == false){
       firstBuildPassed = true;
 
@@ -393,35 +419,40 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
           );
         }
 
+        ThemeData lightTheme = ThemeData(
+          colorScheme: lightColorScheme,
+          primaryColor: Colors.black,
+          brightness: Brightness.light,
+          useMaterial3: true,
+          splashFactory: Platform.isIOS || isDesktop ? NoSplash.splashFactory : null,
+          splashColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+          highlightColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+          hoverColor: isDesktop ? Colors.transparent : null,
+          platform: !useCupertino ? TargetPlatform.android : null,
+          scaffoldBackgroundColor: acrylicEffect ? Colors.transparent : null,
+        );
+        ThemeData darkTheme = ThemeData(
+          colorScheme: darkColorScheme,
+          primaryColor: Colors.white,
+          brightness: Brightness.dark,
+          useMaterial3: true,
+          splashFactory: Platform.isIOS || isDesktop ? NoSplash.splashFactory : null,
+          splashColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+          highlightColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
+          hoverColor: isDesktop ? Colors.transparent : null,
+          platform: !useCupertino ? TargetPlatform.android : null,
+          cupertinoOverrideTheme: const CupertinoThemeData(
+            textTheme: CupertinoTextThemeData(),
+          ),
+          scaffoldBackgroundColor: acrylicEffect ? Colors.transparent : null,
+        );
+
         return MaterialApp(
           key: _refreshKey,
           title: 'Stend',
           themeMode: box.read('theme') == 'Système' ? ThemeMode.system : box.read('theme') == 'Clair' ? ThemeMode.light : box.read('theme') == 'Sombre' ? ThemeMode.dark : ThemeMode.system,
-          theme: ThemeData(
-            colorScheme: lightColorScheme,
-            primaryColor: Colors.black,
-            brightness: Brightness.light,
-            useMaterial3: true,
-            splashFactory: Platform.isIOS || isDesktop ? NoSplash.splashFactory : null,
-            splashColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
-            highlightColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
-            hoverColor: isDesktop ? Colors.transparent : null,
-            platform: !useCupertino ? TargetPlatform.android : null,
-          ),
-          darkTheme: ThemeData(
-            colorScheme: darkColorScheme,
-            primaryColor: Colors.white,
-            brightness: Brightness.dark,
-            useMaterial3: true,
-            splashFactory: Platform.isIOS || isDesktop ? NoSplash.splashFactory : null,
-            splashColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
-            highlightColor: Platform.isIOS || isDesktop ? Colors.transparent : null,
-            hoverColor: isDesktop ? Colors.transparent : null,
-            cupertinoOverrideTheme: const CupertinoThemeData(
-              textTheme: CupertinoTextThemeData(),
-            ),
-            platform: !useCupertino ? TargetPlatform.android : null,
-          ),
+          theme: lightTheme,
+          darkTheme: darkTheme,
           home: Scaffold(
             floatingActionButton: showRefreshButton && MediaQuery.of(context).size.width > 900
             ? FloatingActionButton.extended(
@@ -469,65 +500,81 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
 
                 child: Row(
                   children: [
-                    MediaQuery.of(context).size.width > 600 ? NavigationRail(
-                      selectedIndex: _currentIndex,
-                      onDestinationSelected: destinationSelected,
-                      extended: MediaQuery.of(context).size.width > 900,
-                      backgroundColor: isDesktop ? (brightness == Brightness.dark ? Theme.of(context).focusColor : Theme.of(context).colorScheme.onInverseSurface) : null,
-                      indicatorColor: useCupertino ? Colors.transparent : null,
-                      selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
-                      selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
-                      unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey[400]) : null,
-                      unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[400]) : null,
-                      leading: MediaQuery.of(context).size.width > 900 ? (
-                        useCupertino ? SizedBox(
-                          width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
-                          child: const Padding(
-                            padding: EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
-                            child: Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
+                    MediaQuery.of(context).size.width > 600 ? TransparentMacOSSidebar(
+                      effect: acrylicEffect ? (Platform.isMacOS ? WindowEffect.sidebar : WindowEffect.fullScreenUI) : WindowEffect.disabled,
+                      child: NavigationRail(
+                        selectedIndex: _currentIndex,
+                        onDestinationSelected: destinationSelected,
+                        extended: MediaQuery.of(context).size.width > 900,
+                        backgroundColor: acrylicEffect ? Colors.transparent : isDesktop ? (brightness == Brightness.dark ? Theme.of(context).focusColor : Theme.of(context).colorScheme.onInverseSurface) : null,
+                        indicatorColor: useCupertino ? Colors.transparent : null,
+                        selectedIconTheme: useCupertino ? IconThemeData(color: brightness == Brightness.dark ? Colors.white : Colors.black) : null,
+                        selectedLabelTextStyle: useCupertino ? TextStyle(color: brightness == Brightness.dark ? Colors.white : Colors.black, fontWeight: FontWeight.w500) : null,
+                        unselectedIconTheme: useCupertino ? IconThemeData(color: Colors.grey[400]) : null,
+                        unselectedLabelTextStyle: useCupertino ? TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[400]) : null,
+                        leading: MediaQuery.of(context).size.width > 900 ? (
+                          useCupertino ? SizedBox(
+                            width: MediaQuery.of(context).size.width > 500 ? 240 : 72,
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 16.0, top: isDesktop ? 28.0 : 4.0, bottom: 4.0),
+                              child: const Text("Stend", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700), textAlign: TextAlign.left)
+                            )
                           )
-                        )
-                        : const Column(
-                          children: [
-                            SizedBox(height: 20),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Stend',
-                                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700)
+                          : Column(
+                            children: [
+                              SizedBox(height: isDesktop ? 28 : 20),
+                              const Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "Stend",
+                                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700)
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 20),
-                          ],
-                        )) : null,
-                      destinations: [
-                        NavigationRailDestination(
-                          icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
-                          label: const Text('Envoyer'),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
-                          label: const Text('Télécharger'),
-                        ),
-                        NavigationRailDestination(
-                          icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.cog : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
-                          label: const Text('Réglages'),
-                        )
-                      ],
+                              const SizedBox(height: 20),
+                            ],
+                          )) : SizedBox(height: isDesktop ? 20 : 2),
+                        destinations: [
+                          NavigationRailDestination(
+                            icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileUp : iconLib == 'Lucide (alt)' ? LucideIcons.uploadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_up : Icons.upload_file),
+                            label: const Text('Envoyer'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(iconLib == 'Lucide' ? LucideIcons.fileDown : iconLib == 'Lucide (alt)' ? LucideIcons.downloadCloud : iconLib == 'iOS' ? CupertinoIcons.square_arrow_down : Icons.file_download),
+                            label: const Text('Télécharger'),
+                          ),
+                          NavigationRailDestination(
+                            icon: Icon(iconLib == 'Lucide' ? LucideIcons.settings : iconLib == 'Lucide (alt)' ? LucideIcons.cog : iconLib == 'iOS' ? CupertinoIcons.settings : Icons.settings),
+                            label: const Text('Réglages'),
+                          )
+                        ],
+                      ),
                     ) : const SizedBox(),
-                    Expanded(
-                      flex: 1,
-                      child: Padding(
-                        padding: MediaQuery.of(context).size.width > 500 ? const EdgeInsets.symmetric(horizontal: 50.0) : EdgeInsets.zero,
-                        child: PageView(
-                          physics: const NeverScrollableScrollPhysics(),
-                          controller: _pageController,
-                          children: [
-                            SendPage(useCupertino: useCupertino),
-                            DownloadPage(useCupertino: useCupertino),
-                            SettingsPage(refresh: refresh, showRefreshButton: (bool value) { setState(() { showRefreshButton = value; }); }, updateState: () { setState(() {}); }, useCupertino: useCupertino),
-                            DebugPage(refresh: refresh, useCupertino: useCupertino),
-                          ]
+
+                    Theme(
+                      data: brightness == Brightness.dark ? darkTheme : lightTheme,
+                      child: Expanded(
+                        flex: 1,
+                        child: Padding(
+                          padding: MediaQuery.of(context).size.width > 500 ? const EdgeInsets.symmetric(horizontal: 50.0) : EdgeInsets.zero,
+                          child: PageView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            controller: _pageController,
+                            children: [
+                              SendPage(useCupertino: useCupertino),
+                              DownloadPage(useCupertino: useCupertino),
+                              SettingsPage(
+                                refresh: refresh,
+                                showRefreshButton: (bool value) { setState(() { showRefreshButton = value; }); },
+                                updateState: () { setState(() {}); },
+                                updateAcrylic: () {
+                                  brightness = box.read('theme') == 'Système' ? PlatformDispatcher.instance.platformBrightness : box.read('theme') == 'Clair' ? Brightness.light : box.read('theme') == 'Sombre' ? Brightness.dark : PlatformDispatcher.instance.platformBrightness;
+                                  setAcrylicEffect();
+                                },
+                                useCupertino: useCupertino
+                              ),
+                              DebugPage(refresh: refresh, useCupertino: useCupertino),
+                            ]
+                          ),
                         ),
                       ),
                     ),

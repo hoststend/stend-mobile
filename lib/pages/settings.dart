@@ -31,9 +31,10 @@ class SettingsPage extends StatefulWidget {
   final Function refresh;
   final Function showRefreshButton;
   final Function updateState;
+  final Function updateAcrylic;
   final bool useCupertino;
 
-  const SettingsPage({Key? key, required this.refresh, required this.showRefreshButton, required this.updateState, required this.useCupertino}) : super(key: key);
+  const SettingsPage({Key? key, required this.refresh, required this.showRefreshButton, required this.updateState, required this.updateAcrylic, required this.useCupertino}) : super(key: key);
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -978,6 +979,19 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
+                          globals.isDesktop ? CustomSwitchTile(
+                            title: "Effet Acrylique",
+                            subtitle: "La barre de navigation aura un arrière-plan flou, basé sur les couleurs de la fenêtre derrière elle",
+                            value: box.read('acrylicEffect') ?? false,
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                box.write('acrylicEffect', value!);
+                                widget.showRefreshButton(true);
+                              });
+                            },
+                          ) : const SizedBox.shrink(),
+
                           ListTile(
                             title: const Text("Thème"),
                             subtitle: const Text("Choisissez le thème de l'appli"),
@@ -991,6 +1005,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                                 setState(() {
                                   box.write('theme', newValue!);
                                   widget.updateState();
+                                  widget.updateAcrylic();
                                 });
                               },
                             ),
