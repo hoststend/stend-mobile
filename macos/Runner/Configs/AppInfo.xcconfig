@@ -8,7 +8,7 @@
 PRODUCT_NAME = Stend
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = fr.johanstick.stendmobile
+PRODUCT_BUNDLE_IDENTIFIER = fr.johanstick.stendmobile.dev
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2024 Johan Stickman. All rights reserved.
