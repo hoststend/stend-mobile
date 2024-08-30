@@ -979,19 +979,6 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                       ),
                       child: Column(
                         children: [
-                          globals.isDesktop ? CustomSwitchTile(
-                            title: "Effet Acrylique",
-                            subtitle: "La barre de navigation aura un arrière-plan flou, basé sur les couleurs de la fenêtre derrière elle",
-                            value: box.read('acrylicEffect') ?? false,
-                            onChanged: (bool? value) {
-                              Haptic().light();
-                              setState(() {
-                                box.write('acrylicEffect', value!);
-                                widget.showRefreshButton(true);
-                              });
-                            },
-                          ) : const SizedBox.shrink(),
-
                           ListTile(
                             title: const Text("Thème"),
                             subtitle: const Text("Choisissez le thème de l'appli"),
@@ -1080,6 +1067,19 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
                               Haptic().light();
                               setState(() {
                                 box.write('useMaterialYou', value!);
+                                widget.showRefreshButton(true);
+                              });
+                            },
+                          ) : const SizedBox.shrink(),
+
+                          globals.isDesktop ? CustomSwitchTile(
+                            title: "Effet Acrylique",
+                            subtitle: "La barre de navigation aura un arrière-plan flou, basé sur les couleurs de la fenêtre derrière elle",
+                            value: box.read('acrylicEffect') ?? false,
+                            onChanged: (bool? value) {
+                              Haptic().light();
+                              setState(() {
+                                box.write('acrylicEffect', value!);
                                 widget.showRefreshButton(true);
                               });
                             },
