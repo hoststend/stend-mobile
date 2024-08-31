@@ -60,6 +60,7 @@ dependencies:
   in_app_update: ^4.2.3
   dropdown_button2: ^2.3.9
   flutter_acrylic: ^1.1.4
+  window_manager: ^0.4.2
 
 dependency_overrides:
   geolocator: 11.0.0

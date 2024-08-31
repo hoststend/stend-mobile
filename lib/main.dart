@@ -13,6 +13,7 @@ import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_acrylic/widgets/transparent_macos_sidebar.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:stendmobile/utils/haptic.dart';
 import 'package:stendmobile/utils/globals.dart' as globals;
 import 'package:stendmobile/utils/global_server.dart' as globalserver;
@@ -32,8 +33,9 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   await protocolHandler.register('stend');
-
   await GetStorage.init();
+
+  if(Platform.isWindows || Platform.isMacOS || Platform.isLinux) await windowManager.ensureInitialized();
 
   runApp(const MainApp());
 }
@@ -59,6 +61,7 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
   bool useCupertino = false;
   bool acrylicEffect = false;
   bool isDesktop = Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+  bool windowShown = !Platform.isMacOS;
 
   late PageController _pageController;
   late int defaultPageIndex;
@@ -153,14 +156,18 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
     if(!Platform.isWindows && !Platform.isMacOS) return; // pas encore testé sur Linux
 
     try { await Window.initialize(); } catch (e) { debugPrint('Window.initialize() warning: $e'); }
-
-    if(Platform.isWindows) await Window.setEffect(effect: WindowEffect.contentBackground);
-    // if(Platform.isMacOs) await Window.setEffect(effect: WindowEffect.contentBackground); // déjà par défaut, et empêche le resize de la sidebar quand défini manuellement
+    if(acrylicEffect && Platform.isWindows) Window.setEffect(effect: WindowEffect.contentBackground);
+    // if(Platform.isMacOs) Window.setEffect(effect: WindowEffect.contentBackground); // déjà par défaut sur macOS, et empêche le resize de la sidebar quand défini manuellement
 
     await Window.makeTitlebarTransparent();
     await Window.hideTitle();
     await Window.enableFullSizeContentView();
     await Window.overrideMacOSBrightness(dark: brightness == Brightness.dark);
+
+    if(!windowShown){
+      windowShown = true;
+      await windowManager.show();
+    }
   }
 
   @override
@@ -231,10 +238,19 @@ class _MainAppState extends State<MainApp> with ProtocolListener {
       });
     }
 
+    if(!windowShown && !acrylicEffect){
+      windowShown = true;
+      windowManager.show();
+    }
+
     // Déterminer quand l'app est en avant/arrière plan
-    FGBGEvents.stream.listen((event) {
-      globals.appIsInForeground = event == FGBGType.foreground;
-    });
+    if(isDesktop){
+      // TODO: https://pub.dev/packages/window_manager#quick-start
+    } else {
+      FGBGEvents.stream.listen((event) {
+        globals.appIsInForeground = event == FGBGType.foreground;
+      });
+    }
   }
 
   @override
