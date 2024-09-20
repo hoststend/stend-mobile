@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -782,25 +783,50 @@ class _SendPageState extends State<SendPage> with AutomaticKeepAliveClientMixin 
               const SizedBox(height: 20.0),
 
               // Sélection de la durée de partage
-              DropdownButtonFormField<int>(
-                borderRadius: BorderRadius.circular(10.0),
-                focusColor: Theme.of(context).colorScheme.onSecondary,
-                dropdownColor: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+              DropdownButtonFormField2<int>(
+                dropdownStyleData: DropdownStyleData(
+                  isOverButton: true,
+                  offset: const Offset(0, 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10.0),
+                    color: widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[900] : Colors.grey[200] : Theme.of(context).colorScheme.onSecondary,
+                  ),
+                ),
+                menuItemStyleData: MenuItemStyleData(
+                  padding: const EdgeInsets.symmetric(horizontal: 0.0),
+                  overlayColor: MaterialStatePropertyAll(widget.useCupertino ? Theme.of(context).colorScheme.brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[300] : Theme.of(context).colorScheme.secondaryContainer),
+                ),
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   labelText: "Temps avant expiration",
                 ),
                 value: selectedExpireTime,
+                selectedItemBuilder: (BuildContext context) {
+                  return (box.read('recommendedExpireTimes') ?? []).asMap().entries.map<DropdownMenuItem<int>>((entry) {
+                    int index = entry.key;
+                    var expireTime = entry.value;
+
+                    return DropdownMenuItem(
+                      value: index,
+                      key: Key(expireTime['inSeconds'].toString()),
+                      child: Text(expireTime['label'])
+                    );
+                  }).toList();
+                },
                 items: (box.read('recommendedExpireTimes') ?? []).asMap().entries.map<DropdownMenuItem<int>>((entry) {
                   int index = entry.key;
                   var expireTime = entry.value;
+
                   return DropdownMenuItem(
                     value: index,
                     key: Key(expireTime['inSeconds'].toString()),
-                    child: Text(expireTime['label']),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: Text(expireTime['label'])
+                    ),
                   );
                 }).toList(),
-                onTap: () { Haptic().light(); },
+                onMenuStateChange: (bool isOpen) => isOpen ? Haptic().light() : null,
                 onChanged: (int? value) {
                   Haptic().light();
                   setState(() {
