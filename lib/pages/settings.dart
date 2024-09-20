@@ -94,7 +94,7 @@ class _SettingsPageState extends State<SettingsPage> with AutomaticKeepAliveClie
     // Obtenir la version actuellement installée
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     debugPrint(packageInfo.toString());
-    appVersion = packageInfo.version;
+    setState(() { appVersion = packageInfo.version; });
 
     // Définir la source d'installation
     if(packageInfo.installerStore == 'com.android.vending') installSource = 'playStore';
