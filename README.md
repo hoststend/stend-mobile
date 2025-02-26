@@ -4,7 +4,7 @@ Stend est un projet visant à être l'une des meilleures solutions pour configur
 
 Ce repo GitHub contient le code source et les installateurs du client Mobile de Stend pour Android et iOS, permettant de télécharger ou d'envoyer des fichiers sur une instance de Stend et plus encore.
 
-| ![Envoyer](https://stend-docs.johanstick.fr/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmobile_send.659f6f30.png&w=1080&q=75) | ![Télécharger](https://stend-docs.johanstick.fr/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmobile_download.ccc901b9.png&w=1080&q=75) | ![Réglages](https://stend-docs.johanstick.fr/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmobile_settings.89e0e3ed.png&w=1080&q=75) |
+| ![Envoyer](https://r2.johanstick.fr/illustrationsdevs/stend/send.png) | ![Télécharger](https://r2.johanstick.fr/illustrationsdevs/stend/download.png) | ![Réglages](https://r2.johanstick.fr/illustrationsdevs/stend/settings.png) |
 | --- | --- | --- |
 
 Pour plus d'informations sur ce client, vous pouvez lire [la page de la documentation dédiée](https://stend.johanstick.fr/mobile-docs/intro).
